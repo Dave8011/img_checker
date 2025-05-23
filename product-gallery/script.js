@@ -16,7 +16,13 @@ fetch('products.json')
         div.innerHTML = `
           <h2>${product.title} (<code>${product.sku}</code>)</h2>
           <div class="images">
-            ${product.images.map(url => `<img src="${url}" alt="${product.title}" loading="lazy" />`).join('')}
+           ${product.images.map((url, index) => `
+  <div class="image-wrapper">
+    <img src="${url}" />
+    <span class="image-number">${index + 1}</span>
+  </div>
+`).join('')}
+
           </div>
         `;
         gallery.appendChild(div);

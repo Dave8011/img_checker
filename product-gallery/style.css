@@ -5,7 +5,7 @@ body {
   margin: 0;
   padding: 20px;
   color: #333; /* Dark gray text color */
-  max-width: 1400px; /* Limit content width for readability */
+  max-width: 1500px; /* Limit content width for readability */
   margin: auto; /* Center the content horizontally */
 }
 
@@ -59,7 +59,7 @@ h1 {
 #gallery {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); /* Responsive columns */
-  gap: 30px; /* Space between products */
+  gap: 10px; /* Space between products */
 }
 
 /* Individual product card styling */
@@ -67,7 +67,7 @@ h1 {
   background: white;
   border: 1px solid #ccc;
   border-radius: 16px;
-  padding: 20px;
+  padding: 15px;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.07); /* Soft 3D card look */
   transition: transform 0.2s ease; /* Animate lift on hover */
 }

@@ -7,26 +7,18 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
-  <header>
-    <h1>🛍️ Product Gallery</h1>
-    <p style="text-align: center; color: #666;">Browse by name, SKU, or filter by category</p>
-  </header>
-
-  <section id="controls">
-    <input type="text" id="searchBar" placeholder="🔍 Search by SKU or Name..." />
-
-    <!-- Optional Category Dropdown (can be empty if not used) -->
+  <h1>Product Gallery</h1>
+  <div id="controls">
+    <input type="text" id="searchBar" placeholder="Search by SKU or Name..." />
     <select id="categoryFilter">
       <option value="">All Categories</option>
-      <!-- Dynamically populated from script if data has category field -->
     </select>
-  </section>
-
-  <main>
-    <div id="gallery"></div>
-  </main>
-
+  </div>
+  <div id="gallery"></div>
+  <div id="lightbox" class="lightbox hidden">
+    <span id="lightbox-close">&times;</span>
+    <img id="lightbox-img" src="" alt="Enlarged Image">
+  </div>
   <script src="script.js"></script>
 </body>
 </html>

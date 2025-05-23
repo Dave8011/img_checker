@@ -4,35 +4,35 @@ fetch('products.json')
     const gallery = document.getElementById('gallery');
     const searchBar = document.getElementById('searchBar');
     const categoryFilter = document.getElementById('categoryFilter');
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+    const lightboxClose = document.getElementById('lightbox-close');
 
-    // Extract unique categories
     const categories = [...new Set(data.map(p => p.category).filter(Boolean))];
-    categories.sort().forEach(cat => {
-      const option = document.createElement('option');
-      option.value = cat;
-      option.textContent = cat;
-      categoryFilter.appendChild(option);
+    categories.forEach(cat => {
+      const opt = document.createElement('option');
+      opt.value = cat;
+      opt.textContent = cat;
+      categoryFilter.appendChild(opt);
     });
 
     function renderProducts(filter = '', category = '') {
       gallery.innerHTML = '';
-      const filtered = data.filter(p => {
-        const matchesText = p.title.toLowerCase().includes(filter.toLowerCase()) ||
-                            p.sku.toLowerCase().includes(filter.toLowerCase());
-        const matchesCategory = category === '' || p.category === category;
-        return matchesText && matchesCategory;
-      });
-
+      const filtered = data.filter(p =>
+        (p.title.toLowerCase().includes(filter.toLowerCase()) ||
+         p.sku.toLowerCase().includes(filter.toLowerCase())) &&
+        (category === '' || p.category === category)
+      );
       filtered.forEach(product => {
         const div = document.createElement('div');
         div.className = 'product';
         div.innerHTML = `
-          <h2>${product.title} <code>(${product.sku})</code></h2>
           ${product.category ? `<div class="category-tag">${product.category}</div>` : ''}
+          <h2>${product.title} (<code>${product.sku}</code>)</h2>
           <div class="images">
             ${product.images.map((url, index) => `
               <div class="image-wrapper">
-                <img src="${url}" onclick="openLightbox('${url}')" />
+                <img src="${url}" data-full="${url}" />
                 <span class="image-number">${index + 1}</span>
               </div>
             `).join('')}
@@ -40,7 +40,19 @@ fetch('products.json')
         `;
         gallery.appendChild(div);
       });
+
+      document.querySelectorAll('.image-wrapper img').forEach(img => {
+        img.addEventListener('click', () => {
+          lightboxImg.src = img.dataset.full;
+          lightbox.classList.remove('hidden');
+        });
+      });
     }
+
+    lightboxClose.addEventListener('click', () => {
+      lightbox.classList.add('hidden');
+      lightboxImg.src = '';
+    });
 
     renderProducts();
 
@@ -52,16 +64,3 @@ fetch('products.json')
       renderProducts(searchBar.value, categoryFilter.value);
     });
   });
-
-// Lightbox feature
-function openLightbox(url) {
-  const overlay = document.createElement('div');
-  overlay.className = 'lightbox';
-  overlay.innerHTML = `
-    <div class="lightbox-content">
-      <span class="lightbox-close" onclick="this.parentElement.parentElement.remove()">×</span>
-      <img src="${url}" />
-    </div>
-  `;
-  document.body.appendChild(overlay);
-}

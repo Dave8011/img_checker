@@ -57,3 +57,43 @@ h1 {
   flex-shrink: 0;
   box-shadow: 0 0 3px rgba(0,0,0,0.1);
 }
+.product {
+  border: 1px solid #ccc;
+  border-radius: 16px;
+  padding: 20px;
+  margin: 20px auto;
+  max-width: 90%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: #fff;
+}
+
+.images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.image-wrapper {
+  position: relative;
+  flex: 0 1 120px;
+}
+
+.image-wrapper img {
+  width: 120px;
+  height: auto;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.image-number {
+  position: absolute;
+  bottom: 4px;
+  right: 8px;
+  background-color: rgba(0,0,0,0.6);
+  color: white;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 10px;
+}
+

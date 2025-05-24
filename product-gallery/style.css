@@ -106,11 +106,10 @@ h1 {
 }
 .image-wrapper img {
   width: 120px;
-  height: 150px;
+  height: auto;
   border-radius: 8px;
   border: 1px solid #ddd;
   transition: transform 0.2s ease;
-  object-fit: cover;
 }
 .image-wrapper img:hover {
   transform: scale(1.05);

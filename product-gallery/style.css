@@ -216,4 +216,8 @@ h1 {
   border-radius: 8px;
   width: fit-content;
 }
+.product label:hover {
+  background-color: #e1bee7;
+  cursor: pointer;
+}
 

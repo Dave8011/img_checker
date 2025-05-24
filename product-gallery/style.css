@@ -193,3 +193,27 @@ h1 {
 .back-button:hover {
   background-color: #0056b3;
 }
+
+/* Category tag on product card */
+.category-tag {
+  display: inline-block;
+  background-color: #007bff; /* Bootstrap blue */
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 4px 10px;
+  border-radius: 20px;
+  margin-bottom: 10px;
+}
+/* Style for comparison checkbox label */
+.product label {
+  display: block;
+  margin: 10px 0;
+  font-weight: bold;
+  color: #4a148c; /* Deep purple */
+  background-color: #f3e5f5; /* Light purple background */
+  padding: 6px 10px;
+  border-radius: 8px;
+  width: fit-content;
+}
+

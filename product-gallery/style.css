@@ -250,4 +250,17 @@ h1 {
 .clear-compare:hover {
   background-color: #c53030;
 }
+/* Link to Compare Page */
+.go-to-compare {
+  display: block;
+  text-align: right;
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #2b6cb0;
+  text-decoration: none;
+}
+
+.go-to-compare:hover {
+  text-decoration: underline;
+}
 

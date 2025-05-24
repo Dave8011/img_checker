@@ -8,19 +8,25 @@
 </head>
 <body>
   <h1>🛍️ Product Gallery</h1>
+
+  <!-- Sticky Filter Bar -->
   <div id="controls">
     <input type="text" id="searchBar" placeholder="🔍 Search by SKU or Name..." />
     <select id="categoryFilter">
       <option value="">📂 All Categories</option>
     </select>
-    <!-- Button to navigate to the comparison page -->
-    <button id="comparePageBtn">🆚 Compare Products</button>
+    <button id="compareButton">🔄 Compare</button>
   </div>
+
+  <!-- Product Cards Will Be Rendered Here -->
   <div id="gallery"></div>
+
+  <!-- Lightbox for Enlarged Image -->
   <div id="lightbox" class="lightbox hidden">
     <span id="lightbox-close">&times;</span>
     <img id="lightbox-img" src="" alt="Enlarged Image">
   </div>
-  <script type="module" src="script.js"></script>
+
+  <script type="module" src="scripts/main.js"></script>
 </body>
 </html>

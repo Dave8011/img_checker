@@ -202,3 +202,20 @@ h1 {
   font-size: 18px;
   margin-top: 40px;
 }
+/* Compare Button Style */
+.compare-btn {
+  margin-top: 15px;
+  padding: 10px 20px;
+  background-color: #38a169; /* Green */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.3s ease;
+}
+
+.compare-btn:hover {
+  background-color: #2f855a;
+}
+

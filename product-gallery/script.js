@@ -48,6 +48,26 @@ fetch('products.json')
             `).join('')}
           </div>
         `;
+
+        // ⭐ Add Compare button at the bottom of each product card
+        const compareBtn = document.createElement('button');
+        compareBtn.className = 'compare-btn';
+        compareBtn.textContent = '🔄 Compare';
+        compareBtn.onclick = () => {
+          // Get current list from localStorage
+          const selected = JSON.parse(localStorage.getItem('compareList') || '[]');
+
+          // Check for duplicates before adding
+          if (!selected.some(p => p.sku === product.sku)) {
+            selected.push(product); // Add new product
+            localStorage.setItem('compareList', JSON.stringify(selected)); // Save back to storage
+            alert(`${product.title} added to comparison.`);
+          } else {
+            alert(`${product.title} is already added.`);
+          }
+        };
+
+        div.appendChild(compareBtn); // Add button to card
         gallery.appendChild(div); // Add product card to the gallery
       });
 

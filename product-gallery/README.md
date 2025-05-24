@@ -1,17 +1,40 @@
-# 🛍️ Product Gallery with Comparison
+# 🛍️ Product Gallery & Comparison Tool
 
-## Features
-- Search and filter products by name or SKU
-- View products with image previews and lightbox
-- Navigate to product comparison page
-- Responsive design with a clean, modern look
-- Modular JavaScript for easier maintenance
+A responsive web application to display a product gallery with filtering, search, and comparison features.
 
-## Files
-- `index.html` – Main product gallery
-- `compare.html` – Product comparison page
-- `script.js` – Main logic
-- `compare.js` – Comparison logic
-- `utils.js` – Shared rendering and lightbox functions
-- `products.json` – Sample data
-- `style.css` – Full styling with comments
+## ✨ Features
+- Live search by name or SKU
+- Category dropdown filter
+- Sticky filter bar
+- Lightbox image zoom
+- Select products to compare
+- Compare page with side-by-side layout
+
+## 📁 Folder Structure
+
+├── index.html
+├── compare.html
+├── products.json
+├── style.css
+└── scripts/
+├── main.js
+└── compare.js
+
+## 🚀 Usage
+1. Place all files in a folder and host locally or on a static server (GitHub Pages, Netlify).
+2. Add your products in `products.json`.
+3. Open `index.html` in your browser.
+4. Select two or more products and click "🔄 Compare".
+
+## 🛠️ Customization
+- Update styles in `style.css`
+- Add product fields and update logic in `main.js` and `compare.js`
+- Extend comparison fields dynamically
+
+## 📦 Tech Stack
+- HTML5, CSS3
+- JavaScript (ES Modules)
+- JSON (local)
+
+## 📄 License
+MIT

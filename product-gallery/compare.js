@@ -1,51 +1,27 @@
 // compare.js
+fetch('products.json')
+  .then(res => res.json())
+  .then(data => {
+    const table = document.getElementById('comparison-table');
 
-// Load compare list from localStorage
-const compareList = JSON.parse(localStorage.getItem('compareList') || '[]');
-const container = document.getElementById('comparison-container');
+    // Get first 2 products to compare for demo
+    const [p1, p2] = data.slice(0, 2);
 
-// If no products, show message
-if (!compareList.length) {
-  container.innerHTML = `<p class="placeholder-text">No products selected. Go back and add some to compare.</p>`;
-} else {
-  const table = document.createElement('table');
-  table.className = 'compare-table';
-
-  // Define which fields to compare
-  const fields = ['title', 'sku', 'category', 'images'];
-
-  // Create table header
-  const thead = document.createElement('thead');
-  const headRow = document.createElement('tr');
-  headRow.innerHTML = `<th>Property</th>` + compareList.map(p => `<th>${p.title}</th>`).join('');
-  thead.appendChild(headRow);
-  table.appendChild(thead);
-
-  // Create table body
-  const tbody = document.createElement('tbody');
-  fields.forEach(field => {
-    const row = document.createElement('tr');
-    row.innerHTML = `<td><strong>${field.charAt(0).toUpperCase() + field.slice(1)}</strong></td>` +
-      compareList.map(p => {
-        if (field === 'images') {
-          return `<td><img src="${p.images[0]}" width="80" /></td>`;
-        } else {
-          return `<td>${p[field]}</td>`;
-        }
-      }).join('');
-    tbody.appendChild(row);
+    // Generate HTML table
+    table.innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>Attribute</th>
+            <th>${p1.title}</th>
+            <th>${p2.title}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>SKU</td><td>${p1.sku}</td><td>${p2.sku}</td></tr>
+          <tr><td>Category</td><td>${p1.category}</td><td>${p2.category}</td></tr>
+          <tr><td>Image</td><td><img src="${p1.images[0]}" width="100"></td><td><img src="${p2.images[0]}" width="100"></td></tr>
+        </tbody>
+      </table>
+    `;
   });
-
-  table.appendChild(tbody);
-  container.appendChild(table);
-
-  // Add Clear Button
-  const clearBtn = document.createElement('button');
-  clearBtn.textContent = '🧹 Clear Comparison';
-  clearBtn.className = 'clear-compare';
-  clearBtn.onclick = () => {
-    localStorage.removeItem('compareList');
-    location.reload();
-  };
-  container.appendChild(clearBtn);
-}

@@ -271,20 +271,4 @@ h1 {
 .toggle input:checked + .slider:before {
   transform: translateX(26px);
 }
-/* =============================
-   Toggle Switch Layout Fix
-   ============================= */
-
-.compare-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-left: 20px;
-  margin-top: 10px;
-}
-
-.compare-text {
-  font-size: 16px;
-  color: #333;
-}
 

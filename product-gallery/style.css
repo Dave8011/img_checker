@@ -221,7 +221,8 @@ h1 {
   cursor: pointer;
 }
 /* Toggle switch for enabling/disabling comparison */
-.toggle {
+.compare-label {
+
   position: relative;
   display: inline-block;
   width: 60px;

@@ -101,3 +101,17 @@ fetch('../products.json')
 
     renderProducts(); // Initial load
   });
+const toggleCompare = document.getElementById('toggleCompare');
+
+// In your renderProducts() function, after creating the product card:
+if (toggleCompare.checked) {
+  const compareBtn = document.createElement('button');
+  compareBtn.textContent = 'Select for Comparison';
+  compareBtn.className = 'compare-btn';
+  compareBtn.addEventListener('click', () => {
+    selectedProducts.push(product);
+    alert(`${product.title} added for comparison`);
+  });
+  div.appendChild(compareBtn);
+}
+

@@ -9,30 +9,34 @@
 <body>
   <h1>🛍️ Product Gallery</h1>
 
-  <!-- Sticky Filter Bar -->
+  <!-- ✅ Sticky Filter Bar: Contains search, category filter, compare mode toggle -->
   <div id="controls">
     <input type="text" id="searchBar" placeholder="🔍 Search by SKU or Name..." />
+
     <select id="categoryFilter">
       <option value="">📂 All Categories</option>
     </select>
-    <button id="compareButton">🔄 Compare</button>
-<label class="toggle">
-  <input type="checkbox" id="toggleCompare">
-  <span class="slider"></span> Enable Comparison Mode
-</label>
-<button id="compareButton">Compare Selected</button>
 
+    <!-- Comparison Mode Toggle Switch -->
+    <label class="toggle">
+      <input type="checkbox" id="toggleCompare">
+      <span class="slider"></span>
+      Enable Comparison Mode
+    </label>
+
+    <!-- Compare Button to open comparison page with selected products -->
+    <button id="compareButton">🔄 Compare Selected</button>
   </div>
 
-  <!-- Product Cards Will Be Rendered Here -->
+  <!-- 🖼️ Product Cards Will Be Rendered Here -->
   <div id="gallery"></div>
 
-  <!-- Lightbox for Enlarged Image -->
+  <!-- 🔍 Lightbox Viewer for Enlarged Image -->
   <div id="lightbox" class="lightbox hidden">
     <span id="lightbox-close">&times;</span>
     <img id="lightbox-img" src="" alt="Enlarged Image">
   </div>
-
+  <!-- 📜 Main JavaScript File -->
   <script type="module" src="scripts/main.js"></script>
 </body>
 </html>

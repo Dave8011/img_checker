@@ -1,9 +1,10 @@
 // scripts/main.js
 
-// Fetch and render product data from local JSON
+// Fetch and render product data from local JSON file
 fetch('../products.json')
   .then(res => res.json())
   .then(data => {
+    // DOM elements
     const gallery = document.getElementById('gallery');
     const searchBar = document.getElementById('searchBar');
     const categoryFilter = document.getElementById('categoryFilter');
@@ -11,10 +12,11 @@ fetch('../products.json')
     const lightboxImg = document.getElementById('lightbox-img');
     const lightboxClose = document.getElementById('lightbox-close');
     const compareButton = document.getElementById('compareButton');
+    const toggleCompare = document.getElementById('toggleCompare');
 
-    const selectedProducts = new Set(); // To store SKUs for comparison
+    const selectedProducts = new Set(); // Track selected SKUs for comparison
 
-    // Dynamically populate category dropdown
+    // Extract unique categories and populate category dropdown
     const categories = [...new Set(data.map(p => p.category).filter(Boolean))];
     categories.forEach(cat => {
       const opt = document.createElement('option');
@@ -23,32 +25,40 @@ fetch('../products.json')
       categoryFilter.appendChild(opt);
     });
 
-    // Render products based on search/filter input
+    // Main render function to display products
     function renderProducts(filter = '', category = '') {
-      gallery.innerHTML = '';
+      gallery.innerHTML = ''; // Clear current gallery
+
+      // Filter based on search text and selected category
       const filtered = data.filter(p =>
         (p.title.toLowerCase().includes(filter.toLowerCase()) ||
          p.sku.toLowerCase().includes(filter.toLowerCase())) &&
         (category === '' || p.category === category)
       );
 
+      // Loop through filtered products and create cards
       filtered.forEach(product => {
         const div = document.createElement('div');
         div.className = 'product';
 
-        const isChecked = selectedProducts.has(product.sku);
+        const isChecked = selectedProducts.has(product.sku); // If selected previously
 
+        // Generate HTML for the product card
         div.innerHTML = `
           ${product.category ? `<div class="category-tag">${product.category}</div>` : ''}
           <h2>${product.title} (<code>${product.sku}</code>)</h2>
-          <label>
-            <input type="checkbox" data-sku="${product.sku}" ${isChecked ? 'checked' : ''}>
-            Select for Comparison
-          </label>
+
+          ${toggleCompare.checked ? `
+            <label class="compare-label">
+              <input type="checkbox" data-sku="${product.sku}" ${isChecked ? 'checked' : ''}>
+              <span>Select for Comparison</span>
+            </label>
+          ` : ''}
+
           <div class="images">
             ${product.images.map((url, index) => `
               <div class="image-wrapper">
-                <img src="${url}" data-full="${url}" />
+                <img src="${url}" data-full="${url}" style="width: 200px;" />
                 <span class="image-number">${index + 1}</span>
               </div>
             `).join('')}
@@ -57,7 +67,7 @@ fetch('../products.json')
         gallery.appendChild(div);
       });
 
-      // Lightbox functionality
+      // Lightbox image click logic
       document.querySelectorAll('.image-wrapper img').forEach(img => {
         img.addEventListener('click', () => {
           lightboxImg.src = img.dataset.full;
@@ -65,14 +75,19 @@ fetch('../products.json')
         });
       });
 
-      // Checkbox to select items for comparison
-      document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-        checkbox.addEventListener('change', () => {
-          const sku = checkbox.dataset.sku;
-          if (checkbox.checked) selectedProducts.add(sku);
-          else selectedProducts.delete(sku);
+      // Handle compare checkbox clicks (if visible)
+      if (toggleCompare.checked) {
+        document.querySelectorAll('input[type="checkbox"][data-sku]').forEach(checkbox => {
+          checkbox.addEventListener('change', () => {
+            const sku = checkbox.dataset.sku;
+            if (checkbox.checked) {
+              selectedProducts.add(sku);
+            } else {
+              selectedProducts.delete(sku);
+            }
+          });
         });
-      });
+      }
     }
 
     // Close lightbox
@@ -81,37 +96,31 @@ fetch('../products.json')
       lightboxImg.src = '';
     });
 
-    // Filter triggers
+    // Search and filter listeners
     searchBar.addEventListener('input', () => {
       renderProducts(searchBar.value, categoryFilter.value);
     });
+
     categoryFilter.addEventListener('change', () => {
       renderProducts(searchBar.value, categoryFilter.value);
     });
 
-    // Go to comparison page with selected SKUs in URL
+    // Compare button sends user to compare.html with selected SKUs in URL
     compareButton.addEventListener('click', () => {
       const skus = Array.from(selectedProducts);
       if (skus.length >= 2) {
+        // Store selected products in localStorage
+        localStorage.setItem('selectedProducts', JSON.stringify(skus));
         window.location.href = `compare.html?skus=${skus.join(',')}`;
       } else {
         alert('Please select at least two products to compare.');
       }
     });
 
-    renderProducts(); // Initial load
-  });
-const toggleCompare = document.getElementById('toggleCompare');
+    // Toggle comparison mode on/off
+    toggleCompare.addEventListener('change', () => {
+      renderProducts(searchBar.value, categoryFilter.value); // Rerender with/without checkboxes
+    });
 
-// In your renderProducts() function, after creating the product card:
-if (toggleCompare.checked) {
-  const compareBtn = document.createElement('button');
-  compareBtn.textContent = 'Select for Comparison';
-  compareBtn.className = 'compare-btn';
-  compareBtn.addEventListener('click', () => {
-    selectedProducts.push(product);
-    alert(`${product.title} added for comparison`);
+    renderProducts(); // Initial load of product cards
   });
-  div.appendChild(compareBtn);
-}
-

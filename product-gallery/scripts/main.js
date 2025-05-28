@@ -1,7 +1,7 @@
 // scripts/main.js
 
 // Fetch and render product data from local JSON file
-fetch('../products.json')
+fetch(`../products.json?t=${Date.now()}`)
   .then(res => res.json())
   .then(data => {
     // DOM elements

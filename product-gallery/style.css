@@ -33,7 +33,7 @@ h1 {
 }
 
 /* Inputs and Buttons */
-#searchBar, #categoryFilter, #listing-type, #compareButton {
+#searchBar, #categoryFilter, #listingType {
   padding: 12px 20px;
   font-size: 16px;
   border-radius: 30px;
@@ -50,18 +50,6 @@ h1 {
 #categoryFilter, #listingType {
   background: #fff;
   cursor: pointer;
-}
-
-#compareButton {
-  background-color: #4CAF50;
-  color: white;
-  cursor: pointer;
-  border: none;
-}
-
-/* Button Hover */
-#compareButton:hover {
-  background-color: #45a049;
 }
 
 /* Gallery Grid */
@@ -156,27 +144,6 @@ h1 {
   cursor: pointer;
 }
 
-/* Comparison Table */
-#comparisonTable {
-  overflow-x: auto;
-  background: white;
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.1);
-}
-#comparisonTable table {
-  width: 100%;
-  border-collapse: collapse;
-}
-#comparisonTable th,
-#comparisonTable td {
-  border: 1px solid #ccc;
-  padding: 10px;
-  text-align: center;
-}
-#comparisonTable th {
-  background-color: #f9f9f9;
-}
 
 /* Back Button */
 .back-button-container {
@@ -220,52 +187,7 @@ h1 {
   background-color: #e1bee7;
   cursor: pointer;
 }
-/* ✅ Toggle wrapper label for styling */
-.compare-label {
-  position: relative;
-  display: inline-block;
-  width: 60px;
-  height: 30px;
-  margin-left: 20px;
-  vertical-align: middle;
-  font-size: 14px;
-  color: #555;
-}
 
-/* 🔧 This class is essential for the toggle structure */
-.toggle input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-/* ✅ Track of the toggle switch */
-.toggle .slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background-color: #ccc;
-  border-radius: 34px;
-  transition: .4s;
-}
-
-/* ✅ The circular knob inside the toggle */
-.toggle .slider:before {
-  position: absolute;
-  content: "";
-  height: 22px;
-  width: 22px;
-  left: 4px;
-  bottom: 4px;
-  background-color: white;
-  transition: .4s;
-  border-radius: 50%;
-}
-
-/* ✅ When toggle is checked, track color changes */
-.toggle input:checked + .slider {
-  background-color: #4CAF50; /* Green for "enabled" */
-}
 
 /* ✅ Move the knob to the right when checked */
 .toggle input:checked + .slider:before {

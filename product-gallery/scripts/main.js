@@ -12,14 +12,6 @@ fetch(`../products.json?t=${Date.now()}`)
     const lightbox = document.getElementById('lightbox');
     const lightboxImg = document.getElementById('lightbox-img');
     const lightboxClose = document.getElementById('lightbox-close');
-    const compareButton = document.getElementById('compareButton');
-    const toggleCompare = document.getElementById('toggleCompare');
-
-    // Hide Compare button and toggleCompare checkbox
-    if (compareButton) compareButton.style.display = 'none';
-    if (toggleCompare) toggleCompare.style.display = 'none';
-
-    const selectedProducts = new Set(); // Track selected SKUs for comparison
 
     // Extract unique categories and populate category dropdown
     const categories = [...new Set(data.map(p => p.category).filter(Boolean))];
@@ -56,21 +48,11 @@ fetch(`../products.json?t=${Date.now()}`)
         const div = document.createElement('div');
         div.className = 'product';
 
-        const isChecked = selectedProducts.has(product.sku); // If selected previously
-
         // Generate HTML for the product card
         div.innerHTML = `
           ${product.category ? `<div class="category-tag">${product.category}</div>` : ''}
           ${product.listingType ? `<div class="listing-type-tag">${product.listingType}</div>` : ''}
           <h2>${product.title} (<code>${product.sku}</code>)</h2>
-
-          ${toggleCompare && toggleCompare.checked ? `
-            <label class="compare-label">
-              <input type="checkbox" data-sku="${product.sku}" ${isChecked ? 'checked' : ''}>
-              <span>Select for Comparison</span>
-            </label>
-          ` : ''}
-
           <div class="images">
             ${product.images.map((url, index) => `
               <div class="image-wrapper">
@@ -90,20 +72,6 @@ fetch(`../products.json?t=${Date.now()}`)
           lightbox.classList.remove('hidden');
         });
       });
-
-      // Handle compare checkbox clicks (if visible)
-      if (toggleCompare && toggleCompare.checked) {
-        document.querySelectorAll('input[type="checkbox"][data-sku]').forEach(checkbox => {
-          checkbox.addEventListener('change', () => {
-            const sku = checkbox.dataset.sku;
-            if (checkbox.checked) {
-              selectedProducts.add(sku);
-            } else {
-              selectedProducts.delete(sku);
-            }
-          });
-        });
-      }
     }
 
     // Close lightbox
@@ -124,27 +92,6 @@ fetch(`../products.json?t=${Date.now()}`)
     listingTypeFilter.addEventListener('change', () => {
       renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value);
     });
-
-    // Compare button sends user to compare.html with selected SKUs in URL (button is hidden)
-    if (compareButton) {
-      compareButton.addEventListener('click', () => {
-        const skus = Array.from(selectedProducts);
-        if (skus.length >= 2) {
-          // Store selected products in localStorage
-          localStorage.setItem('selectedProducts', JSON.stringify(skus));
-          window.location.href = `compare.html?skus=${skus.join(',')}`;
-        } else {
-          alert('Please select at least two products to compare.');
-        }
-      });
-    }
-
-    // Toggle comparison mode on/off (toggle is hidden)
-    if (toggleCompare) {
-      toggleCompare.addEventListener('change', () => {
-        renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value); // Rerender with/without checkboxes
-      });
-    }
 
     renderProducts('', '', ''); // Initial load of product cards
   });

@@ -47,7 +47,7 @@ h1 {
   max-width: 500px;
 }
 
-#categoryFilter, #listing-type {
+#categoryFilter, #listingType {
   background: #fff;
   cursor: pointer;
 }

@@ -9,29 +9,18 @@
 <body>
   <h1>🛍️ Product Gallery</h1>
 
-  <!-- ✅ Sticky Filter Bar: Contains search, category filter, compare mode toggle -->
+  <!-- ✅ Sticky Filter Bar: Contains search, category filter -->
   <div id="controls">
     <input type="text" id="searchBar" placeholder="🔍 Search by SKU or Name..." />
 
     <select id="categoryFilter">
       <option value="">📂 All Categories</option>
     </select>
-     <select id="listingTypeFilter">
-  <option value="">All Listing Types</option>
-</select>
-
-
- <div class="compare-label">
-  <label class="toggle">
-    <input type="checkbox" id="toggleCompare">
-    <span class="slider"></span>
-  </label>
-</div>
-    
-  <button id="compareButton">🔄 Compare Selected</button> 
+    <select id="listingTypeFilter">
+      <option value="">All Listing Types</option>
+    </select>
   </div>
 
-  
   <!-- 🖼️ Product Cards Will Be Rendered Here -->
   <div id="gallery"></div>
 

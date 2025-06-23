@@ -33,7 +33,7 @@ h1 {
 }
 
 /* Inputs and Buttons */
-#searchBar, #categoryFilter, #compareButton {
+#searchBar, #categoryFilter, #listing-type, #compareButton {
   padding: 12px 20px;
   font-size: 16px;
   border-radius: 30px;
@@ -47,7 +47,7 @@ h1 {
   max-width: 500px;
 }
 
-#categoryFilter {
+#categoryFilter, #listing-type {
   background: #fff;
   cursor: pointer;
 }

@@ -4,32 +4,46 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>🛍️ Product Gallery</title>
+  <!-- Main stylesheet for gallery layout and styling -->
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <!-- Main heading -->
   <h1>🛍️ Product Gallery</h1>
 
-  <!-- ✅ Sticky Filter Bar: Contains search, category filter -->
+  <!-- 
+    Sticky Filter Bar: 
+    Contains search, category filter, and listing type filter 
+    (No compare controls present)
+  -->
   <div id="controls">
+    <!-- Search bar for filtering products by SKU or Name -->
     <input type="text" id="searchBar" placeholder="🔍 Search by SKU or Name..." />
 
+    <!-- Dropdown for filtering products by category -->
     <select id="categoryFilter">
       <option value="">📂 All Categories</option>
     </select>
+
+    <!-- Dropdown for filtering products by listing type -->
     <select id="listingTypeFilter">
-      <option value="">All Listing Types</option>
+      <option value="">🏷️ All Listing Types</option>
     </select>
   </div>
 
-  <!-- 🖼️ Product Cards Will Be Rendered Here -->
+  <!-- Gallery: Product cards will be rendered here dynamically -->
   <div id="gallery"></div>
 
-  <!-- 🔍 Lightbox Viewer for Enlarged Image -->
+  <!-- 
+    Lightbox Viewer:
+    For displaying enlarged product images when a user clicks on a thumbnail.
+  -->
   <div id="lightbox" class="lightbox hidden">
     <span id="lightbox-close">&times;</span>
     <img id="lightbox-img" src="" alt="Enlarged Image">
   </div>
-  <!-- 📜 Main JavaScript File -->
+
+  <!-- Main JavaScript file for gallery interactivity -->
   <script type="module" src="scripts/main.js"></script>
 </body>
 </html>

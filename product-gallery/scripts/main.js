@@ -32,48 +32,59 @@ fetch(`../products.json?t=${Date.now()}`)
     });
 
     // Main render function to display products
-    function renderProducts(filter = '', category = '', listingType = '') {
-      gallery.innerHTML = ''; // Clear current gallery
+   function renderProducts(filter = '', category = '', listingType = '') {
+  gallery.innerHTML = ''; // Clear current gallery
 
-      // Filter based on search text, selected category, and listing type
-      const filtered = data.filter(p =>
-        (p.title.toLowerCase().includes(filter.toLowerCase()) ||
-         p.sku.toLowerCase().includes(filter.toLowerCase())) &&
-        (category === '' || p.category === category) &&
-        (listingType === '' || p.listingType === listingType)
-      );
+  // Filter based on search text, selected category, and listing type
+  const filtered = data.filter(p =>
+    (p.title.toLowerCase().includes(filter.toLowerCase()) ||
+     p.sku.toLowerCase().includes(filter.toLowerCase())) &&
+    (category === '' || p.category === category) &&
+    (listingType === '' || p.listingType === listingType)
+  );
 
-      // Loop through filtered products and create cards
-      filtered.forEach(product => {
-        const div = document.createElement('div');
-        div.className = 'product';
+  // Empty-state logic
+  const emptyState = document.getElementById('emptyState');
+  if (filtered.length === 0) {
+    emptyState.innerHTML = `
+      <img src="https://cdn.jsdelivr.net/gh/edent/SuperTinyIcons/images/svg/emoji-sad.svg" alt="No Results" width="120" style="margin-bottom:20px;opacity:.7;" />
+      <div style="font-size:1.4rem;color:#888;">No products found. Try adjusting your filter or search terms!</div>
+    `;
+    emptyState.style.display = 'block';
+    return;
+  } else {
+    emptyState.style.display = 'none';
+  }
 
-        // Generate HTML for the product card
-        div.innerHTML = `
-          ${product.category ? `<div class="category-tag">${product.category}</div>` : ''}
-          ${product.listingType ? `<div class="listing-type-tag">${product.listingType}</div>` : ''}
-          <h2>${product.title} (<code>${product.sku}</code>)</h2>
-          <div class="images">
-            ${product.images.map((url, index) => `
-              <div class="image-wrapper">
-                <img src="${url}" data-full="${url}" style="width: 200px;" />
-                <span class="image-number">${index + 1}</span>
-              </div>
-            `).join('')}
+  // Loop through filtered products and create cards
+  filtered.forEach(product => {
+    const div = document.createElement('div');
+    div.className = 'product';
+    div.innerHTML = `
+      ${product.category ? `<div class="category-tag">${product.category}</div>` : ''}
+      ${product.listingType ? `<div class="listing-type-tag">${product.listingType}</div>` : ''}
+      <h2>${product.title} (<code>${product.sku}</code>)</h2>
+      <div class="images">
+        ${product.images.map((url, index) => `
+          <div class="image-wrapper">
+            <img src="${url}" data-full="${url}" style="width: 200px;" />
+            <span class="image-number">${index + 1}</span>
           </div>
-        `;
-        gallery.appendChild(div);
-      });
+        `).join('')}
+      </div>
+    `;
+    gallery.appendChild(div);
+  });
 
-      // Lightbox image click logic
-      document.querySelectorAll('.image-wrapper img').forEach(img => {
-        img.addEventListener('click', () => {
-          lightboxImg.src = img.dataset.full;
-          lightbox.classList.remove('hidden');
-        });
-      });
-    }
-
+  // Lightbox image click logic (as before)
+  document.querySelectorAll('.image-wrapper img').forEach(img => {
+    img.addEventListener('click', () => {
+      lightboxImg.src = img.dataset.full;
+      lightbox.classList.remove('hidden');
+    });
+  });
+}
+       
     // Close lightbox
     lightboxClose.addEventListener('click', () => {
       lightbox.classList.add('hidden');

@@ -3,7 +3,7 @@
 fetch(`../products.json?t=${Date.now()}`)
   .then(res => res.json())
   .then(data => {
-    // Get DOM elements
+    // Grab DOM elements
     const gallery = document.getElementById('gallery');
     const searchBar = document.getElementById('searchBar');
     const categoryFilter = document.getElementById('categoryFilter');
@@ -13,7 +13,7 @@ fetch(`../products.json?t=${Date.now()}`)
     const lightboxClose = document.getElementById('lightbox-close');
     const emptyState = document.getElementById('emptyState');
 
-    // Populate category dropdown with unique categories
+    // Populate dropdowns with unique categories and listing types
     const categories = [...new Set(data.map(p => p.category).filter(Boolean))];
     categories.forEach(cat => {
       const opt = document.createElement('option');
@@ -21,26 +21,19 @@ fetch(`../products.json?t=${Date.now()}`)
       opt.textContent = cat;
       categoryFilter.appendChild(opt);
     });
-
-    // Populate listing type dropdown with unique listing types
     const listingTypes = [...new Set(data.map(p => p.listingType).filter(Boolean))];
     listingTypes.forEach(type => {
       const opt = document.createElement('option');
       opt.value = type;
-      opt.textContent = `🏷️ ${type}`;
+      opt.textContent = type;
       listingTypeFilter.appendChild(opt);
     });
 
-    /**
-     * Render the filtered list of products
-     * @param {string} filter - Search text
-     * @param {string} category - Selected category
-     * @param {string} listingType - Selected listing type
-     */
+    // Render product cards
     function renderProducts(filter = '', category = '', listingType = '') {
-      gallery.innerHTML = ''; // Clear current gallery
+      gallery.innerHTML = '';
 
-      // Filter products based on search, category, and listing type
+      // Filter product data
       const filtered = data.filter(p =>
         (p.title.toLowerCase().includes(filter.toLowerCase()) ||
          p.sku.toLowerCase().includes(filter.toLowerCase())) &&
@@ -48,7 +41,7 @@ fetch(`../products.json?t=${Date.now()}`)
         (listingType === '' || p.listingType === listingType)
       );
 
-      // Handle empty state: show friendly image/message if no products
+      // Handle empty state
       if (filtered.length === 0) {
         if (emptyState) {
           emptyState.innerHTML = `
@@ -62,17 +55,19 @@ fetch(`../products.json?t=${Date.now()}`)
         emptyState.style.display = 'none';
       }
 
-      // Render each product card with fade-in effect for smooth transition
+      // For each product, create a card
       filtered.forEach(product => {
         const div = document.createElement('div');
         div.className = 'product';
         div.setAttribute('role', 'region');
         div.setAttribute('aria-label', `${product.title}, SKU ${product.sku}`);
 
-        // Product tags, title, images
+        // Tag row: category and listing type
         div.innerHTML = `
-          ${product.category ? `<div class="category-tag">${product.category}</div>` : ''}
-          ${product.listingType ? `<div class="listing-type-tag">🏷️ ${product.listingType}</div>` : ''}
+          <div class="tag-row">
+            ${product.category ? `<div class="category-tag" title="Category">${product.category}</div>` : ''}
+            ${product.listingType ? `<div class="listing-type-tag" title="Listing Type">${product.listingType}</div>` : ''}
+          </div>
           <h2>${product.title} (<code>${product.sku}</code>)</h2>
           <div class="images" role="list">
             ${product.images.map((url, index) => `
@@ -83,7 +78,7 @@ fetch(`../products.json?t=${Date.now()}`)
                   style="width: 200px;" 
                   alt="${product.title} image ${index + 1}" 
                   loading="lazy"
-                  />
+                />
                 <span class="image-number">${index + 1}</span>
               </div>
             `).join('')}
@@ -92,9 +87,8 @@ fetch(`../products.json?t=${Date.now()}`)
         gallery.appendChild(div);
       });
 
-      // Add click and keyboard event listeners for lightbox functionality
+      // Add click and keyboard events for lightbox
       document.querySelectorAll('.image-wrapper').forEach(wrapper => {
-        // Mouse click opens lightbox
         wrapper.addEventListener('click', () => {
           const img = wrapper.querySelector('img');
           lightboxImg.src = img.dataset.full;
@@ -102,7 +96,6 @@ fetch(`../products.json?t=${Date.now()}`)
           lightbox.classList.remove('hidden');
           lightboxClose.focus();
         });
-        // Keyboard "Enter" or "Space" opens lightbox
         wrapper.addEventListener('keydown', (e) => {
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
@@ -116,7 +109,7 @@ fetch(`../products.json?t=${Date.now()}`)
       });
     }
 
-    // Lightbox close button event (click and keyboard)
+    // Lightbox close: mouse and keyboard
     lightboxClose.addEventListener('click', () => {
       lightbox.classList.add('hidden');
       lightboxImg.src = '';
@@ -128,7 +121,6 @@ fetch(`../products.json?t=${Date.now()}`)
         lightboxImg.src = '';
       }
     });
-    // Close the lightbox with Escape key
     window.addEventListener('keydown', (e) => {
       if (!lightbox.classList.contains('hidden') && e.key === 'Escape') {
         lightbox.classList.add('hidden');
@@ -136,17 +128,13 @@ fetch(`../products.json?t=${Date.now()}`)
       }
     });
 
-    // Search bar input event: re-render products on typing
+    // Filter and search events
     searchBar.addEventListener('input', () => {
       renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value);
     });
-
-    // Category dropdown event: re-render products on change
     categoryFilter.addEventListener('change', () => {
       renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value);
     });
-
-    // Listing type dropdown event: re-render products on change
     listingTypeFilter.addEventListener('change', () => {
       renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value);
     });

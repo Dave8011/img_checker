@@ -8,11 +8,16 @@ fetch(`../products.json?t=${Date.now()}`)
     const gallery = document.getElementById('gallery');
     const searchBar = document.getElementById('searchBar');
     const categoryFilter = document.getElementById('categoryFilter');
+    const listingTypeFilter = document.getElementById('listingTypeFilter');
     const lightbox = document.getElementById('lightbox');
     const lightboxImg = document.getElementById('lightbox-img');
     const lightboxClose = document.getElementById('lightbox-close');
     const compareButton = document.getElementById('compareButton');
     const toggleCompare = document.getElementById('toggleCompare');
+
+    // Hide Compare button and toggleCompare checkbox
+    if (compareButton) compareButton.style.display = 'none';
+    if (toggleCompare) toggleCompare.style.display = 'none';
 
     const selectedProducts = new Set(); // Track selected SKUs for comparison
 
@@ -25,15 +30,25 @@ fetch(`../products.json?t=${Date.now()}`)
       categoryFilter.appendChild(opt);
     });
 
+    // Extract unique listingTypes and populate listingType dropdown
+    const listingTypes = [...new Set(data.map(p => p.listingType).filter(Boolean))];
+    listingTypes.forEach(type => {
+      const opt = document.createElement('option');
+      opt.value = type;
+      opt.textContent = type;
+      listingTypeFilter.appendChild(opt);
+    });
+
     // Main render function to display products
-    function renderProducts(filter = '', category = '') {
+    function renderProducts(filter = '', category = '', listingType = '') {
       gallery.innerHTML = ''; // Clear current gallery
 
-      // Filter based on search text and selected category
+      // Filter based on search text, selected category, and listing type
       const filtered = data.filter(p =>
         (p.title.toLowerCase().includes(filter.toLowerCase()) ||
          p.sku.toLowerCase().includes(filter.toLowerCase())) &&
-        (category === '' || p.category === category)
+        (category === '' || p.category === category) &&
+        (listingType === '' || p.listingType === listingType)
       );
 
       // Loop through filtered products and create cards
@@ -46,9 +61,10 @@ fetch(`../products.json?t=${Date.now()}`)
         // Generate HTML for the product card
         div.innerHTML = `
           ${product.category ? `<div class="category-tag">${product.category}</div>` : ''}
+          ${product.listingType ? `<div class="listing-type-tag">${product.listingType}</div>` : ''}
           <h2>${product.title} (<code>${product.sku}</code>)</h2>
 
-          ${toggleCompare.checked ? `
+          ${toggleCompare && toggleCompare.checked ? `
             <label class="compare-label">
               <input type="checkbox" data-sku="${product.sku}" ${isChecked ? 'checked' : ''}>
               <span>Select for Comparison</span>
@@ -76,7 +92,7 @@ fetch(`../products.json?t=${Date.now()}`)
       });
 
       // Handle compare checkbox clicks (if visible)
-      if (toggleCompare.checked) {
+      if (toggleCompare && toggleCompare.checked) {
         document.querySelectorAll('input[type="checkbox"][data-sku]').forEach(checkbox => {
           checkbox.addEventListener('change', () => {
             const sku = checkbox.dataset.sku;
@@ -98,29 +114,37 @@ fetch(`../products.json?t=${Date.now()}`)
 
     // Search and filter listeners
     searchBar.addEventListener('input', () => {
-      renderProducts(searchBar.value, categoryFilter.value);
+      renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value);
     });
 
     categoryFilter.addEventListener('change', () => {
-      renderProducts(searchBar.value, categoryFilter.value);
+      renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value);
     });
 
-    // Compare button sends user to compare.html with selected SKUs in URL
-    compareButton.addEventListener('click', () => {
-      const skus = Array.from(selectedProducts);
-      if (skus.length >= 2) {
-        // Store selected products in localStorage
-        localStorage.setItem('selectedProducts', JSON.stringify(skus));
-        window.location.href = `compare.html?skus=${skus.join(',')}`;
-      } else {
-        alert('Please select at least two products to compare.');
-      }
+    listingTypeFilter.addEventListener('change', () => {
+      renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value);
     });
 
-    // Toggle comparison mode on/off
-    toggleCompare.addEventListener('change', () => {
-      renderProducts(searchBar.value, categoryFilter.value); // Rerender with/without checkboxes
-    });
+    // Compare button sends user to compare.html with selected SKUs in URL (button is hidden)
+    if (compareButton) {
+      compareButton.addEventListener('click', () => {
+        const skus = Array.from(selectedProducts);
+        if (skus.length >= 2) {
+          // Store selected products in localStorage
+          localStorage.setItem('selectedProducts', JSON.stringify(skus));
+          window.location.href = `compare.html?skus=${skus.join(',')}`;
+        } else {
+          alert('Please select at least two products to compare.');
+        }
+      });
+    }
 
-    renderProducts(); // Initial load of product cards
+    // Toggle comparison mode on/off (toggle is hidden)
+    if (toggleCompare) {
+      toggleCompare.addEventListener('change', () => {
+        renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value); // Rerender with/without checkboxes
+      });
+    }
+
+    renderProducts('', '', ''); // Initial load of product cards
   });

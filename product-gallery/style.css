@@ -33,7 +33,7 @@ h1 {
 }
 
 /* Inputs and Buttons */
-#searchBar, #categoryFilter {
+#searchBar, #categoryFilter, #compareButton {
   padding: 12px 20px;
   font-size: 16px;
   border-radius: 30px;
@@ -52,6 +52,17 @@ h1 {
   cursor: pointer;
 }
 
+#compareButton {
+  background-color: #4CAF50;
+  color: white;
+  cursor: pointer;
+  border: none;
+}
+
+/* Button Hover */
+#compareButton:hover {
+  background-color: #45a049;
+}
 
 /* Gallery Grid */
 #gallery {
@@ -145,6 +156,27 @@ h1 {
   cursor: pointer;
 }
 
+/* Comparison Table */
+#comparisonTable {
+  overflow-x: auto;
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+}
+#comparisonTable table {
+  width: 100%;
+  border-collapse: collapse;
+}
+#comparisonTable th,
+#comparisonTable td {
+  border: 1px solid #ccc;
+  padding: 10px;
+  text-align: center;
+}
+#comparisonTable th {
+  background-color: #f9f9f9;
+}
 
 /* Back Button */
 .back-button-container {
@@ -188,6 +220,17 @@ h1 {
   background-color: #e1bee7;
   cursor: pointer;
 }
+/* ✅ Toggle wrapper label for styling */
+.compare-label {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 30px;
+  margin-left: 20px;
+  vertical-align: middle;
+  font-size: 14px;
+  color: #555;
+}
 
 /* 🔧 This class is essential for the toggle structure */
 .toggle input {
@@ -228,4 +271,3 @@ h1 {
 .toggle input:checked + .slider:before {
   transform: translateX(26px);
 }
-

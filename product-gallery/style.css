@@ -111,20 +111,24 @@ h1 {
 .category-tag {
   display: flex;
   align-items: center;
-  background: #204ea8;           /* High contrast blue */
-  color: #fff;
-  font-size: 0.98rem;
-  font-weight: 500;
-  border-radius: 50px;
-  padding: 4px 14px 4px 10px;
-  box-shadow: 0 2px 8px rgba(32,78,168,0.07);
-  border: 1.5px solid #183875;
+  background: #f7fafd;
+  color: #204ea8;
+  font-size: 0.93rem;
+  font-weight: 400;
+  border-radius: 99px;
+  padding: 2.5px 12px 2.5px 8px;
+  border: 1.3px solid #204ea8;
   letter-spacing: 0.01em;
+  min-width: 0;
+  max-width: 140px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 .category-tag::before {
   content: "📂";
-  margin-right: 7px;
-  font-size: 1.15em;
+  margin-right: 6px;
+  font-size: 1.07em;
 }
 
 /* ===========================

@@ -11,16 +11,20 @@
   <!-- Main heading -->
   <h1>🛍️ Product Gallery</h1>
 
-  
+  <!-- 
+    Sticky Filter Bar: 
+    Contains search, category filter, and listing type filter
+    ARIA labels for accessibility
+  -->
   <div id="controls">
     <!-- Search bar for filtering products by SKU or Name -->
-<input type="text" id="searchBar" placeholder="🔍 Search by SKU or Name..." aria-label="Search products by SKU or Name" />
+    <input type="text" id="searchBar" placeholder="🔍 Search by SKU or Name..." aria-label="Search products by SKU or Name" />
 
     <!-- Dropdown for filtering products by category -->
     <select id="categoryFilter" aria-label="Filter by category">
-  <option value="">📂 All Categories</option>
-</select>
-    
+      <option value="">📂 All Categories</option>
+    </select>
+
     <!-- Dropdown for filtering products by listing type -->
     <select id="listingTypeFilter" aria-label="Filter by listing type">
       <option value="">🏷️ All Listing Types</option>
@@ -28,18 +32,21 @@
   </div>
 
   <!-- Gallery: Product cards will be rendered here dynamically -->
-  <div id="gallery"></div>
-  
-<!-- Placeholder for empty-state message (hidden by default) -->
-<div id="emptyState" style="display:none; text-align:center; margin-top:40px;" aria-live="polite"></div>
+  <div id="gallery" role="list" aria-label="Product Gallery"></div>
 
-  
+  <!-- 
+    Empty state: shown when no products match search/filter
+    aria-live for screen reader announcements
+  -->
+  <div id="emptyState" style="display:none; text-align:center; margin-top:40px;" aria-live="polite"></div>
+
   <!-- 
     Lightbox Viewer:
     For displaying enlarged product images when a user clicks on a thumbnail.
+    Includes ARIA and keyboard accessibility.
   -->
-  <div id="lightbox" class="lightbox hidden">
-<span id="lightbox-close" aria-label="Close image viewer" tabindex="0">&times;</span>
+  <div id="lightbox" class="lightbox hidden" aria-modal="true" role="dialog" aria-label="Image viewer">
+    <span id="lightbox-close" aria-label="Close image viewer" tabindex="0" role="button">&times;</span>
     <img id="lightbox-img" src="" alt="Enlarged Image">
   </div>
 

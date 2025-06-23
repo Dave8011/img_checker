@@ -1,4 +1,6 @@
-/* Body and Typography */
+/* ===========================
+   General Body & Typography
+   =========================== */
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background: #f0f2f5;
@@ -9,7 +11,9 @@ body {
   margin: auto;
 }
 
-/* Title Styling */
+/* ===========================
+   Title Styling
+   =========================== */
 h1 {
   text-align: center;
   margin-bottom: 30px;
@@ -18,7 +22,9 @@ h1 {
   text-shadow: 1px 1px 1px #ccc;
 }
 
-/* Sticky Filter Bar */
+/* ===========================
+   Sticky Filter Bar
+   =========================== */
 #controls {
   position: sticky;
   top: 0;
@@ -32,8 +38,10 @@ h1 {
   padding: 15px 0;
 }
 
-/* Inputs and Buttons */
-#searchBar, #categoryFilter, #listingType {
+/* ===========================
+   Inputs and Dropdowns
+   =========================== */
+#searchBar, #categoryFilter, #listingTypeFilter {
   padding: 12px 20px;
   font-size: 16px;
   border-radius: 30px;
@@ -47,19 +55,23 @@ h1 {
   max-width: 500px;
 }
 
-#categoryFilter, #listingType {
+#categoryFilter, #listingTypeFilter {
   background: #fff;
   cursor: pointer;
 }
 
-/* Gallery Grid */
+/* ===========================
+   Gallery Grid Layout
+   =========================== */
 #gallery {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
   gap: 10px;
 }
 
-/* Product Card */
+/* ===========================
+   Product Card Styling
+   =========================== */
 .product {
   background: white;
   border: 1px solid #ccc;
@@ -80,7 +92,26 @@ h1 {
   color: #333;
 }
 
-/* Image Styling */
+/* ===========================
+   Category & Listing Type Tags
+   =========================== */
+.category-tag, .listing-type-tag {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: #fff;
+  background: #49b6f5;
+  margin-right: 6px;
+}
+.listing-type-tag {
+  background: #a2d729;
+}
+
+/* ===========================
+   Image Styling
+   =========================== */
 .images {
   display: flex;
   flex-wrap: wrap;
@@ -113,83 +144,52 @@ h1 {
   border-radius: 10px;
 }
 
-/* Lightbox */
+/* ===========================
+   Lightbox Styles
+   =========================== */
 .lightbox {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0,0,0,0.85);
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.7);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999;
+  z-index: 2000;
 }
 .lightbox.hidden {
   display: none;
 }
-.lightbox img {
-  max-width: 90%;
-  max-height: 90%;
-  border-radius: 8px;
-  box-shadow: 0 0 25px rgba(255,255,255,0.2);
+#lightbox-img {
+  max-width: 90vw;
+  max-height: 80vh;
+  border-radius: 10px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.4);
 }
 #lightbox-close {
   position: absolute;
-  top: 20px;
-  right: 30px;
-  font-size: 40px;
-  color: white;
+  top: 40px;
+  right: 60px;
+  font-size: 3rem;
+  color: #fff;
   cursor: pointer;
+  z-index: 2100;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.8);
 }
 
-
-/* Back Button */
-.back-button-container {
-  text-align: center;
-  margin-top: 20px;
-}
-.back-button {
-  background-color: #007BFF;
-  padding: 10px 20px;
-  color: white;
-  text-decoration: none;
-  border-radius: 30px;
-}
-.back-button:hover {
-  background-color: #0056b3;
-}
-
-/* Category tag on product card */
-.category-tag {
-  display: inline-block;
-  background-color: #007bff; /* Bootstrap blue */
-  color: white;
-  font-size: 12px;
-  font-weight: bold;
-  padding: 4px 10px;
-  border-radius: 20px;
-  margin-bottom: 10px;
-}
-/* Style for comparison checkbox label */
-.product label {
-  display: block;
-  margin: 10px 0;
-  font-weight: bold;
-  color: #4a148c; /* Deep purple */
-  background-color: #f3e5f5; /* Light purple background */
-  padding: 6px 10px;
-  border-radius: 8px;
-  width: fit-content;
-}
-.product label:hover {
-  background-color: #e1bee7;
-  cursor: pointer;
-}
-
-
-/* ✅ Move the knob to the right when checked */
-.toggle input:checked + .slider:before {
-  transform: translateX(26px);
+/* ===========================
+   Responsive Adjustments
+   =========================== */
+@media (max-width: 600px) {
+  #controls {
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px 0;
+  }
+  #searchBar {
+    width: 100%;
+    max-width: none;
+  }
+  #gallery {
+    grid-template-columns: 1fr;
+  }
 }

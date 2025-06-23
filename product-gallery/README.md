@@ -24,7 +24,7 @@ A responsive web application to display a product gallery with filtering, search
 1. Place all files in a folder and host locally or on a static server (GitHub Pages, Netlify).
 2. Add your products in `products.json`.
 3. Open `index.html` in your browser.
-4. Select two or more products and click "🔄 Compare".
+
 
 ## 🛠️ Customization
 - Update styles in `style.css`

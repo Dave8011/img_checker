@@ -1,9 +1,14 @@
 // scripts/main.js
 
+// Fetch product data (cache-busted each time)
 fetch(`../products.json?t=${Date.now()}`)
   .then(res => res.json())
   .then(data => {
-    // Grab DOM elements
+    // --- State for lightbox navigation ---
+    let currentImages = []; // Array of current product's images in lightbox
+    let currentIndex = 0;   // Index of the currently displayed image in lightbox
+
+    // --- Grab DOM elements ---
     const gallery = document.getElementById('gallery');
     const searchBar = document.getElementById('searchBar');
     const categoryFilter = document.getElementById('categoryFilter');
@@ -13,7 +18,7 @@ fetch(`../products.json?t=${Date.now()}`)
     const lightboxClose = document.getElementById('lightbox-close');
     const emptyState = document.getElementById('emptyState');
 
-    // Populate dropdowns with unique categories and listing types
+    // --- Populate dropdowns with unique categories and listing types ---
     const categories = [...new Set(data.map(p => p.category).filter(Boolean))];
     categories.forEach(cat => {
       const opt = document.createElement('option');
@@ -29,7 +34,13 @@ fetch(`../products.json?t=${Date.now()}`)
       listingTypeFilter.appendChild(opt);
     });
 
-    // Render product cards
+    // --- Helper: Update the lightbox image based on currentIndex ---
+    function updateLightboxImage() {
+      lightboxImg.src = currentImages[currentIndex];
+      lightboxImg.alt = `Image ${currentIndex + 1} of ${currentImages.length}`;
+    }
+
+    // --- Render product cards based on filters/search ---
     function renderProducts(filter = '', category = '', listingType = '') {
       gallery.innerHTML = '';
 
@@ -87,29 +98,31 @@ fetch(`../products.json?t=${Date.now()}`)
         gallery.appendChild(div);
       });
 
-      // Add click and keyboard events for lightbox
+      // --- Add click and keyboard events for lightbox + navigation setup ---
       document.querySelectorAll('.image-wrapper').forEach(wrapper => {
-        wrapper.addEventListener('click', () => {
+        // Open lightbox on click or keyboard (Enter/Space)
+        function openLightbox() {
+          // Get all images for this product card
+          const productDiv = wrapper.closest('.product');
+          currentImages = Array.from(productDiv.querySelectorAll('.image-wrapper img')).map(img => img.dataset.full);
           const img = wrapper.querySelector('img');
-          lightboxImg.src = img.dataset.full;
-          lightboxImg.alt = img.alt;
+          currentIndex = currentImages.indexOf(img.dataset.full);
+
+          updateLightboxImage();
           lightbox.classList.remove('hidden');
           lightboxClose.focus();
-        });
+        }
+        wrapper.addEventListener('click', openLightbox);
         wrapper.addEventListener('keydown', (e) => {
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
-            const img = wrapper.querySelector('img');
-            lightboxImg.src = img.dataset.full;
-            lightboxImg.alt = img.alt;
-            lightbox.classList.remove('hidden');
-            lightboxClose.focus();
+            openLightbox();
           }
         });
       });
     }
 
-    // Lightbox close: mouse and keyboard
+    // --- Lightbox close: mouse and keyboard ---
     lightboxClose.addEventListener('click', () => {
       lightbox.classList.add('hidden');
       lightboxImg.src = '';
@@ -121,14 +134,42 @@ fetch(`../products.json?t=${Date.now()}`)
         lightboxImg.src = '';
       }
     });
+
+    // --- Lightbox keyboard navigation (arrow keys & Esc) ---
     window.addEventListener('keydown', (e) => {
-      if (!lightbox.classList.contains('hidden') && e.key === 'Escape') {
-        lightbox.classList.add('hidden');
-        lightboxImg.src = '';
+      if (!lightbox.classList.contains('hidden')) {
+        if (e.key === 'ArrowLeft' && currentIndex > 0) {
+          currentIndex--;
+          updateLightboxImage();
+        } else if (e.key === 'ArrowRight' && currentIndex < currentImages.length - 1) {
+          currentIndex++;
+          updateLightboxImage();
+        } else if (e.key === 'Escape') {
+          lightbox.classList.add('hidden');
+          lightboxImg.src = '';
+        }
       }
     });
 
-    // Filter and search events
+    // --- Touch swipe navigation for lightbox (on mobile) ---
+    let touchStartX = 0;
+    lightbox.addEventListener('touchstart', e => {
+      if (e.touches.length === 1) touchStartX = e.touches[0].clientX;
+    });
+    lightbox.addEventListener('touchend', e => {
+      if (e.changedTouches.length === 1) {
+        let deltaX = e.changedTouches[0].clientX - touchStartX;
+        if (deltaX > 50 && currentIndex > 0) {
+          currentIndex--;
+          updateLightboxImage();
+        } else if (deltaX < -50 && currentIndex < currentImages.length - 1) {
+          currentIndex++;
+          updateLightboxImage();
+        }
+      }
+    });
+
+    // --- Filter and search events ---
     searchBar.addEventListener('input', () => {
       renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value);
     });
@@ -139,6 +180,6 @@ fetch(`../products.json?t=${Date.now()}`)
       renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value);
     });
 
-    // Initial render
+    // --- Initial render ---
     renderProducts('', '', '');
   });

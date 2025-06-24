@@ -215,6 +215,8 @@ h1 {
   max-height: 80vh;
   border-radius: 10px;
   box-shadow: 0 6px 24px rgba(0,0,0,0.4);
+  position: relative;
+  background: #fff;
 }
 #lightbox-close {
   position: absolute;
@@ -238,6 +240,62 @@ h1 {
 }
 #lightbox-close:focus, #lightbox-close:hover {
   background: #444;
+}
+
+/* ===========================
+   Lightbox Navigation Arrows (HIDDEN by default)
+   Uncomment display: flex; if you want to show them.
+   =========================== */
+.lightbox-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255,255,255,0.82);
+  border: none;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  font-size: 2.3rem;
+  color: #333;
+  cursor: pointer;
+  z-index: 2100;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.13);
+  align-items: center;
+  justify-content: center;
+  transition: background 0.17s;
+  display: none; /* HIDDEN by default */
+}
+.lightbox-arrow.left {
+  left: 32px;
+}
+.lightbox-arrow.right {
+  right: 32px;
+}
+.lightbox-arrow:active,
+.lightbox-arrow:focus {
+  background: #e0eaff;
+}
+
+/* ===========================
+   Swipe hint for mobile (optional, hidden by default)
+   =========================== */
+@media (pointer: coarse) {
+  #lightbox-img::after {
+    content: '';
+    /* To show a hint like "← Swipe →", replace above with: content: '← Swipe →'; */
+    display: none; /* Hidden by default */
+  }
+}
+
+/* ===========================
+   Empty state
+   =========================== */
+#emptyState {
+  margin: 80px auto 0 auto;
+  text-align: center;
+  color: #888;
+  display: none;
+  max-width: 420px;
 }
 
 /* ===========================
@@ -267,3 +325,11 @@ h1 {
     grid-template-columns: 1fr;
   }
 }
+
+/* ===========================
+   NOTES:
+   - Lightbox navigation (arrows/swipe) is available via JS, but arrow buttons are hidden by default.
+   - To enable visual arrow buttons, set display:flex on .lightbox-arrow.
+   - Keyboard navigation (←/→) and swipe gestures will work as coded in JS.
+   - All style changes are integrated with your existing theme and structure.
+   =========================== */

@@ -1,4 +1,3 @@
-
 // scripts/main.js
 
 // Fetch product data (cache-busted each time)
@@ -14,6 +13,7 @@ fetch(`../products.json?t=${Date.now()}`)
     const searchBar = document.getElementById('searchBar');
     const categoryFilter = document.getElementById('categoryFilter');
     const listingTypeFilter = document.getElementById('listingTypeFilter');
+    const imageNumberFilter = document.getElementById('imageNumberFilter'); // NEW: multi-select
     const lightbox = document.getElementById('lightbox');
     const lightboxImg = document.getElementById('lightbox-img');
     const lightboxClose = document.getElementById('lightbox-close');
@@ -35,6 +35,34 @@ fetch(`../products.json?t=${Date.now()}`)
       listingTypeFilter.appendChild(opt);
     });
 
+    // --- Populate image number multi-select filter ---
+    // Figure out max number of images any product has
+    const maxImages = data.reduce((max, product) => Math.max(max, product.images?.length || 0), 0);
+    if (imageNumberFilter) {
+      imageNumberFilter.innerHTML = '';
+      const optAll = document.createElement('option');
+      optAll.value = '';
+      optAll.textContent = 'All Images';
+      imageNumberFilter.appendChild(optAll);
+
+      for (let i = 1; i <= maxImages; i++) {
+        const opt = document.createElement('option');
+        opt.value = String(i);
+        opt.textContent = `Image ${i}`;
+        imageNumberFilter.appendChild(opt);
+      }
+    }
+
+    // --- Helper: Get selected image numbers as zero-based indices ---
+    function getSelectedImageNumbers() {
+      if (!imageNumberFilter) return [];
+      const selected = Array.from(imageNumberFilter.selectedOptions)
+        .map(opt => opt.value)
+        .filter(v => v !== '');
+      // Convert to zero-based indices
+      return selected.map(num => parseInt(num, 10) - 1);
+    }
+
     // --- Helper: Update the lightbox image based on currentIndex ---
     function updateLightboxImage() {
       lightboxImg.src = currentImages[currentIndex];
@@ -42,7 +70,7 @@ fetch(`../products.json?t=${Date.now()}`)
     }
 
     // --- Render product cards based on filters/search ---
-    function renderProducts(filter = '', category = '', listingType = '') {
+    function renderProducts(filter = '', category = '', listingType = '', imageNumbers = []) {
       gallery.innerHTML = '';
 
       // Filter product data
@@ -74,7 +102,9 @@ fetch(`../products.json?t=${Date.now()}`)
         div.setAttribute('role', 'region');
         div.setAttribute('aria-label', `${product.title}, SKU ${product.sku}`);
 
-        // Tag row: category and listing type
+        // Only show images matching selected indices (or all if none selected)
+        const selectedIndices = imageNumbers.length ? imageNumbers : (product.images || []).map((_, i) => i);
+
         div.innerHTML = `
           <div class="tag-row">
             ${product.category ? `<div class="category-tag" title="Category">${product.category}</div>` : ''}
@@ -82,18 +112,21 @@ fetch(`../products.json?t=${Date.now()}`)
           </div>
           <h2>${product.title} (<code>${product.sku}</code>)</h2>
           <div class="images" role="list">
-            ${product.images.map((url, index) => `
-              <div class="image-wrapper" tabindex="0" role="listitem" aria-label="Image ${index + 1} for ${product.title}">
-                <img 
-                  src="${url}" 
-                  data-full="${url}" 
-                  style="width: 200px;" 
-                  alt="${product.title} image ${index + 1}" 
-                  loading="lazy"
-                />
-                <span class="image-number">${index + 1}</span>
-              </div>
-            `).join('')}
+            ${(selectedIndices
+              .filter(idx => product.images && product.images[idx])
+              .map((idx) => `
+                <div class="image-wrapper" tabindex="0" role="listitem" aria-label="Image ${idx + 1} for ${product.title}">
+                  <img 
+                    src="${product.images[idx]}" 
+                    data-full="${product.images[idx]}" 
+                    style="width: 200px;" 
+                    alt="${product.title} image ${idx + 1}" 
+                    loading="lazy"
+                  />
+                  <span class="image-number">${idx + 1}</span>
+                </div>
+              `).join(''))
+            }
           </div>
         `;
         gallery.appendChild(div);
@@ -171,16 +204,21 @@ fetch(`../products.json?t=${Date.now()}`)
     });
 
     // --- Filter and search events ---
-    searchBar.addEventListener('input', () => {
-      renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value);
-    });
-    categoryFilter.addEventListener('change', () => {
-      renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value);
-    });
-    listingTypeFilter.addEventListener('change', () => {
-      renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value);
-    });
+    function applyFilters() {
+      renderProducts(
+        searchBar.value,
+        categoryFilter.value,
+        listingTypeFilter.value,
+        getSelectedImageNumbers()
+      );
+    }
+    searchBar.addEventListener('input', applyFilters);
+    categoryFilter.addEventListener('change', applyFilters);
+    listingTypeFilter.addEventListener('change', applyFilters);
+    if (imageNumberFilter) {
+      imageNumberFilter.addEventListener('change', applyFilters);
+    }
 
     // --- Initial render ---
-    renderProducts('', '', '');
+    renderProducts('', '', '', []);
   });

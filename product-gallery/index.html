@@ -13,7 +13,7 @@
 
   <!-- 
     Sticky Filter Bar: 
-    Contains search, category filter, and listing type filter
+    Contains search, category filter, listing type filter, and image number multi-select
     ARIA labels for accessibility
   -->
   <div id="controls">
@@ -29,6 +29,18 @@
     <select id="listingTypeFilter" aria-label="Filter by listing type">
       <option value="">🏷️ All Listing Types</option>
     </select>
+
+    <!-- 
+      Multi-select dropdown for filtering which images are visible per product
+      Populated dynamically via JS depending on maximum image count
+      ARIA label for accessibility
+    -->
+    <select id="imageNumberFilter" multiple aria-label="Show images (multi-select)">
+      <!-- JS will populate with options like "Image 1", "Image 2", ... -->
+    </select>
+    <span class="note" style="font-size:0.95em; color:#888;">
+      Hold Ctrl (Windows) or ⌘ (Mac) to select multiple images
+    </span>
   </div>
 
   <!-- Gallery: Product cards will be rendered here dynamically -->

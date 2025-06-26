@@ -13,7 +13,7 @@
 
   <!-- 
     Sticky Filter Bar: 
-    Contains search, category filter, and listing type filter
+    Contains search, category filter, listing type filter, and image number multi-select
     ARIA labels for accessibility
   -->
   <div id="controls">
@@ -29,23 +29,19 @@
     <select id="listingTypeFilter" aria-label="Filter by listing type">
       <option value="">🏷️ All Listing Types</option>
     </select>
-  </div>
 
-  <!-- Image Selector: Users can choose which images to display using checkboxes -->
-<!--   <fieldset id="image-selector" style="margin-top: 2em;">
-    <legend>Select images to view</legend>
-    <label><input type="checkbox" value="1"> Image 1</label>
-    <label><input type="checkbox" value="2"> Image 2</label>
-    <label><input type="checkbox" value="3"> Image 3</label>
-    <label><input type="checkbox" value="4"> Image 4</label>
-    <label><input type="checkbox" value="5"> Image 5</label>
-    <label><input type="checkbox" value="6"> Image 6</label>
-    <label><input type="checkbox" value="7"> Image 7</label>
-    <label><input type="checkbox" value="8"> Image 8</label>
-    <label><input type="checkbox" value="9"> Image 9</label>
-    <button type="button" onclick="showSelectedImages()">Show Selected Images</button>
-  </fieldset>
-  <div id="gallery-selector" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 2em;"></div> -->
+    <!-- 
+      Multi-select dropdown for filtering which images are visible per product
+      Populated dynamically via JS depending on maximum image count
+      ARIA label for accessibility
+    -->
+    <select id="imageNumberFilter" multiple aria-label="Show images (multi-select)">
+      <!-- JS will populate with options like "Image 1", "Image 2", ... -->
+    </select>
+    <span class="note" style="font-size:0.95em; color:#888;">
+      Hold Ctrl (Windows) or ⌘ (Mac) to select multiple images
+    </span>
+  </div>
 
   <!-- Gallery: Product cards will be rendered here dynamically -->
   <div id="gallery" role="list" aria-label="Product Gallery"></div>
@@ -67,8 +63,6 @@
   </div>
 
   <!-- Main JavaScript file for gallery interactivity -->
-<!--   <script type="module" src="scripts/main.js"></script> -->
-  <!-- Image selector JavaScript -->
-  <script src="scripts/image-selector.js"></script>
+  <script type="module" src="scripts/main.js"></script>
 </body>
 </html>

@@ -31,18 +31,22 @@
     </select>
   </div>
 
+  <!-- Image Selector: Users can choose which images to display using checkboxes -->
+  <fieldset id="image-selector" style="margin-top: 2em;">
+    <legend>Select images to view</legend>
+    <label><input type="checkbox" value="1"> Image 1</label>
+    <label><input type="checkbox" value="2"> Image 2</label>
+    <label><input type="checkbox" value="3"> Image 3</label>
+    <label><input type="checkbox" value="4"> Image 4</label>
+    <label><input type="checkbox" value="5"> Image 5</label>
+    <label><input type="checkbox" value="6"> Image 6</label>
+    <label><input type="checkbox" value="7"> Image 7</label>
+    <label><input type="checkbox" value="8"> Image 8</label>
+    <label><input type="checkbox" value="9"> Image 9</label>
+    <button type="button" onclick="showSelectedImages()">Show Selected Images</button>
+  </fieldset>
+  <div id="gallery-selector" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 2em;"></div>
 
-  
-<div id="image-selector">
-  <label><input type="checkbox" value="1"> Image 1</label>
-  <label><input type="checkbox" value="2"> Image 2</label>
-  <label><input type="checkbox" value="3"> Image 3</label>
-  <!-- Repeat for all images -->
-  <label><input type="checkbox" value="10"> Image 10</label>
-  <button onclick="showSelectedImages()">Show Selected Images</button>
-</div>
-<div id="gallery"></div>
-  
   <!-- Gallery: Product cards will be rendered here dynamically -->
   <div id="gallery" role="list" aria-label="Product Gallery"></div>
 
@@ -62,7 +66,8 @@
     <img id="lightbox-img" src="" alt="Enlarged Image">
   </div>
 
-  <!-- Main JavaScript file for gallery interactivity -->
+  <!-- Main JavaScript file for gallery interactivity and image selector -->
   <script type="module" src="scripts/main.js"></script>
+  <script src="scripts/image-selector.js"></script>
 </body>
 </html>

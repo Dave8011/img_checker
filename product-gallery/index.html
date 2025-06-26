@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>🛍️ Product Gallery</title>
   <!-- Main stylesheet for gallery layout and styling -->
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="styles/main.css" />
 </head>
 <body>
   <!-- Main heading -->
@@ -35,10 +35,13 @@
       Populated dynamically via JS depending on maximum image count
       ARIA label for accessibility
     -->
-    <select id="imageNumberFilter" multiple aria-label="Show images (multi-select)">
-      <!-- JS will populate with options like "Image 1", "Image 2", ... -->
-    </select>
-    <span class="note" style="font-size:0.95em; color:#888;">
+    <div class="custom-multiselect-wrapper">
+      <select id="imageNumberFilter" multiple aria-label="Show images (multi-select)">
+        <!-- JS will populate with options like "Image 1", "Image 2", ... -->
+      </select>
+      <span class="custom-multiselect-arrow">&#9662;</span>
+    </div>
+    <span class="note">
       Hold Ctrl (Windows) or ⌘ (Mac) to select multiple images
     </span>
   </div>

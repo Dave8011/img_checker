@@ -36,6 +36,7 @@ h1 {
   gap: 15px;
   margin-bottom: 30px;
   padding: 15px 0;
+  align-items: center;
 }
 
 /* ===========================
@@ -61,33 +62,64 @@ h1 {
 }
 
 /* ===========================
-   Image Number Multi-select Filter
+   Custom Multi-select Styling
    =========================== */
+.custom-multiselect-wrapper {
+  position: relative;
+  display: inline-block;
+  min-width: 148px;
+  max-width: 220px;
+}
 #imageNumberFilter {
   padding: 12px 16px;
   font-size: 16px;
-  border-radius: 30px;
-  border: 1px solid #ccc;
-  background: #fff;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+  border-radius: 22px;
+  border: 1px solid #204ea8;
+  background: #f7fafd;
+  box-shadow: 0 4px 8px rgba(32,78,168,0.06);
   min-width: 130px;
   max-width: 180px;
-  height: 2.8em; /* Slightly taller for multi-select visibility */
+  height: 2.7em; /* Slightly taller for multi-select visibility */
   cursor: pointer;
-  /* For multi-select, allow vertical resize on some browsers */
-  resize: vertical;
   outline: none;
-  transition: border 0.2s;
+  transition: border 0.2s, box-shadow 0.2s;
+  color: #204ea8;
+  appearance: none; /* Remove default arrow (browser-specific) */
 }
 #imageNumberFilter:focus {
-  border-color: #204ea8;
+  border-color: #536dfe;
+  box-shadow: 0 0 0 2px #536dfe33;
+}
+.custom-multiselect-arrow {
+  pointer-events: none;
+  position: absolute;
+  right: 17px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #204ea8;
+  font-size: 1.15em;
+  transition: color 0.18s;
+  z-index: 2;
 }
 
+/* Show the arrow only if the filter is present */
+.custom-multiselect-wrapper:has(#imageNumberFilter) .custom-multiselect-arrow {
+  display: block;
+}
+
+/* Style the note for multi-select */
 #controls .note {
-  font-size: 0.95em;
+  font-size: 0.97em;
   color: #888;
   align-self: center;
   margin-left: 6px;
+  user-select: none;
+}
+
+/* Placeholder color for multi-select */
+#imageNumberFilter:empty:before {
+  content: "Images";
+  color: #888;
 }
 
 /* ===========================
@@ -273,51 +305,6 @@ h1 {
 }
 
 /* ===========================
-   Lightbox Navigation Arrows (HIDDEN by default)
-   Uncomment display: flex; if you want to show them.
-   =========================== */
-.lightbox-arrow {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(255,255,255,0.82);
-  border: none;
-  border-radius: 50%;
-  width: 48px;
-  height: 48px;
-  font-size: 2.3rem;
-  color: #333;
-  cursor: pointer;
-  z-index: 2100;
-  box-shadow: 0 1px 6px rgba(0,0,0,0.13);
-  align-items: center;
-  justify-content: center;
-  transition: background 0.17s;
-  display: none; /* HIDDEN by default */
-}
-.lightbox-arrow.left {
-  left: 32px;
-}
-.lightbox-arrow.right {
-  right: 32px;
-}
-.lightbox-arrow:active,
-.lightbox-arrow:focus {
-  background: #e0eaff;
-}
-
-/* ===========================
-   Swipe hint for mobile (optional, hidden by default)
-   =========================== */
-@media (pointer: coarse) {
-  #lightbox-img::after {
-    content: '';
-    /* To show a hint like "← Swipe →", replace above with: content: '← Swipe →'; */
-    display: none; /* Hidden by default */
-  }
-}
-
-/* ===========================
    Empty state
    =========================== */
 #emptyState {
@@ -355,11 +342,3 @@ h1 {
     grid-template-columns: 1fr;
   }
 }
-
-/* ===========================
-   NOTES:
-   - Lightbox navigation (arrows/swipe) is available via JS, but arrow buttons are hidden by default.
-   - To enable visual arrow buttons, set display:flex on .lightbox-arrow.
-   - Keyboard navigation (←/→) and swipe gestures will work as coded in JS.
-   - All style changes are integrated with your existing theme and structure.
-   =========================== */

@@ -182,59 +182,81 @@ fetch(`../products.json?t=${Date.now()}`)
 
     // --- Missing IMG CSV download logic ---
 document.getElementById('downloadMissingBtn').addEventListener('click', () => {
+  const products = document.querySelectorAll('.product');
   const missingImagesData = [];
 
-  document.querySelectorAll('.product').forEach(productEl => {
-    const titleText = productEl.querySelector('h2')?.innerText || '';
-    const skuMatch = titleText.match(/\(([^)]+)\)/);
-    const sku = skuMatch ? skuMatch[1] : '';
-    const title = titleText.replace(/\s*\([^)]+\)/, '');
-    const category = productEl.querySelector('.category-tag')?.textContent?.trim() || '';
-    const listingType = productEl.querySelector('.listing-type-tag')?.textContent?.trim() || '';
+  let allImages = document.querySelectorAll('.product img');
+  let total = allImages.length;
+  let loaded = 0;
 
-    const imageElements = productEl.querySelectorAll('img');
-    const missingNumbers = [];
-
-    imageElements.forEach((img, index) => {
-      if (!img.complete || img.naturalWidth === 0) {
-        missingNumbers.push(index + 1); // 1-based index
-      }
-    });
-
-    if (missingNumbers.length > 0) {
-      missingImagesData.push({
-        sku,
-        title,
-        category,
-        listingType,
-        missingImageNumbers: missingNumbers.join(', ')
+  // Wait until all images are fully loaded before checking
+  allImages.forEach(img => {
+    if (img.complete) {
+      loaded++;
+    } else {
+      img.addEventListener('load', () => {
+        loaded++;
+        if (loaded === total) checkMissing();
+      });
+      img.addEventListener('error', () => {
+        loaded++;
+        if (loaded === total) checkMissing();
       });
     }
   });
 
-  if (missingImagesData.length === 0) {
-    alert("✅ No missing images found!");
-    return;
+  if (loaded === total) checkMissing();
+
+  function checkMissing() {
+    products.forEach(productEl => {
+      const titleText = productEl.querySelector('h2')?.innerText || '';
+      const skuMatch = titleText.match(/\(([^)]+)\)/);
+      const sku = skuMatch ? skuMatch[1] : '';
+      const title = titleText.replace(/\s*\([^)]+\)/, '');
+      const category = productEl.querySelector('.category-tag')?.textContent?.trim() || '';
+      const listingType = productEl.querySelector('.listing-type-tag')?.textContent?.trim() || '';
+
+      const imageElements = productEl.querySelectorAll('img');
+      const missingNumbers = [];
+
+      imageElements.forEach((img, index) => {
+        if (!img.complete || img.naturalWidth === 0) {
+          missingNumbers.push(index + 1); // 1-based position
+        }
+      });
+
+      if (missingNumbers.length > 0) {
+        missingImagesData.push({
+          sku,
+          title,
+          category,
+          listingType,
+          missingImageNumbers: missingNumbers.join(', ')
+        });
+      }
+    });
+
+    if (missingImagesData.length === 0) {
+      alert("✅ No missing images found!");
+      return;
+    }
+
+    const csvHeader = 'sku,title,category,listingType,missingImageNumbers\n';
+    const csvRows = missingImagesData.map(item =>
+      `${item.sku},"${item.title.replace(/"/g, '""')}",${item.category},${item.listingType},"${item.missingImageNumbers}"`
+    );
+
+    const csvContent = csvHeader + csvRows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'missing_images_report.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   }
-
-  const csvHeader = 'sku,title,category,listingType,missingImageNumbers\n';
-  const csvRows = missingImagesData.map(item =>
-    `${item.sku},"${item.title.replace(/"/g, '""')}",${item.category},${item.listingType},"${item.missingImageNumbers}"`
-  );
-
-  const csvContent = csvHeader + csvRows.join('\n');
-
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'missing_images_report.csv';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
 });
-
-
 
     // --- Initial render ---
     renderProducts('', '', '');

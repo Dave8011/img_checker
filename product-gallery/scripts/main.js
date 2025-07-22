@@ -182,7 +182,7 @@ fetch(`../products.json?t=${Date.now()}`)
 
     // --- Missing IMG CSV download logic ---
 document.getElementById('downloadMissingBtn').addEventListener('click', () => {
-  const missingImagesRows = [];
+  const missingImagesData = [];
 
   document.querySelectorAll('.product').forEach(productEl => {
     const titleText = productEl.querySelector('h2')?.innerText || '';
@@ -193,35 +193,37 @@ document.getElementById('downloadMissingBtn').addEventListener('click', () => {
     const listingType = productEl.querySelector('.listing-type-tag')?.textContent?.trim() || '';
 
     const imageElements = productEl.querySelectorAll('img');
+    const missingNumbers = [];
 
-    imageElements.forEach(img => {
-      const imgURL = img.getAttribute('src');
+    imageElements.forEach((img, index) => {
       if (!img.complete || img.naturalWidth === 0) {
-        missingImagesRows.push({
-          sku,
-          title,
-          category,
-          listingType,
-          missingImageURL: imgURL
-        });
+        missingNumbers.push(index + 1); // 1-based index
       }
     });
+
+    if (missingNumbers.length > 0) {
+      missingImagesData.push({
+        sku,
+        title,
+        category,
+        listingType,
+        missingImageNumbers: missingNumbers.join(', ')
+      });
+    }
   });
 
-  if (missingImagesRows.length === 0) {
+  if (missingImagesData.length === 0) {
     alert("✅ No missing images found!");
     return;
   }
 
-  // CSV header
-  const csvHeader = 'sku,title,category,listingType,missingImageURL\n';
-  const csvLines = missingImagesRows.map(item =>
-    `${item.sku},"${item.title.replace(/"/g, '""')}",${item.category},${item.listingType},${item.missingImageURL}`
+  const csvHeader = 'sku,title,category,listingType,missingImageNumbers\n';
+  const csvRows = missingImagesData.map(item =>
+    `${item.sku},"${item.title.replace(/"/g, '""')}",${item.category},${item.listingType},"${item.missingImageNumbers}"`
   );
 
-  const csvContent = csvHeader + csvLines.join('\n');
+  const csvContent = csvHeader + csvRows.join('\n');
 
-  // Trigger download
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -231,6 +233,7 @@ document.getElementById('downloadMissingBtn').addEventListener('click', () => {
   a.click();
   document.body.removeChild(a);
 });
+
 
 
     // --- Initial render ---

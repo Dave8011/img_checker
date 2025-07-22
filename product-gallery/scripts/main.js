@@ -180,6 +180,65 @@ fetch(`../products.json?t=${Date.now()}`)
       renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value);
     });
 
+    // --- Missing IMG CSV download logic ---
+document.getElementById('downloadMissingBtn').addEventListener('click', () => {
+  const missingImagesData = [];
+
+  // Loop through all product cards
+  document.querySelectorAll('.product').forEach(productEl => {
+    const titleText = productEl.querySelector('h2')?.innerText || '';
+    const skuMatch = titleText.match(/\(([^)]+)\)/);
+    const sku = skuMatch ? skuMatch[1] : '';
+    const title = titleText.replace(/\s*\([^)]+\)/, '');
+    const category = productEl.querySelector('.category-tag')?.textContent?.trim() || '';
+    const listingType = productEl.querySelector('.listing-type-tag')?.textContent?.trim() || '';
+
+    const imageElements = productEl.querySelectorAll('img');
+    let missingCount = 0;
+
+    imageElements.forEach(img => {
+      if (!img.complete || img.naturalWidth === 0) {
+        missingCount++;
+      }
+    });
+
+    if (missingCount > 0) {
+      missingImagesData.push({
+        sku,
+        title,
+        category,
+        listingType,
+        missingCount
+      });
+    }
+  });
+
+  if (missingImagesData.length === 0) {
+    alert("✅ No missing images found!");
+    return;
+  }
+
+  // Convert to CSV
+  const csvHeader = 'sku,title,category,listingType,missingImageCount\n';
+  const csvRows = missingImagesData.map(item =>
+    `${item.sku},"${item.title.replace(/"/g, '""')}",${item.category},${item.listingType},${item.missingCount}`
+  );
+
+  const csvContent = csvHeader + csvRows.join('\n');
+
+  // Create and trigger download
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.setAttribute('href', url);
+  link.setAttribute('download', 'missing_images_report.csv');
+  link.style.display = 'none';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+});
+
+
     // --- Initial render ---
     renderProducts('', '', '');
   });

@@ -268,6 +268,14 @@ document.getElementById('downloadMissingBtn').addEventListener('click', () => {
       document.getElementById('downloadZipBtn').addEventListener('click', () => {
     alert("📦 ZIP logic not implemented yet.");
   });
+
+// Mobile menu toggle
+const menuToggle = document.getElementById('menuToggle');
+const controlGroup = document.getElementById('controlGroup');
+
+menuToggle.addEventListener('click', () => {
+  controlGroup.classList.toggle('show');
+});
     
     // --- Initial render ---
     renderProducts('', '', '');

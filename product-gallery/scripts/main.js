@@ -4,7 +4,7 @@
 fetch(`../products.json?t=${Date.now()}`)
   .then(res => res.json())
   .then(data => {
-    window.productData = products;
+    window.productData = data;  // ✅ Use 'data', not 'products'
     // --- State for lightbox navigation ---
     let currentImages = []; // Array of current product's images in lightbox
     let currentIndex = 0;   // Index of the currently displayed image in lightbox

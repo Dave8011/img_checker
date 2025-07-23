@@ -264,10 +264,11 @@ document.getElementById('downloadMissingBtn').addEventListener('click', () => {
   return `PT${String(index).padStart(2, '0')}`;
 }
 
-  // ---- zip img folder download logic ----
-      document.getElementById('downloadZipBtn').addEventListener('click', () => {
-    alert("📦 ZIP logic not implemented yet.");
-  });
+ // ---- zip img folder download logic ----
+document.getElementById('downloadZipBtn').addEventListener('click', () => {
+  showZipPopup();
+});
+
 
 // Mobile menu toggle
 const menuToggle = document.getElementById('menuToggle');

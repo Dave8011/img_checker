@@ -19,12 +19,10 @@
         <div id="controls">
         <!-- Always visible: Search bar -->
         <input type="text" id="searchBar" placeholder="🔍 Search by SKU or Name..." aria-label="Search products by SKU or Name" />
-      
-        <!-- Hamburger menu for mobile -->
-        <div id="menuToggle" aria-label="Toggle Filters/Actions" tabindex="0">
-          ☰
-        </div>
-      
+          <!-- Hamburger menu for mobile -->
+        <button id="searchToggle" aria-label="Show Search" title="Search">🔍</button>
+        <div id="menuToggle" aria-label="Toggle Filters/Actions" tabindex="0">☰</div>
+        
         <!-- Hidden group: filters + buttons -->
         <div id="controlGroup">
           <select id="categoryFilter" aria-label="Filter by category">

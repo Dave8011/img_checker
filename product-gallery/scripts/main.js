@@ -90,7 +90,7 @@ fetch(`../products.json?t=${Date.now()}`)
                   alt="${product.title} image ${index + 1}" 
                   loading="lazy"
                 />
-                <span class="image-number">${index + 1}</span>
+                <span class="image-number">${getImageLabel(index)}</span>
               </div>
             `).join('')}
           </div>
@@ -258,6 +258,13 @@ document.getElementById('downloadMissingBtn').addEventListener('click', () => {
   }
 });
 
+// ---- Image card name ----
+    function getImageLabel(index) {
+  if (index === 0) return 'MAIN';
+  return `PT${String(index).padStart(2, '0')}`;
+}
+
+    
     // --- Initial render ---
     renderProducts('', '', '');
   });

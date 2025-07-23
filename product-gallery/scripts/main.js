@@ -264,6 +264,10 @@ document.getElementById('downloadMissingBtn').addEventListener('click', () => {
   return `PT${String(index).padStart(2, '0')}`;
 }
 
+  // ---- zip img folder download logic ----
+      document.getElementById('downloadZipBtn').addEventListener('click', () => {
+    alert("📦 ZIP logic not implemented yet.");
+  });
     
     // --- Initial render ---
     renderProducts('', '', '');

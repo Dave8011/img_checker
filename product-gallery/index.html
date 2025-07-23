@@ -57,7 +57,18 @@
     <span id="lightbox-close" aria-label="Close image viewer" tabindex="0" role="button">&times;</span>
     <img id="lightbox-img" src="" alt="Enlarged Image">
   </div>
+<!-- 📦 ZIP Download Popup -->
+<div id="zipPopup" class="popup hidden">
+  <div class="popup-content">
+    <h3>🔍 Search Product to ZIP</h3>
+    <input type="text" id="zipSearchInput" placeholder="Search by SKU or Name..." />
+    <div id="zipSearchResults" class="zip-results"></div>
+    <button id="zipDownloadConfirmBtn" disabled>⬇️ Download ZIP</button>
+    <button id="zipPopupCloseBtn">❌ Cancel</button>
+  </div>
+</div>
 
+  
   <!-- Main JavaScript file for gallery interactivity -->
   <script type="module" src="scripts/main.js"></script>
 </body>

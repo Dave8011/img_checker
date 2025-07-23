@@ -398,21 +398,6 @@ async function generateZipForProduct(product) {
   zipLoading.classList.add('hidden'); // 👈 Hide loading
 }
 
-
-
-  // Wait for all images to be added
-  await Promise.all(downloadPromises);
-
-  const zipBlob = await zip.generateAsync({ type: 'blob' });
-  const url = URL.createObjectURL(zipBlob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `${asin}_images.zip`;
-  a.click();
-}
-
-
-
 // Mobile menu toggle
 const menuToggle = document.getElementById('menuToggle');
 const controlGroup = document.getElementById('controlGroup');

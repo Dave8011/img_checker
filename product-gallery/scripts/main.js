@@ -265,6 +265,16 @@ document.getElementById('downloadMissingBtn').addEventListener('click', () => {
   return `PT${String(index).padStart(2, '0')}`;
 }
 
+
+    // ---- imag fetch for download ---
+function fetchImageAsBlob(url) {
+  return fetch(url).then(res => {
+    if (!res.ok) throw new Error('Image fetch failed');
+    return res.blob();
+  });
+}
+
+    
  // ---- zip img folder download logic ----
 document.getElementById('downloadZipBtn').addEventListener('click', () => {
   showZipPopup();
@@ -317,6 +327,62 @@ function showZipPopup() {
       generateZipForProduct(selectedZipProduct);
     }
   };
+}
+
+    // ---- generate ZIP for selected product ----
+async function generateZipForProduct(product) {
+  const zip = new JSZip();
+  const asinMap = await fetch('asin_map_zip.json').then(res => res.json());
+  const asinEntry = asinMap.find(entry => entry.sku === product.sku);
+  
+  if (!asinEntry) {
+    alert(`❌ No ASIN found for SKU: ${product.sku}`);
+    return;
+  }
+
+  const asin = asinEntry.asin;
+  const productEl = [...document.querySelectorAll('.product')].find(el =>
+    el.querySelector('h2')?.innerText.includes(product.sku)
+  );
+
+  if (!productEl) {
+    alert(`⚠️ Product not currently visible on screen.`);
+    return;
+  }
+
+  const images = productEl.querySelectorAll('img');
+  const downloadPromises = [];
+
+  images.forEach((img, index) => {
+    if (img.complete && img.naturalWidth > 0) {
+      const label = getImageLabel(index); // Use your existing label logic (MAIN, PT01, etc.)
+      const imgURL = img.src;
+      downloadPromises.push(
+        fetchImageAsBlob(imgURL)
+          .then(blob => {
+            zip.file(`${asin}.${label}.jpg`, blob);
+          })
+          .catch(() => {
+            console.warn(`❌ Skipped broken/missing image: ${imgURL}`);
+          })
+      );
+    }
+  });
+
+  if (downloadPromises.length === 0) {
+    alert("❌ No valid images to download.");
+    return;
+  }
+
+  // Wait for all images to be added
+  await Promise.all(downloadPromises);
+
+  const zipBlob = await zip.generateAsync({ type: 'blob' });
+  const url = URL.createObjectURL(zipBlob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${asin}_images.zip`;
+  a.click();
 }
 
 

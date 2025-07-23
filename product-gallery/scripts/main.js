@@ -4,6 +4,7 @@
 fetch(`../products.json?t=${Date.now()}`)
   .then(res => res.json())
   .then(data => {
+    window.productData = products;
     // --- State for lightbox navigation ---
     let currentImages = []; // Array of current product's images in lightbox
     let currentIndex = 0;   // Index of the currently displayed image in lightbox
@@ -268,6 +269,56 @@ document.getElementById('downloadMissingBtn').addEventListener('click', () => {
 document.getElementById('downloadZipBtn').addEventListener('click', () => {
   showZipPopup();
 });
+
+    // ---- zip img folder Popup logic ----
+let selectedZipProduct = null;
+
+function showZipPopup() {
+  const popup = document.getElementById('zipPopup');
+  const searchInput = document.getElementById('zipSearchInput');
+  const resultsDiv = document.getElementById('zipSearchResults');
+  const confirmBtn = document.getElementById('zipDownloadConfirmBtn');
+  selectedZipProduct = null;
+
+  popup.classList.remove('hidden');
+  searchInput.value = '';
+  resultsDiv.innerHTML = '';
+  confirmBtn.disabled = true;
+
+  searchInput.addEventListener('input', () => {
+    const query = searchInput.value.toLowerCase();
+    resultsDiv.innerHTML = '';
+
+    const matches = window.productData.filter(p =>
+      p.sku.toLowerCase().includes(query) || p.title.toLowerCase().includes(query)
+    );
+
+    matches.forEach(product => {
+      const item = document.createElement('div');
+      item.className = 'zip-result-item';
+      item.textContent = `${product.title} (${product.sku})`;
+      item.addEventListener('click', () => {
+        selectedZipProduct = product;
+        confirmBtn.disabled = false;
+        searchInput.value = `${product.title} (${product.sku})`;
+        resultsDiv.innerHTML = '';
+      });
+      resultsDiv.appendChild(item);
+    });
+  });
+
+  document.getElementById('zipPopupCloseBtn').onclick = () => {
+    popup.classList.add('hidden');
+  };
+
+  confirmBtn.onclick = () => {
+    popup.classList.add('hidden');
+    if (selectedZipProduct) {
+      generateZipForProduct(selectedZipProduct);
+    }
+  };
+}
+
 
 
 // Mobile menu toggle

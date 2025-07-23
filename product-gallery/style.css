@@ -308,21 +308,88 @@ h1 {
   }
 }
 
+
 /* ===========================
-   Responsive Adjustments
+   Mobile-Optimized Control Bar
    =========================== */
-@media (max-width: 600px) {
+
+/* Hide menuToggle by default (visible on small screens only) */
+#menuToggle {
+  display: none;
+  font-size: 26px;
+  font-weight: bold;
+  padding: 10px 16px;
+  background-color: #204ea8;
+  color: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Group of dropdowns & buttons (initially visible, hidden on mobile) */
+#controlGroup {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* Button base style (already included, redefining for clarity) */
+#controlGroup button {
+  padding: 10px 18px;
+  border-radius: 30px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+  color: white;
+}
+
+/* Specific buttons */
+#downloadMissingBtn {
+  background-color: #204ea8;
+}
+#downloadZipBtn {
+  background-color: #2c922c;
+}
+
+/* ===========================
+   Responsive Controls for Mobile
+   =========================== */
+@media screen and (max-width: 768px) {
   #controls {
     flex-direction: column;
-    gap: 10px;
-    padding: 10px 0;
+    align-items: center;
   }
+
+  #menuToggle {
+    display: block;
+    margin-top: 10px;
+  }
+
+  #controlGroup {
+    display: none; /* hidden by default on mobile */
+    flex-direction: column;
+    width: 100%;
+    padding: 10px;
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  #controlGroup.show {
+    display: flex; /* shown when toggled */
+  }
+
+  #categoryFilter,
+  #listingTypeFilter,
+  #controlGroup button {
+    width: 100%;
+  }
+
   #searchBar {
     width: 100%;
     max-width: none;
-  }
-  #gallery {
-    grid-template-columns: 1fr;
   }
 }
 

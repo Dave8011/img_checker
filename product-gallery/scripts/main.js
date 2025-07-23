@@ -1,15 +1,19 @@
 // scripts/main.js
 
-// Fetch product data (cache-busted each time)
+/* ===========================
+   Fetch Product Data and Setup
+   =========================== */
 fetch(`../products.json?t=${Date.now()}`)
   .then(res => res.json())
   .then(data => {
-    window.productData = data;  // ✅ Use 'data', not 'products'
-    // --- State for lightbox navigation ---
-    let currentImages = []; // Array of current product's images in lightbox
-    let currentIndex = 0;   // Index of the currently displayed image in lightbox
+    window.productData = data; // Store product data globally for other features (ZIP, etc.)
 
-    // --- Grab DOM elements ---
+    /* ===========================
+       Initialize Variables and DOM Elements
+       =========================== */
+    let currentImages = [];
+    let currentIndex = 0;
+
     const gallery = document.getElementById('gallery');
     const searchBar = document.getElementById('searchBar');
     const categoryFilter = document.getElementById('categoryFilter');
@@ -19,7 +23,9 @@ fetch(`../products.json?t=${Date.now()}`)
     const lightboxClose = document.getElementById('lightbox-close');
     const emptyState = document.getElementById('emptyState');
 
-    // --- Populate dropdowns with unique categories and listing types ---
+    /* ===========================
+       Populate Filters from Data
+       =========================== */
     const categories = [...new Set(data.map(p => p.category).filter(Boolean))];
     categories.forEach(cat => {
       const opt = document.createElement('option');
@@ -27,6 +33,7 @@ fetch(`../products.json?t=${Date.now()}`)
       opt.textContent = cat;
       categoryFilter.appendChild(opt);
     });
+
     const listingTypes = [...new Set(data.map(p => p.listingType).filter(Boolean))];
     listingTypes.forEach(type => {
       const opt = document.createElement('option');
@@ -35,17 +42,11 @@ fetch(`../products.json?t=${Date.now()}`)
       listingTypeFilter.appendChild(opt);
     });
 
-    // --- Helper: Update the lightbox image based on currentIndex ---
-    function updateLightboxImage() {
-      lightboxImg.src = currentImages[currentIndex];
-      lightboxImg.alt = `Image ${currentIndex + 1} of ${currentImages.length}`;
-    }
-
-    // --- Render product cards based on filters/search ---
+    /* ===========================
+       Render Product Cards
+       =========================== */
     function renderProducts(filter = '', category = '', listingType = '') {
       gallery.innerHTML = '';
-
-      // Filter product data
       const filtered = data.filter(p =>
         (p.title.toLowerCase().includes(filter.toLowerCase()) ||
          p.sku.toLowerCase().includes(filter.toLowerCase())) &&
@@ -53,28 +54,23 @@ fetch(`../products.json?t=${Date.now()}`)
         (listingType === '' || p.listingType === listingType)
       );
 
-      // Handle empty state
       if (filtered.length === 0) {
-        if (emptyState) {
-          emptyState.innerHTML = `
-            <img src="https://cdn.jsdelivr.net/gh/edent/SuperTinyIcons/images/svg/emoji-sad.svg" alt="No Results" width="120" style="margin-bottom:20px;opacity:.7;" />
-            <div style="font-size:1.4rem;color:#888;">No products found. Try adjusting your filter or search terms!</div>
-          `;
-          emptyState.style.display = 'block';
-        }
+        emptyState.innerHTML = `
+          <img src="https://cdn.jsdelivr.net/gh/edent/SuperTinyIcons/images/svg/emoji-sad.svg" alt="No Results" width="120" style="margin-bottom:20px;opacity:.7;" />
+          <div style="font-size:1.4rem;color:#888;">No products found. Try adjusting your filter or search terms!</div>
+        `;
+        emptyState.style.display = 'block';
         return;
-      } else if (emptyState) {
+      } else {
         emptyState.style.display = 'none';
       }
 
-      // For each product, create a card
       filtered.forEach(product => {
         const div = document.createElement('div');
         div.className = 'product';
         div.setAttribute('role', 'region');
         div.setAttribute('aria-label', `${product.title}, SKU ${product.sku}`);
 
-        // Tag row: category and listing type
         div.innerHTML = `
           <div class="tag-row">
             ${product.category ? `<div class="category-tag" title="Category">${product.category}</div>` : ''}
@@ -83,14 +79,8 @@ fetch(`../products.json?t=${Date.now()}`)
           <h2>${product.title} (<code>${product.sku}</code>)</h2>
           <div class="images" role="list">
             ${product.images.map((url, index) => `
-              <div class="image-wrapper" tabindex="0" role="listitem" aria-label="Image ${index + 1} for ${product.title}">
-                <img 
-                  src="${url}" 
-                  data-full="${url}" 
-                  style="width: 200px;" 
-                  alt="${product.title} image ${index + 1}" 
-                  loading="lazy"
-                />
+              <div class="image-wrapper" tabindex="0" role="listitem">
+                <img src="${url}" data-full="${url}" alt="${product.title} image ${index + 1}" loading="lazy" />
                 <span class="image-number">${getImageLabel(index)}</span>
               </div>
             `).join('')}
@@ -99,13 +89,11 @@ fetch(`../products.json?t=${Date.now()}`)
         gallery.appendChild(div);
       });
 
-      // --- Add click and keyboard events for lightbox + navigation setup ---
+      // Setup lightbox events
       document.querySelectorAll('.image-wrapper').forEach(wrapper => {
-        // Open lightbox on click or keyboard (Enter/Space)
         function openLightbox() {
-          // Get all images for this product card
           const productDiv = wrapper.closest('.product');
-          currentImages = Array.from(productDiv.querySelectorAll('.image-wrapper img')).map(img => img.dataset.full);
+          currentImages = Array.from(productDiv.querySelectorAll('img')).map(img => img.dataset.full);
           const img = wrapper.querySelector('img');
           currentIndex = currentImages.indexOf(img.dataset.full);
 
@@ -114,8 +102,8 @@ fetch(`../products.json?t=${Date.now()}`)
           lightboxClose.focus();
         }
         wrapper.addEventListener('click', openLightbox);
-        wrapper.addEventListener('keydown', (e) => {
-          if (e.key === "Enter" || e.key === " ") {
+        wrapper.addEventListener('keydown', e => {
+          if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
             openLightbox();
           }
@@ -123,21 +111,21 @@ fetch(`../products.json?t=${Date.now()}`)
       });
     }
 
-    // --- Lightbox close: mouse and keyboard ---
-    lightboxClose.addEventListener('click', () => {
-      lightbox.classList.add('hidden');
-      lightboxImg.src = '';
-    });
-    lightboxClose.addEventListener('keydown', (e) => {
+    function updateLightboxImage() {
+      lightboxImg.src = currentImages[currentIndex];
+      lightboxImg.alt = `Image ${currentIndex + 1} of ${currentImages.length}`;
+    }
+
+    // Lightbox close events
+    lightboxClose.addEventListener('click', () => lightbox.classList.add('hidden'));
+    lightboxClose.addEventListener('keydown', e => {
       if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
         lightbox.classList.add('hidden');
-        lightboxImg.src = '';
       }
     });
 
-    // --- Lightbox keyboard navigation (arrow keys & Esc) ---
-    window.addEventListener('keydown', (e) => {
+    // Lightbox navigation via keyboard
+    window.addEventListener('keydown', e => {
       if (!lightbox.classList.contains('hidden')) {
         if (e.key === 'ArrowLeft' && currentIndex > 0) {
           currentIndex--;
@@ -147,267 +135,177 @@ fetch(`../products.json?t=${Date.now()}`)
           updateLightboxImage();
         } else if (e.key === 'Escape') {
           lightbox.classList.add('hidden');
-          lightboxImg.src = '';
         }
       }
     });
 
-    // --- Touch swipe navigation for lightbox (on mobile) ---
-    let touchStartX = 0;
-    lightbox.addEventListener('touchstart', e => {
-      if (e.touches.length === 1) touchStartX = e.touches[0].clientX;
-    });
-    lightbox.addEventListener('touchend', e => {
-      if (e.changedTouches.length === 1) {
-        let deltaX = e.changedTouches[0].clientX - touchStartX;
-        if (deltaX > 50 && currentIndex > 0) {
-          currentIndex--;
-          updateLightboxImage();
-        } else if (deltaX < -50 && currentIndex < currentImages.length - 1) {
-          currentIndex++;
-          updateLightboxImage();
-        }
-      }
-    });
+    // Filters & search
+    searchBar.addEventListener('input', () => renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value));
+    categoryFilter.addEventListener('change', () => renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value));
+    listingTypeFilter.addEventListener('change', () => renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value));
 
-    // --- Filter and search events ---
-    searchBar.addEventListener('input', () => {
-      renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value);
-    });
-    categoryFilter.addEventListener('change', () => {
-      renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value);
-    });
-    listingTypeFilter.addEventListener('change', () => {
-      renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value);
-    });
-
-    // --- Missing IMG CSV download logic ---
-document.getElementById('downloadMissingBtn').addEventListener('click', () => {
-  const products = document.querySelectorAll('.product');
-  const missingImagesData = [];
-
-  let allImages = document.querySelectorAll('.product img');
-  let total = allImages.length;
-  let loaded = 0;
-
-  // Wait until all images are fully loaded before checking
-  allImages.forEach(img => {
-    if (img.complete) {
-      loaded++;
-    } else {
-      img.addEventListener('load', () => {
-        loaded++;
-        if (loaded === total) checkMissing();
-      });
-      img.addEventListener('error', () => {
-        loaded++;
-        if (loaded === total) checkMissing();
-      });
-    }
-  });
-
-  if (loaded === total) checkMissing();
-
-  function checkMissing() {
-    products.forEach(productEl => {
-      const titleText = productEl.querySelector('h2')?.innerText || '';
-      const skuMatch = titleText.match(/\(([^)]+)\)/);
-      const sku = skuMatch ? skuMatch[1] : '';
-      const title = titleText.replace(/\s*\([^)]+\)/, '');
-      const category = productEl.querySelector('.category-tag')?.textContent?.trim() || '';
-      const listingType = productEl.querySelector('.listing-type-tag')?.textContent?.trim() || '';
-
-      const imageElements = productEl.querySelectorAll('img');
-      const missingNumbers = [];
-
-      imageElements.forEach((img, index) => {
-        if (!img.complete || img.naturalWidth === 0) {
-          missingNumbers.push(index + 1); // 1-based position
-        }
-      });
-
-      if (missingNumbers.length > 0) {
-        missingImagesData.push({
-          sku,
-          title,
-          category,
-          listingType,
-          missingImageNumbers: missingNumbers.join(', ')
-        });
-      }
-    });
-
-    if (missingImagesData.length === 0) {
-      alert("✅ No missing images found!");
-      return;
-    }
-
-    const csvHeader = 'sku,title,category,listingType,missingImageNumbers\n';
-    const csvRows = missingImagesData.map(item =>
-      `${item.sku},"${item.title.replace(/"/g, '""')}",${item.category},${item.listingType},"${item.missingImageNumbers}"`
-    );
-
-    const csvContent = csvHeader + csvRows.join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'missing_images_report.csv';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  }
-});
-
-// ---- Image card name ----
+    /* ===========================
+       Image Labeling Function
+       =========================== */
     function getImageLabel(index) {
-  if (index === 0) return 'MAIN';
-  return `PT${String(index).padStart(2, '0')}`;
-}
-
-
-    // ---- imag fetch for download ---
-function fetchImageAsBlob(url) {
-  return fetch(url).then(res => {
-    if (!res.ok) throw new Error('Image fetch failed');
-    return res.blob();
-  });
-}
-
-    
- // ---- zip img folder download logic ----
-document.getElementById('downloadZipBtn').addEventListener('click', () => {
-  showZipPopup();
-});
-
-    // ---- zip img folder Popup logic ----
-let selectedZipProduct = null;
-
-function showZipPopup() {
-  const popup = document.getElementById('zipPopup');
-  const searchInput = document.getElementById('zipSearchInput');
-  const resultsDiv = document.getElementById('zipSearchResults');
-  const confirmBtn = document.getElementById('zipDownloadConfirmBtn');
-  selectedZipProduct = null;
-
-  popup.classList.remove('hidden');
-  searchInput.value = '';
-  resultsDiv.innerHTML = '';
-  confirmBtn.disabled = true;
-
-  searchInput.addEventListener('input', () => {
-    const query = searchInput.value.toLowerCase();
-    resultsDiv.innerHTML = '';
-
-    const matches = window.productData.filter(p =>
-      p.sku.toLowerCase().includes(query) || p.title.toLowerCase().includes(query)
-    );
-
-    matches.forEach(product => {
-      const item = document.createElement('div');
-      item.className = 'zip-result-item';
-      item.textContent = `${product.title} (${product.sku})`;
-      item.addEventListener('click', () => {
-        selectedZipProduct = product;
-        confirmBtn.disabled = false;
-        searchInput.value = `${product.title} (${product.sku})`;
-        resultsDiv.innerHTML = '';
-      });
-      resultsDiv.appendChild(item);
-    });
-  });
-
-  document.getElementById('zipPopupCloseBtn').onclick = () => {
-    popup.classList.add('hidden');
-  };
-
-  confirmBtn.onclick = () => {
-    popup.classList.add('hidden');
-    if (selectedZipProduct) {
-      generateZipForProduct(selectedZipProduct);
+      if (index === 0) return 'MAIN';
+      return `PT${String(index).padStart(2, '0')}`;
     }
-  };
-}
 
-    // ---- generate ZIP for selected product ----
-async function generateZipForProduct(product) {
-  const zipLoading = document.getElementById('zipLoadingOverlay');
-  zipLoading.classList.remove('hidden'); // 👈 Show loading
+    /* ===========================
+       Image Fetch as Blob
+       =========================== */
+    function fetchImageAsBlob(url) {
+      return fetch(url).then(res => {
+        if (!res.ok) throw new Error('Image fetch failed');
+        return res.blob();
+      });
+    }
 
-  const zip = new JSZip();
-  const asinMap = await fetch('asin_map_zip.json').then(res => res.json());
-  const asinEntry = asinMap.find(entry => entry.sku === product.sku);
-  
-  if (!asinEntry) {
-    zipLoading.classList.add('hidden'); // 👈 Hide loading
-    alert(`❌ No ASIN found for SKU: ${product.sku}`);
-    return;
-  }
+    /* ===========================
+       ZIP Download Button Setup
+       =========================== */
+    document.getElementById('downloadZipBtn').addEventListener('click', () => {
+      showZipPopup();
+    });
 
-  const asin = asinEntry.asin;
-  const productEl = [...document.querySelectorAll('.product')].find(el =>
-    el.querySelector('h2')?.innerText.includes(product.sku)
-  );
+    /* ===========================
+       ZIP Popup Logic
+       =========================== */
+    let selectedZipProduct = null;
 
-  if (!productEl) {
-    zipLoading.classList.add('hidden'); // 👈 Hide loading
-    alert(`⚠️ Product not currently visible on screen.`);
-    return;
-  }
+    function showZipPopup() {
+      const popup = document.getElementById('zipPopup');
+      const searchInput = document.getElementById('zipSearchInput');
+      const resultsDiv = document.getElementById('zipSearchResults');
+      const confirmBtn = document.getElementById('zipDownloadConfirmBtn');
+      selectedZipProduct = null;
 
-  const images = productEl.querySelectorAll('img');
-  const downloadPromises = [];
+      popup.classList.remove('hidden');
+      searchInput.value = '';
+      resultsDiv.innerHTML = '';
+      confirmBtn.disabled = true;
 
-  images.forEach((img, index) => {
-    const label = getImageLabel(index);
-    const imgURL = img.src;
+      searchInput.addEventListener('input', () => {
+        const query = searchInput.value.toLowerCase();
+        resultsDiv.innerHTML = '';
 
-    downloadPromises.push(
-      new Promise((resolve) => {
-        if (img.complete && img.naturalWidth > 0) {
-          fetchImageAsBlob(imgURL)
-            .then(blob => {
-              zip.file(`${asin}.${label}.jpg`, blob);
-              resolve();
-            })
-            .catch(() => resolve());
-        } else {
-          img.onload = () => {
-            fetchImageAsBlob(imgURL)
-              .then(blob => {
-                zip.file(`${asin}.${label}.jpg`, blob);
-                resolve();
-              })
-              .catch(() => resolve());
-          };
-          img.onerror = () => resolve();
+        const matches = window.productData.filter(p =>
+          p.sku.toLowerCase().includes(query) || p.title.toLowerCase().includes(query)
+        );
+
+        matches.forEach(product => {
+          const item = document.createElement('div');
+          item.className = 'zip-result-item';
+          item.textContent = `${product.title} (${product.sku})`;
+          item.addEventListener('click', () => {
+            selectedZipProduct = product;
+            confirmBtn.disabled = false;
+            searchInput.value = `${product.title} (${product.sku})`;
+            resultsDiv.innerHTML = '';
+          });
+          resultsDiv.appendChild(item);
+        });
+      });
+
+      document.getElementById('zipPopupCloseBtn').onclick = () => {
+        popup.classList.add('hidden');
+      };
+
+      confirmBtn.onclick = () => {
+        popup.classList.add('hidden');
+        if (selectedZipProduct) {
+          generateZipForProduct(selectedZipProduct);
         }
-      })
-    );
-  });
+      };
+    }
 
-  await Promise.all(downloadPromises);
+    /* ===========================
+       Generate ZIP File
+       =========================== */
+    async function generateZipForProduct(product) {
+      const zipLoading = document.getElementById('zipLoadingOverlay');
+      const progressText = document.getElementById('zipProgressText');
+      zipLoading.classList.remove('hidden');
+      progressText.textContent = 'Starting download...';
 
-  const zipBlob = await zip.generateAsync({ type: 'blob' });
-  const url = URL.createObjectURL(zipBlob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `${asin}_images.zip`;
-  a.click();
+      const zip = new JSZip();
+      const asinMap = await fetch('asin_map_zip.json').then(res => res.json());
+      const asinEntry = asinMap.find(entry => entry.sku === product.sku);
 
-  zipLoading.classList.add('hidden'); // 👈 Hide loading
-}
+      if (!asinEntry) {
+        zipLoading.classList.add('hidden');
+        alert(`❌ No ASIN found for SKU: ${product.sku}`);
+        return;
+      }
 
-// Mobile menu toggle
-const menuToggle = document.getElementById('menuToggle');
-const controlGroup = document.getElementById('controlGroup');
+      const asin = asinEntry.asin;
+      const productEl = [...document.querySelectorAll('.product')].find(el =>
+        el.querySelector('h2')?.innerText.includes(product.sku)
+      );
 
-menuToggle.addEventListener('click', () => {
-  controlGroup.classList.toggle('show');
-});
-   
+      if (!productEl) {
+        zipLoading.classList.add('hidden');
+        alert(`⚠️ Product not currently visible on screen.`);
+        return;
+      }
 
-    
-    // --- Initial render ---
+      const images = productEl.querySelectorAll('img');
+      const total = images.length;
+      let completed = 0;
+
+      const downloadPromises = Array.from(images).map((img, index) => {
+        const label = getImageLabel(index);
+        const imgURL = img.src;
+
+        return new Promise(resolve => {
+          const onSuccess = (blob) => {
+            zip.file(`${asin}.${label}.jpg`, blob);
+            completed++;
+            progressText.textContent = `📷 Downloaded ${completed} of ${total} images...`;
+            resolve();
+          };
+
+          const onFail = () => {
+            completed++;
+            progressText.textContent = `📷 Downloaded ${completed} of ${total} images...`;
+            resolve();
+          };
+
+          if (img.complete && img.naturalWidth > 0) {
+            fetchImageAsBlob(imgURL).then(onSuccess).catch(onFail);
+          } else {
+            img.onload = () => fetchImageAsBlob(imgURL).then(onSuccess).catch(onFail);
+            img.onerror = onFail;
+          }
+        });
+      });
+
+      await Promise.all(downloadPromises);
+
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      const url = URL.createObjectURL(zipBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${asin}_images.zip`;
+      a.click();
+
+      zipLoading.classList.add('hidden');
+      progressText.textContent = '';
+    }
+
+    /* ===========================
+       Mobile Menu Toggle
+       =========================== */
+    const menuToggle = document.getElementById('menuToggle');
+    const controlGroup = document.getElementById('controlGroup');
+
+    menuToggle.addEventListener('click', () => {
+      controlGroup.classList.toggle('show');
+    });
+
+    /* ===========================
+       Initial Page Render
+       =========================== */
     renderProducts('', '', '');
   });

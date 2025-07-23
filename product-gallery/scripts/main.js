@@ -247,6 +247,7 @@ async function generateZipForProduct(product) {
 
 
   await Promise.all(downloadPromises);
+progressText.textContent = '✅ All images processed. Generating ZIP...';
 
   const zipBlob = await zip.generateAsync({ type: 'blob' });
   const url = URL.createObjectURL(zipBlob);

@@ -350,29 +350,43 @@ async function generateZipForProduct(product) {
     return;
   }
 
-  const images = productEl.querySelectorAll('img');
-  const downloadPromises = [];
-
   images.forEach((img, index) => {
-    if (img.complete && img.naturalWidth > 0) {
-      const label = getImageLabel(index); // Use your existing label logic (MAIN, PT01, etc.)
-      const imgURL = img.src;
-      downloadPromises.push(
+  const label = getImageLabel(index);
+  const imgURL = img.src;
+
+  downloadPromises.push(
+    new Promise((resolve, reject) => {
+      if (img.complete && img.naturalWidth > 0) {
         fetchImageAsBlob(imgURL)
           .then(blob => {
             zip.file(`${asin}.${label}.jpg`, blob);
+            resolve();
           })
-          .catch(() => {
-            console.warn(`❌ Skipped broken/missing image: ${imgURL}`);
-          })
-      );
-    }
-  });
+          .catch(err => {
+            console.warn(`❌ Failed to load image: ${imgURL}`, err);
+            resolve(); // resolve anyway to allow ZIP creation
+          });
+      } else {
+        img.onload = () => {
+          fetchImageAsBlob(imgURL)
+            .then(blob => {
+              zip.file(`${asin}.${label}.jpg`, blob);
+              resolve();
+            })
+            .catch(err => {
+              console.warn(`❌ Failed after load: ${imgURL}`, err);
+              resolve();
+            });
+        };
+        img.onerror = () => {
+          console.warn(`❌ Broken image: ${imgURL}`);
+          resolve();
+        };
+      }
+    })
+  );
+});
 
-  if (downloadPromises.length === 0) {
-    alert("❌ No valid images to download.");
-    return;
-  }
 
   // Wait for all images to be added
   await Promise.all(downloadPromises);

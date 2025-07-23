@@ -216,28 +216,35 @@ async function generateZipForProduct(product) {
   const total = images.length;
   let completed = 0;
 
-  const downloadPromises = Array.from(images).map(async (img, index) => {
-    const label = getImageLabel(index);
-    const imgURL = img.src;
+  const downloadPromises = Array.from(images).map((img, index) => {
+  const label = getImageLabel(index);
+  const imgURL = img.src;
+
+  return new Promise(async (resolve) => {
+    const timeout = new Promise((res) => setTimeout(res, 5000)); // 5 sec timeout
+    const waitForImage = new Promise((res, rej) => {
+      if (img.complete && img.naturalWidth > 0) {
+        res();
+      } else {
+        img.onload = res;
+        img.onerror = rej;
+      }
+    });
 
     try {
-      // Wait until image is loaded if not yet
-      if (!img.complete || img.naturalWidth === 0) {
-        await new Promise((resolve, reject) => {
-          img.onload = resolve;
-          img.onerror = reject;
-        });
-      }
-
+      await Promise.race([waitForImage, timeout]); // Whichever finishes first
       const blob = await fetchImageAsBlob(imgURL);
       zip.file(`${asin}.${label}.jpg`, blob);
-    } catch (err) {
-      console.warn(`❌ Failed to fetch: ${imgURL}`);
+    } catch (e) {
+      console.warn(`❌ Skipped: ${label} (timeout or error)`);
     }
 
     completed++;
     progressText.textContent = `📷 Processed ${completed} of ${total} images...`;
+    resolve();
   });
+});
+
 
   await Promise.all(downloadPromises);
 

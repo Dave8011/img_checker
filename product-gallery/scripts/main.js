@@ -276,6 +276,14 @@ const controlGroup = document.getElementById('controlGroup');
 menuToggle.addEventListener('click', () => {
   controlGroup.classList.toggle('show');
 });
+    // Mobile search toggle
+const searchToggle = document.getElementById('searchToggle');
+const searchBar = document.getElementById('searchBar');
+
+searchToggle.addEventListener('click', () => {
+  searchBar.classList.toggle('show');
+});
+
     
     // --- Initial render ---
     renderProducts('', '', '');

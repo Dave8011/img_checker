@@ -379,11 +379,7 @@ h1 {
     align-items: center;
   }
 
-  #menuToggle {
-    display: block;
-    margin-top: 10px;
-  }
-
+ 
   #controlGroup {
     display: none; /* hidden by default on mobile */
     flex-direction: column;
@@ -404,11 +400,42 @@ h1 {
     width: 100%;
   }
 
+ 
+/* ===========================
+   Responsive Search Toggle for Mobile
+   =========================== */
+#searchToggle {
+  display: none;
+  font-size: 24px;
+  background: #204ea8;
+  color: white;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+@media screen and (max-width: 768px) {
+  #searchToggle {
+    display: inline-block;
+  }
+
   #searchBar {
+    display: none;
     width: 100%;
-    max-width: none;
+    margin-top: 10px;
+  }
+
+  #searchBar.show {
+    display: block;
+  }
+
+
+  #menuToggle {
+    margin-top: 10px;
   }
 }
+
 
 /* ===========================
    NOTES:

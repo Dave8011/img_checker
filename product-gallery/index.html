@@ -68,13 +68,15 @@
   </div>
 </div>
 
-  <!-- 🔄 ZIP Loading Spinner -->
+<!-- 🔄 ZIP Loading Spinner -->
 <div id="zipLoadingOverlay" class="popup hidden">
   <div class="popup-content">
     <div class="spinner"></div>
     <p style="margin-top: 10px;">Preparing ZIP file, please wait...</p>
+    <p id="zipProgressText" style="font-size: 0.95rem; margin-top: 8px; color: #555;"></p>
   </div>
 </div>
+
 
 <!-- JSZip & main script -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.0/jszip.min.js"></script>

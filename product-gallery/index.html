@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -16,31 +16,30 @@
     Contains search, category filter, and listing type filter
     ARIA labels for accessibility
   -->
-  <div id="controls">
-    <!-- Search bar for filtering products by SKU or Name -->
-    <input type="text" id="searchBar" placeholder="🔍 Search by SKU or Name..." aria-label="Search products by SKU or Name" />
+        <div id="controls">
+        <!-- Always visible: Search bar -->
+        <input type="text" id="searchBar" placeholder="🔍 Search by SKU or Name..." aria-label="Search products by SKU or Name" />
+      
+        <!-- Hamburger menu for mobile -->
+        <div id="menuToggle" aria-label="Toggle Filters/Actions" tabindex="0">
+          ☰
+        </div>
+      
+        <!-- Hidden group: filters + buttons -->
+        <div id="controlGroup">
+          <select id="categoryFilter" aria-label="Filter by category">
+            <option value="">📂 All Categories</option>
+          </select>
+      
+          <select id="listingTypeFilter" aria-label="Filter by listing type">
+            <option value="">🏷️ All Listing Types</option>
+          </select>
+      
+          <button id="downloadMissingBtn">⬇️ Missing IMG</button>
+          <button id="downloadZipBtn">📦 IMG_zip</button>
+        </div>
+      </div>
 
-    <!-- Dropdown for filtering products by category -->
-    <select id="categoryFilter" aria-label="Filter by category">
-      <option value="">📂 All Categories</option>
-    </select>
-
-    <!-- Dropdown for filtering products by listing type -->
-    <select id="listingTypeFilter" aria-label="Filter by listing type">
-      <option value="">🏷️ All Listing Types</option>
-    </select>
-
-     <!-- 🚀 New Button for Missing IMG -->
-    <button id="downloadMissingBtn" style="padding: 10px 18px; border-radius: 30px; background-color: #204ea8; color: white; font-size: 16px; border: none; cursor: pointer;">
-      ⬇️ Missing IMG
-    </button>
-
-    <!-- 📦 New Button for Download ZIP -->
-    <button id="downloadZipBtn" style="padding: 10px 18px; border-radius: 30px; background-color: #2c922c; color: white; font-size: 16px; border: none; cursor: pointer;">
-      📦 IMG_zip
-    </button>
-        
-  </div>
 
   <!-- Gallery: Product cards will be rendered here dynamically -->
   <div id="gallery" role="list" aria-label="Product Gallery"></div>

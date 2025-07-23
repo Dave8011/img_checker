@@ -331,11 +331,15 @@ function showZipPopup() {
 
     // ---- generate ZIP for selected product ----
 async function generateZipForProduct(product) {
+  const zipLoading = document.getElementById('zipLoadingOverlay');
+  zipLoading.classList.remove('hidden'); // 👈 Show loading
+
   const zip = new JSZip();
   const asinMap = await fetch('asin_map_zip.json').then(res => res.json());
   const asinEntry = asinMap.find(entry => entry.sku === product.sku);
   
   if (!asinEntry) {
+    zipLoading.classList.add('hidden'); // 👈 Hide loading
     alert(`❌ No ASIN found for SKU: ${product.sku}`);
     return;
   }
@@ -346,46 +350,54 @@ async function generateZipForProduct(product) {
   );
 
   if (!productEl) {
+    zipLoading.classList.add('hidden'); // 👈 Hide loading
     alert(`⚠️ Product not currently visible on screen.`);
     return;
   }
 
-  images.forEach((img, index) => {
-  const label = getImageLabel(index);
-  const imgURL = img.src;
+  const images = productEl.querySelectorAll('img');
+  const downloadPromises = [];
 
-  downloadPromises.push(
-    new Promise((resolve, reject) => {
-      if (img.complete && img.naturalWidth > 0) {
-        fetchImageAsBlob(imgURL)
-          .then(blob => {
-            zip.file(`${asin}.${label}.jpg`, blob);
-            resolve();
-          })
-          .catch(err => {
-            console.warn(`❌ Failed to load image: ${imgURL}`, err);
-            resolve(); // resolve anyway to allow ZIP creation
-          });
-      } else {
-        img.onload = () => {
+  images.forEach((img, index) => {
+    const label = getImageLabel(index);
+    const imgURL = img.src;
+
+    downloadPromises.push(
+      new Promise((resolve) => {
+        if (img.complete && img.naturalWidth > 0) {
           fetchImageAsBlob(imgURL)
             .then(blob => {
               zip.file(`${asin}.${label}.jpg`, blob);
               resolve();
             })
-            .catch(err => {
-              console.warn(`❌ Failed after load: ${imgURL}`, err);
-              resolve();
-            });
-        };
-        img.onerror = () => {
-          console.warn(`❌ Broken image: ${imgURL}`);
-          resolve();
-        };
-      }
-    })
-  );
-});
+            .catch(() => resolve());
+        } else {
+          img.onload = () => {
+            fetchImageAsBlob(imgURL)
+              .then(blob => {
+                zip.file(`${asin}.${label}.jpg`, blob);
+                resolve();
+              })
+              .catch(() => resolve());
+          };
+          img.onerror = () => resolve();
+        }
+      })
+    );
+  });
+
+  await Promise.all(downloadPromises);
+
+  const zipBlob = await zip.generateAsync({ type: 'blob' });
+  const url = URL.createObjectURL(zipBlob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${asin}_images.zip`;
+  a.click();
+
+  zipLoading.classList.add('hidden'); // 👈 Hide loading
+}
+
 
 
   // Wait for all images to be added

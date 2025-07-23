@@ -1,15 +1,13 @@
-// scripts/main.js
-
 /* ===========================
-   Fetch Product Data and Setup
+   Fetch Product Data
    =========================== */
 fetch(`../products.json?t=${Date.now()}`)
   .then(res => res.json())
   .then(data => {
-    window.productData = data; // Store product data globally for other features (ZIP, etc.)
+    window.productData = data;
 
     /* ===========================
-       Initialize Variables and DOM Elements
+       State & DOM References
        =========================== */
     let currentImages = [];
     let currentIndex = 0;
@@ -24,7 +22,7 @@ fetch(`../products.json?t=${Date.now()}`)
     const emptyState = document.getElementById('emptyState');
 
     /* ===========================
-       Populate Filters from Data
+       Populate Filters
        =========================== */
     const categories = [...new Set(data.map(p => p.category).filter(Boolean))];
     categories.forEach(cat => {
@@ -43,10 +41,11 @@ fetch(`../products.json?t=${Date.now()}`)
     });
 
     /* ===========================
-       Render Product Cards
+       Render Product Gallery
        =========================== */
     function renderProducts(filter = '', category = '', listingType = '') {
       gallery.innerHTML = '';
+
       const filtered = data.filter(p =>
         (p.title.toLowerCase().includes(filter.toLowerCase()) ||
          p.sku.toLowerCase().includes(filter.toLowerCase())) &&
@@ -55,10 +54,8 @@ fetch(`../products.json?t=${Date.now()}`)
       );
 
       if (filtered.length === 0) {
-        emptyState.innerHTML = `
-          <img src="https://cdn.jsdelivr.net/gh/edent/SuperTinyIcons/images/svg/emoji-sad.svg" alt="No Results" width="120" style="margin-bottom:20px;opacity:.7;" />
-          <div style="font-size:1.4rem;color:#888;">No products found. Try adjusting your filter or search terms!</div>
-        `;
+        emptyState.innerHTML = `<img src="https://cdn.jsdelivr.net/gh/edent/SuperTinyIcons/images/svg/emoji-sad.svg" width="120" style="margin-bottom:20px;opacity:.7;" />
+          <div style="font-size:1.4rem;color:#888;">No products found. Try adjusting your filter or search terms!</div>`;
         emptyState.style.display = 'block';
         return;
       } else {
@@ -68,110 +65,72 @@ fetch(`../products.json?t=${Date.now()}`)
       filtered.forEach(product => {
         const div = document.createElement('div');
         div.className = 'product';
-        div.setAttribute('role', 'region');
-        div.setAttribute('aria-label', `${product.title}, SKU ${product.sku}`);
-
         div.innerHTML = `
           <div class="tag-row">
-            ${product.category ? `<div class="category-tag" title="Category">${product.category}</div>` : ''}
-            ${product.listingType ? `<div class="listing-type-tag" title="Listing Type">${product.listingType}</div>` : ''}
+            ${product.category ? `<div class="category-tag">${product.category}</div>` : ''}
+            ${product.listingType ? `<div class="listing-type-tag">${product.listingType}</div>` : ''}
           </div>
           <h2>${product.title} (<code>${product.sku}</code>)</h2>
-          <div class="images" role="list">
-            ${product.images.map((url, index) => `
-              <div class="image-wrapper" tabindex="0" role="listitem">
-                <img src="${url}" data-full="${url}" alt="${product.title} image ${index + 1}" loading="lazy" />
-                <span class="image-number">${getImageLabel(index)}</span>
-              </div>
-            `).join('')}
+          <div class="images">
+            ${product.images.map((url, i) => `
+              <div class="image-wrapper" tabindex="0">
+                <img src="${url}" data-full="${url}" style="width: 200px;" loading="lazy" />
+                <span class="image-number">${getImageLabel(i)}</span>
+              </div>`).join('')}
           </div>
         `;
         gallery.appendChild(div);
       });
 
-      // Setup lightbox events
+      // Lightbox trigger
       document.querySelectorAll('.image-wrapper').forEach(wrapper => {
-        function openLightbox() {
-          const productDiv = wrapper.closest('.product');
+        const productDiv = wrapper.closest('.product');
+        wrapper.addEventListener('click', () => {
           currentImages = Array.from(productDiv.querySelectorAll('img')).map(img => img.dataset.full);
-          const img = wrapper.querySelector('img');
-          currentIndex = currentImages.indexOf(img.dataset.full);
-
+          currentIndex = currentImages.indexOf(wrapper.querySelector('img').dataset.full);
           updateLightboxImage();
           lightbox.classList.remove('hidden');
-          lightboxClose.focus();
-        }
-        wrapper.addEventListener('click', openLightbox);
-        wrapper.addEventListener('keydown', e => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            openLightbox();
-          }
         });
       });
     }
 
+    /* ===========================
+       Lightbox Navigation
+       =========================== */
     function updateLightboxImage() {
       lightboxImg.src = currentImages[currentIndex];
-      lightboxImg.alt = `Image ${currentIndex + 1} of ${currentImages.length}`;
     }
 
-    // Lightbox close events
-    lightboxClose.addEventListener('click', () => lightbox.classList.add('hidden'));
-    lightboxClose.addEventListener('keydown', e => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        lightbox.classList.add('hidden');
-      }
-    });
-
-    // Lightbox navigation via keyboard
+    lightboxClose.onclick = () => lightbox.classList.add('hidden');
     window.addEventListener('keydown', e => {
-      if (!lightbox.classList.contains('hidden')) {
-        if (e.key === 'ArrowLeft' && currentIndex > 0) {
-          currentIndex--;
-          updateLightboxImage();
-        } else if (e.key === 'ArrowRight' && currentIndex < currentImages.length - 1) {
-          currentIndex++;
-          updateLightboxImage();
-        } else if (e.key === 'Escape') {
-          lightbox.classList.add('hidden');
-        }
-      }
+      if (lightbox.classList.contains('hidden')) return;
+      if (e.key === 'ArrowRight') currentIndex = Math.min(currentIndex + 1, currentImages.length - 1);
+      if (e.key === 'ArrowLeft') currentIndex = Math.max(currentIndex - 1, 0);
+      if (e.key === 'Escape') lightbox.classList.add('hidden');
+      updateLightboxImage();
     });
 
-    // Filters & search
-    searchBar.addEventListener('input', () => renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value));
-    categoryFilter.addEventListener('change', () => renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value));
-    listingTypeFilter.addEventListener('change', () => renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value));
-
     /* ===========================
-       Image Labeling Function
+       Helpers
        =========================== */
-    function getImageLabel(index) {
-      if (index === 0) return 'MAIN';
-      return `PT${String(index).padStart(2, '0')}`;
+    function getImageLabel(i) {
+      return i === 0 ? 'MAIN' : `PT${String(i).padStart(2, '0')}`;
     }
 
-    /* ===========================
-       Image Fetch as Blob
-       =========================== */
     function fetchImageAsBlob(url) {
       return fetch(url).then(res => {
-        if (!res.ok) throw new Error('Image fetch failed');
+        if (!res.ok) throw new Error('Fetch failed');
         return res.blob();
       });
     }
 
     /* ===========================
-       ZIP Download Button Setup
+       ZIP Download Logic
        =========================== */
     document.getElementById('downloadZipBtn').addEventListener('click', () => {
       showZipPopup();
     });
 
-    /* ===========================
-       ZIP Popup Logic
-       =========================== */
     let selectedZipProduct = null;
 
     function showZipPopup() {
@@ -179,7 +138,6 @@ fetch(`../products.json?t=${Date.now()}`)
       const searchInput = document.getElementById('zipSearchInput');
       const resultsDiv = document.getElementById('zipSearchResults');
       const confirmBtn = document.getElementById('zipDownloadConfirmBtn');
-      selectedZipProduct = null;
 
       popup.classList.remove('hidden');
       searchInput.value = '';
@@ -195,16 +153,16 @@ fetch(`../products.json?t=${Date.now()}`)
         );
 
         matches.forEach(product => {
-          const item = document.createElement('div');
-          item.className = 'zip-result-item';
-          item.textContent = `${product.title} (${product.sku})`;
-          item.addEventListener('click', () => {
+          const div = document.createElement('div');
+          div.className = 'zip-result-item';
+          div.textContent = `${product.title} (${product.sku})`;
+          div.onclick = () => {
             selectedZipProduct = product;
             confirmBtn.disabled = false;
-            searchInput.value = `${product.title} (${product.sku})`;
+            searchInput.value = div.textContent;
             resultsDiv.innerHTML = '';
-          });
-          resultsDiv.appendChild(item);
+          };
+          resultsDiv.appendChild(div);
         });
       });
 
@@ -220,92 +178,70 @@ fetch(`../products.json?t=${Date.now()}`)
       };
     }
 
-    /* ===========================
-       Generate ZIP File
-       =========================== */
     async function generateZipForProduct(product) {
       const zipLoading = document.getElementById('zipLoadingOverlay');
       const progressText = document.getElementById('zipProgressText');
       zipLoading.classList.remove('hidden');
-      progressText.textContent = 'Starting download...';
+      progressText.textContent = 'Starting...';
 
       const zip = new JSZip();
-      const asinMap = await fetch('asin_map_zip.json').then(res => res.json());
-      const asinEntry = asinMap.find(entry => entry.sku === product.sku);
+      const asinMap = await fetch('asin_map_zip.json').then(r => r.json());
+      const asin = asinMap.find(x => x.sku === product.sku)?.asin;
 
-      if (!asinEntry) {
+      if (!asin) {
+        alert(`ASIN not found for ${product.sku}`);
         zipLoading.classList.add('hidden');
-        alert(`❌ No ASIN found for SKU: ${product.sku}`);
         return;
       }
 
-      const asin = asinEntry.asin;
       const productEl = [...document.querySelectorAll('.product')].find(el =>
         el.querySelector('h2')?.innerText.includes(product.sku)
       );
-
-      if (!productEl) {
-        zipLoading.classList.add('hidden');
-        alert(`⚠️ Product not currently visible on screen.`);
-        return;
-      }
 
       const images = productEl.querySelectorAll('img');
       const total = images.length;
       let completed = 0;
 
-      const downloadPromises = Array.from(images).map((img, index) => {
+      const tasks = Array.from(images).map((img, index) => {
         const label = getImageLabel(index);
-        const imgURL = img.src;
+        const url = img.src;
 
-        return new Promise(resolve => {
-          const onSuccess = (blob) => {
-            zip.file(`${asin}.${label}.jpg`, blob);
+        return fetchImageAsBlob(url)
+          .then(blob => zip.file(`${asin}.${label}.jpg`, blob))
+          .catch(() => null)
+          .finally(() => {
             completed++;
             progressText.textContent = `📷 Downloaded ${completed} of ${total} images...`;
-            resolve();
-          };
-
-          const onFail = () => {
-            completed++;
-            progressText.textContent = `📷 Downloaded ${completed} of ${total} images...`;
-            resolve();
-          };
-
-          if (img.complete && img.naturalWidth > 0) {
-            fetchImageAsBlob(imgURL).then(onSuccess).catch(onFail);
-          } else {
-            img.onload = () => fetchImageAsBlob(imgURL).then(onSuccess).catch(onFail);
-            img.onerror = onFail;
-          }
-        });
+          });
       });
 
-      await Promise.all(downloadPromises);
+      await Promise.all(tasks);
 
-      const zipBlob = await zip.generateAsync({ type: 'blob' });
-      const url = URL.createObjectURL(zipBlob);
+      const blob = await zip.generateAsync({ type: 'blob' });
       const a = document.createElement('a');
-      a.href = url;
+      a.href = URL.createObjectURL(blob);
       a.download = `${asin}_images.zip`;
       a.click();
 
       zipLoading.classList.add('hidden');
-      progressText.textContent = '';
     }
+
+    /* ===========================
+       Search & Filters
+       =========================== */
+    searchBar.addEventListener('input', () => renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value));
+    categoryFilter.addEventListener('change', () => renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value));
+    listingTypeFilter.addEventListener('change', () => renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value));
 
     /* ===========================
        Mobile Menu Toggle
        =========================== */
-    const menuToggle = document.getElementById('menuToggle');
-    const controlGroup = document.getElementById('controlGroup');
-
-    menuToggle.addEventListener('click', () => {
-      controlGroup.classList.toggle('show');
+    document.getElementById('menuToggle').addEventListener('click', () => {
+      document.getElementById('controlGroup').classList.toggle('show');
     });
 
     /* ===========================
-       Initial Page Render
+       Initial Render
        =========================== */
-    renderProducts('', '', '');
+    renderProducts();
   });

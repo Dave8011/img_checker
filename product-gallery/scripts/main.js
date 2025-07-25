@@ -259,6 +259,113 @@ progressText.textContent = '✅ All images processed. Generating ZIP...';
   zipLoading.classList.add('hidden');
 }
 
+
+     /* ===========================
+   Missing Image CSV Logic
+   =========================== */
+document.getElementById('downloadMissingBtn').addEventListener('click', () => {
+  // Show overlay loader
+  const overlay = document.getElementById('missingLoadingOverlay');
+  const progressText = document.getElementById('missingProgressText');
+  overlay.classList.remove('hidden');
+  progressText.textContent = 'Waiting for all images to load...';
+
+  const products = document.querySelectorAll('.product');
+  const missingImagesData = [];
+
+  const allImages = document.querySelectorAll('.product img');
+  const total = allImages.length;
+  let loaded = 0;
+
+  // Wait until all images are fully loaded or errored
+  allImages.forEach(img => {
+    if (img.complete) {
+      loaded++;
+    } else {
+      img.addEventListener('load', onImageEvent);
+      img.addEventListener('error', onImageEvent);
+    }
+  });
+
+  // If already loaded
+  if (loaded === total) {
+    checkMissing();
+  }
+
+  // Image load or error handler
+  function onImageEvent() {
+    loaded++;
+    progressText.textContent = `Loading images: ${loaded} / ${total}`;
+    if (loaded === total) {
+      checkMissing();
+    }
+  }
+
+  // Main logic to check and generate missing image CSV
+  function checkMissing() {
+    progressText.textContent = `🔍 Checking for missing images...`;
+
+    products.forEach(productEl => {
+      // Extract SKU from h2
+      const titleText = productEl.querySelector('h2')?.innerText || '';
+      const skuMatch = titleText.match(/\(([^)]+)\)/);
+      const sku = skuMatch ? skuMatch[1] : '';
+      const title = titleText.replace(/\s*\([^)]+\)/, '');
+
+      // Category & listingType tags
+      const category = productEl.querySelector('.category-tag')?.textContent?.trim() || '';
+      const listingType = productEl.querySelector('.listing-type-tag')?.textContent?.trim() || '';
+
+      const imageElements = productEl.querySelectorAll('img');
+      const missingNumbers = [];
+
+      imageElements.forEach((img, index) => {
+        // Check if image failed to load
+        if (!img.complete || img.naturalWidth === 0) {
+          missingNumbers.push(index + 1); // 1-based indexing
+        }
+      });
+
+      if (missingNumbers.length > 0) {
+        missingImagesData.push({
+          sku,
+          title,
+          category,
+          listingType,
+          missingImageNumbers: missingNumbers.join(', ')
+        });
+      }
+    });
+
+    // Hide overlay
+    overlay.classList.add('hidden');
+
+    // If everything is fine
+    if (missingImagesData.length === 0) {
+      alert("✅ No missing images found!");
+      return;
+    }
+
+    // Build CSV content
+    const csvHeader = 'sku,title,category,listingType,missingImageNumbers\n';
+    const csvRows = missingImagesData.map(item =>
+      `${item.sku},"${item.title.replace(/"/g, '""')}",${item.category},${item.listingType},"${item.missingImageNumbers}"`
+    );
+    const csvContent = csvHeader + csvRows.join('\n');
+
+    // Trigger download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'missing_images_report.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+});
+
+
     /* ===========================
        Search & Filters
        =========================== */

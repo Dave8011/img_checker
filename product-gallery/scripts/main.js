@@ -274,7 +274,7 @@ document.getElementById('downloadMissingBtn').addEventListener('click', async ()
   let totalChecked = 0;
   const totalImages = products.reduce((sum, p) => sum + p.images.length, 0);
 
-  // ✅ Faster and more accurate image existence check using fetch HEAD
+  // ✅ Accurate image existence check without downloading image
   function checkImageURL(url, timeout = 5000) {
     return new Promise((resolve) => {
       const controller = new AbortController();
@@ -282,16 +282,17 @@ document.getElementById('downloadMissingBtn').addEventListener('click', async ()
 
       fetch(url, {
         method: 'HEAD',
-        mode: 'no-cors',
-        signal: controller.signal
+        signal: controller.signal,
+        mode: 'cors' // use 'cors' if you control the image host; otherwise use 'no-cors'
       })
-        .then(() => {
+        .then(response => {
           clearTimeout(timer);
-          resolve(true); // Assume success if no network error
+          // Only return true if status is 200 (OK)
+          resolve(response.ok);
         })
         .catch(() => {
           clearTimeout(timer);
-          resolve(false); // Treat as missing if any error or timeout
+          resolve(false);
         });
     });
   }
@@ -305,11 +306,11 @@ document.getElementById('downloadMissingBtn').addEventListener('click', async ()
       const label = getImageLabel(index); // MAIN, PT01, PT02...
 
       allChecks.push(
-        checkImageURL(url).then(ok => {
+        checkImageURL(url).then(exists => {
           totalChecked++;
           progressText.textContent = `🖼️ Checked ${totalChecked} of ${totalImages} images...`;
 
-          if (!ok) {
+          if (!exists) {
             if (!missingMap.has(sku)) {
               missingMap.set(sku, {
                 sku,
@@ -334,7 +335,7 @@ document.getElementById('downloadMissingBtn').addEventListener('click', async ()
     return;
   }
 
-  // 🧾 Generate CSV content
+  // 🧾 Create CSV
   const csvHeader = 'sku,title,category,listingType,missingImageLabels\n';
   const csvRows = Array.from(missingMap.values()).map(item =>
     `${item.sku},"${item.title.replace(/"/g, '""')}",${item.category},${item.listingType},"${item.labels.join(', ')}"`

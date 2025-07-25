@@ -311,7 +311,7 @@ document.getElementById('downloadMissingBtn').addEventListener('click', async ()
 
   // ✅ Accurate image existence check without downloading the full image
  // ✅ More reliable image check using <img> element
-function checkImageURL(url, timeout = 10000) {
+function checkImageURL(url, timeout = 20000) {
   return new Promise((resolve) => {
     const img = new Image();
     let done = false;

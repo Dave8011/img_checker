@@ -80,7 +80,38 @@ fetch(`../products.json?t=${Date.now()}`)
           </div>
         `;
         gallery.appendChild(div);
-      });
+      });function checkImageURL(url, timeout = 10000) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    let completed = false;
+
+    const timer = setTimeout(() => {
+      if (!completed) {
+        completed = true;
+        resolve(false); // Timeout → failed
+      }
+    }, timeout);
+
+    img.onload = () => {
+      if (!completed) {
+        completed = true;
+        clearTimeout(timer);
+        resolve(true); // Image loaded
+      }
+    };
+
+    img.onerror = () => {
+      if (!completed) {
+        completed = true;
+        clearTimeout(timer);
+        resolve(false); // Image failed to load
+      }
+    };
+
+    img.src = url;
+  });
+}
+
 
       // Lightbox trigger
       document.querySelectorAll('.image-wrapper').forEach(wrapper => {
@@ -279,26 +310,39 @@ document.getElementById('downloadMissingBtn').addEventListener('click', async ()
   }
 
   // ✅ Accurate image existence check without downloading the full image
-  function checkImageURL(url, timeout = 50000) {
-    return new Promise((resolve) => {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), timeout);
+ // ✅ More reliable image check using <img> element
+function checkImageURL(url, timeout = 10000) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    let done = false;
 
-      fetch(url, {
-        method: 'HEAD',
-        signal: controller.signal,
-        mode: 'cors' // 'cors' for same-origin or CORS-enabled CDNs
-      })
-        .then(response => {
-          clearTimeout(timer);
-          resolve(response.ok); // 200–299 = true, others = false
-        })
-        .catch(() => {
-          clearTimeout(timer);
-          resolve(false); // Fail on timeout, abort, or network error
-        });
-    });
-  }
+    const timer = setTimeout(() => {
+      if (!done) {
+        done = true;
+        resolve(false); // Timed out = failed
+      }
+    }, timeout);
+
+    img.onload = () => {
+      if (!done) {
+        done = true;
+        clearTimeout(timer);
+        resolve(true); // Loaded successfully
+      }
+    };
+
+    img.onerror = () => {
+      if (!done) {
+        done = true;
+        clearTimeout(timer);
+        resolve(false); // Failed to load
+      }
+    };
+
+    img.src = url;
+  });
+}
+
 
   const allChecks = [];
 

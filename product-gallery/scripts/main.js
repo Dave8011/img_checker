@@ -269,13 +269,17 @@ document.getElementById('downloadMissingBtn').addEventListener('click', async ()
   progressText.textContent = '🔍 Checking image URLs...';
 
   const missingMap = new Map(); // Map SKU → { title, category, listingType, labels[] }
-
   const products = window.productData;
   let totalChecked = 0;
   const totalImages = products.reduce((sum, p) => sum + p.images.length, 0);
 
-  // ✅ Accurate image existence check without downloading image
-  function checkImageURL(url, timeout = 5000) {
+  // Utility: Wait for a bit to stagger fetches
+  function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  // ✅ Accurate image existence check without downloading the full image
+  function checkImageURL(url, timeout = 10000) {
     return new Promise((resolve) => {
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), timeout);
@@ -283,16 +287,15 @@ document.getElementById('downloadMissingBtn').addEventListener('click', async ()
       fetch(url, {
         method: 'HEAD',
         signal: controller.signal,
-        mode: 'cors' // use 'cors' if you control the image host; otherwise use 'no-cors'
+        mode: 'cors' // 'cors' for same-origin or CORS-enabled CDNs
       })
         .then(response => {
           clearTimeout(timer);
-          // Only return true if status is 200 (OK)
-          resolve(response.ok);
+          resolve(response.ok); // 200–299 = true, others = false
         })
         .catch(() => {
           clearTimeout(timer);
-          resolve(false);
+          resolve(false); // Fail on timeout, abort, or network error
         });
     });
   }
@@ -306,7 +309,7 @@ document.getElementById('downloadMissingBtn').addEventListener('click', async ()
       const label = getImageLabel(index); // MAIN, PT01, PT02...
 
       allChecks.push(
-        checkImageURL(url).then(exists => {
+        delay(index * 50).then(() => checkImageURL(url).then(exists => {
           totalChecked++;
           progressText.textContent = `🖼️ Checked ${totalChecked} of ${totalImages} images...`;
 
@@ -322,7 +325,7 @@ document.getElementById('downloadMissingBtn').addEventListener('click', async ()
             }
             missingMap.get(sku).labels.push(label);
           }
-        })
+        }))
       );
     });
   }
@@ -335,7 +338,7 @@ document.getElementById('downloadMissingBtn').addEventListener('click', async ()
     return;
   }
 
-  // 🧾 Create CSV
+  // 🧾 Generate CSV content
   const csvHeader = 'sku,title,category,listingType,missingImageLabels\n';
   const csvRows = Array.from(missingMap.values()).map(item =>
     `${item.sku},"${item.title.replace(/"/g, '""')}",${item.category},${item.listingType},"${item.labels.join(', ')}"`
@@ -351,7 +354,6 @@ document.getElementById('downloadMissingBtn').addEventListener('click', async ()
   a.click();
   document.body.removeChild(a);
 });
-
 
     /* ===========================
        Search & Filters

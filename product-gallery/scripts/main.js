@@ -260,17 +260,17 @@ progressText.textContent = '✅ All images processed. Generating ZIP...';
 }
 
 
-     /* ===========================
-   Missing Image CSV Logic
+/* ===========================
+   Missing Image CSV Logic (Grouped by Product)
    =========================== */
-
 document.getElementById('downloadMissingBtn').addEventListener('click', async () => {
   const overlay = document.getElementById('missingLoadingOverlay');
   const progressText = document.getElementById('missingProgressText');
   overlay.classList.remove('hidden');
   progressText.textContent = '🔍 Checking image URLs...';
 
-  const missingImagesData = [];
+  const missingMap = new Map(); // Map SKU → { title, category, listingType, labels[] }
+
   const products = window.productData;
   let totalChecked = 0;
   const totalImages = products.reduce((sum, p) => sum + p.images.length, 0);
@@ -283,7 +283,7 @@ document.getElementById('downloadMissingBtn').addEventListener('click', async ()
       const timer = setTimeout(() => {
         if (!done) {
           done = true;
-          resolve(false); // timeout = failure
+          resolve(false);
         }
       }, timeout);
 
@@ -309,25 +309,27 @@ document.getElementById('downloadMissingBtn').addEventListener('click', async ()
   const allChecks = [];
 
   for (const product of products) {
-    const sku = product.sku;
-    const title = product.title;
-    const category = product.category || '';
-    const listingType = product.listingType || '';
+    const { sku, title, category = '', listingType = '', images } = product;
 
-    product.images.forEach((url, index) => {
-      const label = getImageLabel(index); // e.g. MAIN, PT01...
+    images.forEach((url, index) => {
+      const label = getImageLabel(index); // MAIN, PT01, PT02...
+
       allChecks.push(
         checkImageURL(url).then(ok => {
           totalChecked++;
           progressText.textContent = `🖼️ Checked ${totalChecked} of ${totalImages} images...`;
+
           if (!ok) {
-            missingImagesData.push({
-              sku,
-              title,
-              category,
-              listingType,
-              label
-            });
+            if (!missingMap.has(sku)) {
+              missingMap.set(sku, {
+                sku,
+                title,
+                category,
+                listingType,
+                labels: []
+              });
+            }
+            missingMap.get(sku).labels.push(label);
           }
         })
       );
@@ -335,18 +337,17 @@ document.getElementById('downloadMissingBtn').addEventListener('click', async ()
   }
 
   await Promise.allSettled(allChecks);
-
   overlay.classList.add('hidden');
 
-  if (missingImagesData.length === 0) {
+  if (missingMap.size === 0) {
     alert("✅ No missing images found!");
     return;
   }
 
   // Generate CSV content
-  const csvHeader = 'sku,title,category,listingType,missingImageLabel\n';
-  const csvRows = missingImagesData.map(item =>
-    `${item.sku},"${item.title.replace(/"/g, '""')}",${item.category},${item.listingType},${item.label}`
+  const csvHeader = 'sku,title,category,listingType,missingImageLabels\n';
+  const csvRows = Array.from(missingMap.values()).map(item =>
+    `${item.sku},"${item.title.replace(/"/g, '""')}",${item.category},${item.listingType},"${item.labels.join(', ')}"`
   );
 
   const csvContent = csvHeader + csvRows.join('\n');
@@ -359,6 +360,7 @@ document.getElementById('downloadMissingBtn').addEventListener('click', async ()
   a.click();
   document.body.removeChild(a);
 });
+
 
 
 

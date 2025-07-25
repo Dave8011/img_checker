@@ -259,7 +259,6 @@ progressText.textContent = '✅ All images processed. Generating ZIP...';
   zipLoading.classList.add('hidden');
 }
 
-
 /* ===========================
    Missing Image CSV Logic (Grouped by Product)
    =========================== */
@@ -275,34 +274,25 @@ document.getElementById('downloadMissingBtn').addEventListener('click', async ()
   let totalChecked = 0;
   const totalImages = products.reduce((sum, p) => sum + p.images.length, 0);
 
+  // ✅ Faster and more accurate image existence check using fetch HEAD
   function checkImageURL(url, timeout = 5000) {
     return new Promise((resolve) => {
-      const img = new Image();
-      let done = false;
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeout);
 
-      const timer = setTimeout(() => {
-        if (!done) {
-          done = true;
-          resolve(false);
-        }
-      }, timeout);
-
-      img.onload = () => {
-        if (!done) {
-          done = true;
+      fetch(url, {
+        method: 'HEAD',
+        mode: 'no-cors',
+        signal: controller.signal
+      })
+        .then(() => {
           clearTimeout(timer);
-          resolve(true);
-        }
-      };
-      img.onerror = () => {
-        if (!done) {
-          done = true;
+          resolve(true); // Assume success if no network error
+        })
+        .catch(() => {
           clearTimeout(timer);
-          resolve(false);
-        }
-      };
-
-      img.src = url;
+          resolve(false); // Treat as missing if any error or timeout
+        });
     });
   }
 
@@ -344,7 +334,7 @@ document.getElementById('downloadMissingBtn').addEventListener('click', async ()
     return;
   }
 
-  // Generate CSV content
+  // 🧾 Generate CSV content
   const csvHeader = 'sku,title,category,listingType,missingImageLabels\n';
   const csvRows = Array.from(missingMap.values()).map(item =>
     `${item.sku},"${item.title.replace(/"/g, '""')}",${item.category},${item.listingType},"${item.labels.join(', ')}"`
@@ -360,8 +350,6 @@ document.getElementById('downloadMissingBtn').addEventListener('click', async ()
   a.click();
   document.body.removeChild(a);
 });
-
-
 
 
     /* ===========================

@@ -56,6 +56,20 @@ Top search — visually prominent
   margin-bottom: 30px;
   padding: 15px 0;
 }
+   #controlGroup {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+#controlGroup select,
+#controlGroup button {
+  padding: 8px 12px;
+  font-size: 0.95rem;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background: #fff;
+}
 
 /* ===========================
    Inputs and Dropdowns

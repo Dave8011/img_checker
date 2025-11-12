@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>🛍️ Product Gallery</title>
-  
+
   <!-- 💅 Main CSS -->
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -18,7 +18,7 @@
   <div id="controls">
     <!-- 🔍 Search Input (Visible on all screens) -->
     <input type="text" id="searchBar" placeholder="🔍 Search by SKU or Name..." aria-label="Search products by SKU or Name" />
-    
+
     <!-- ☰ Hamburger Menu for Mobile -->
     <div id="menuToggle" aria-label="Toggle Filters/Actions" tabindex="0">☰</div>
 
@@ -48,7 +48,7 @@
   <!-- ===========================
        🔍 Lightbox Viewer
        =========================== -->
-  <div id="lightbox" class="lightbox hidden" aria-modal="true" role="dialog" aria-label="Image viewer">
+  <div id="lightbox" class="lightbox hidden" aria-modal="true" role="dialog" aria-label="Image viewer" aria-hidden="true">
     <span id="lightbox-close" aria-label="Close image viewer" tabindex="0" role="button">&times;</span>
     <img id="lightbox-img" src="" alt="Enlarged Image">
   </div>
@@ -56,11 +56,11 @@
   <!-- ===========================
        📦 ZIP Search & Confirm Popup
        =========================== -->
-  <div id="zipPopup" class="popup hidden">
+  <div id="zipPopup" class="popup hidden" role="dialog" aria-modal="true" aria-hidden="true">
     <div class="popup-content">
       <h3>🔍 Search Product to ZIP</h3>
-      <input type="text" id="zipSearchInput" placeholder="Search by SKU or Name..." />
-      <div id="zipSearchResults" class="zip-results"></div>
+      <input type="text" id="zipSearchInput" placeholder="Search by SKU or Name..." aria-label="Search product for ZIP" />
+      <div id="zipSearchResults" class="zip-results" role="listbox"></div>
       <button id="zipDownloadConfirmBtn" disabled>⬇️ Download ZIP</button>
       <button id="zipPopupCloseBtn">❌ Cancel</button>
     </div>
@@ -69,9 +69,9 @@
   <!-- ===========================
        🔄 ZIP Loading Overlay
        =========================== -->
-  <div id="zipLoadingOverlay" class="popup hidden">
+  <div id="zipLoadingOverlay" class="popup hidden" aria-hidden="true">
     <div class="popup-content">
-      <div class="spinner"></div>
+      <div class="spinner" aria-hidden="true"></div>
       <p style="margin-top: 10px;">Preparing ZIP file, please wait...</p>
       <p id="zipProgressText" style="font-size: 0.95rem; margin-top: 8px; color: #555;"></p>
     </div>
@@ -80,15 +80,14 @@
   <!-- ===========================
      ⏳ Missing Image Loading Overlay
      =========================== -->
-<div id="missingLoadingOverlay" class="popup hidden">
-  <div class="popup-content">
-    <div class="spinner"></div>
-    <p style="margin-top: 10px;">Checking for missing images...</p>
-    <p id="missingProgressText" style="font-size: 0.95rem; margin-top: 8px; color: #555;"></p>
+  <div id="missingLoadingOverlay" class="popup hidden" aria-hidden="true">
+    <div class="popup-content">
+      <div class="spinner" aria-hidden="true"></div>
+      <p style="margin-top: 10px;">Checking for missing images...</p>
+      <p id="missingProgressText" style="font-size: 0.95rem; margin-top: 8px; color: #555;"></p>
+    </div>
   </div>
-</div>
-  
-  
+
   <!-- ===========================
        📜 Scripts
        =========================== -->

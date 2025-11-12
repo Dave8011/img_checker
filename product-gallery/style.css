@@ -41,7 +41,7 @@ h1 {
 /* ===========================
    Inputs and Dropdowns
    =========================== */
-#searchBar, #categoryFilter, #listingTypeFilter {
+#searchBar, #categoryFilter, #listingTypeFilter, #packagingTypeFilter {
   padding: 12px 20px;
   font-size: 16px;
   border-radius: 30px;
@@ -55,7 +55,7 @@ h1 {
   max-width: 500px;
 }
 
-#categoryFilter, #listingTypeFilter {
+#categoryFilter, #listingTypeFilter, #packagingTypeFilter {
   background: #fff;
   cursor: pointer;
 }
@@ -153,6 +153,32 @@ h1 {
 }
 .listing-type-tag::before {
   content: "🏷️";
+  margin-right: 6px;
+  font-size: 1.07em;
+}
+
+/* ===========================
+   Packaging Type Tag
+   =========================== */
+.packaging-type-tag {
+  display: flex;
+  align-items: center;
+  background: #f7fdf7;
+  color: #2c922c;
+  font-size: 0.93rem;
+  font-weight: 400;
+  border-radius: 99px;
+  padding: 2.5px 12px 2.5px 8px;
+  border: 1.3px solid #2c922c;
+  letter-spacing: 0.01em;
+  min-width: 0;
+  max-width: 140px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.packaging-type-tag::before {
+  content: "📦";
   margin-right: 6px;
   font-size: 1.07em;
 }
@@ -399,6 +425,7 @@ h1 {
 
   #categoryFilter,
   #listingTypeFilter,
+  #packagingTypeFilter,
   #controlGroup button {
     width: 100%;
   }

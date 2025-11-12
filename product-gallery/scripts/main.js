@@ -448,70 +448,116 @@
     return sanitizeFilename(`${asin}_images.zip`);
   }
 
+  // Improved zip generation:
+  // - Use direct fetch of images (don't require DOM image objects)
+  // - Better filename formatting: <asin>_<label>.jpg
+  // - Check for JSZip being available and report helpful error
   async function generateZipForProduct(product) {
     if (!product) return;
-    zipLoadingOverlay.classList.remove('hidden');
-    zipProgressText.textContent = 'Initializing...';
-    zipProgressBar?.setAttribute('value', '0');
+    if (typeof window.JSZip === 'undefined') {
+      alert('❌ JSZip is not available. Make sure JSZip is loaded on the page (window.JSZip).');
+      return;
+    }
+
+    zipLoadingOverlay?.classList.remove('hidden');
+    zipProgressText && (zipProgressText.textContent = 'Initializing...');
+    if (zipProgressBar) zipProgressBar.value = 0;
 
     // load cached asin map
     const map = await loadAsinMap();
     const entry = map.find(e => String(e.sku || '') === String(product.sku || ''));
 
     if (!entry || !entry.asin) {
-      zipLoadingOverlay.classList.add('hidden');
+      zipLoadingOverlay?.classList.add('hidden');
       alert(`❌ No ASIN found for SKU: ${product.sku}`);
       return;
     }
     const asin = entry.asin;
-    const images = product.images.map((url, index) => ({
-  dataset: { full: url },
-  src: url
-}));
+    const images = product.images || [];
 
-    const total = images.length;
+    const total = images.length || 0;
     let completed = 0;
 
     const zip = new JSZip();
 
-    // Process images sequentially-ish but allow concurrency to speed up (limit concurrency)
-    const concurrency = 4;
-    const queue = images.map((img, index) => ({ img, index }));
-    async function worker() {
-      while (queue.length) {
-        const item = queue.shift();
-        const { img, index } = item;
-        const label = getImageLabel(index);
-        const imgURL = img.dataset.full || img.src;
-
-        zipProgressText.textContent = `Checking ${label}... (${completed}/${total})`;
-        try {
-          // Wait for image to be available in browser cache if possible
-          await waitForImageComplete(img, 5000).catch(() => null);
-          // fetch as blob (not HEAD because we need the image content)
-          const blob = await fetchWithTimeout(imgURL, 20000).then(res => res.blob());
-          // Add to zip with sanitized filename
-          zip.file(`${sanitizeFilename(asin)}.${sanitizeFilename(label)}.jpg`, blob);
-        } catch (err) {
-          console.warn('Skipped image', label, err);
+    // helper to fetch image blob with retries and timeout
+    async function fetchImageBlob(url, timeout = 20000, retries = 1) {
+      try {
+        const res = await fetchWithTimeout(url, timeout);
+        return await res.blob();
+      } catch (err) {
+        if (retries > 0) {
+          // small delay then retry once
+          await new Promise(r => setTimeout(r, 300));
+          return fetchImageBlob(url, timeout, retries - 1);
         }
-        completed++;
-        // update UI
-        if (zipProgressBar) zipProgressBar.value = Math.round((completed / total) * 100);
-        zipProgressText.textContent = `Processed ${completed} of ${total} images...`;
+        throw err;
+      }
+    }
+
+    // sequential-ish processing with limited concurrency
+    const concurrency = 4;
+    let index = 0;
+    async function worker() {
+      while (true) {
+        let i;
+        // critical section
+        if (index >= total) break;
+        i = index++;
+        const url = images[i];
+        const label = getImageLabel(i);
+        try {
+          zipProgressText && (zipProgressText.textContent = `Fetching ${label} (${i + 1}/${total})`);
+          let blob = null;
+          try {
+            blob = await fetchImageBlob(url, 20000, 1);
+          } catch (err) {
+            // last resort: attempt to load via an Image and convert to canvas (CORS will block this usually)
+            console.warn(`Fetch failed for ${url} - skipping image.`, err);
+            blob = null;
+          }
+
+          if (blob) {
+            // Create filename: <asin>_<label>.<ext> (try to infer extension)
+            let ext = 'jpg';
+            try {
+              const type = blob.type || '';
+              if (type && type.includes('/')) {
+                const parts = type.split('/');
+                ext = parts[1].split('+')[0] || ext;
+              } else {
+                // try to infer from URL
+                const m = url.match(/\.([a-z0-9]{2,5})(?:\?|$)/i);
+                if (m) ext = m[1];
+              }
+            } catch (e) {
+              ext = 'jpg';
+            }
+            const filename = `${sanitizeFilename(asin)}_${sanitizeFilename(label)}.${sanitizeFilename(ext)}`;
+            zip.file(filename, blob);
+          } else {
+            console.warn('Skipped adding to zip because no blob', url);
+          }
+        } catch (err) {
+          console.warn('Error processing image for zip', err);
+        } finally {
+          completed++;
+          if (zipProgressBar) zipProgressBar.value = Math.round((completed / Math.max(1, total)) * 100);
+          zipProgressText && (zipProgressText.textContent = `Processed ${completed} of ${total} images...`);
+        }
       }
     }
 
     // spawn workers
-    const workers = Array.from({ length: Math.min(concurrency, total) }).map(worker);
+    const workers = Array.from({ length: Math.min(concurrency, Math.max(1, total)) }, worker);
     await Promise.all(workers);
 
-    zipProgressText.textContent = 'Generating ZIP...';
+    zipProgressText && (zipProgressText.textContent = 'Generating ZIP...');
 
     try {
       const zipBlob = await zip.generateAsync({ type: 'blob' }, (meta) => {
         if (zipProgressBar) zipProgressBar.value = Math.round(meta.percent);
-        zipProgressText.textContent = `Compressing... ${Math.round(meta.percent)}%`;
+        zipProgressText && (zipProgressText.textContent = `Compressing... ${Math.round(meta.percent)}%`);
       });
 
       const url = URL.createObjectURL(zipBlob);
@@ -519,15 +565,19 @@
       a.href = url;
       a.download = makeZipFilename(asin);
       document.body.appendChild(a);
+      // Make click and then revoke after a short delay to ensure browser has started the download
       a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-      zipProgressText.textContent = '✅ Done';
+      setTimeout(() => {
+        a.remove();
+        URL.revokeObjectURL(url);
+      }, 1500);
+
+      zipProgressText && (zipProgressText.textContent = '✅ Done');
     } catch (err) {
       console.error('ZIP generation failed', err);
       alert('❌ ZIP generation failed. See console for details.');
     } finally {
-      setTimeout(() => zipLoadingOverlay.classList.add('hidden'), 600);
+      setTimeout(() => zipLoadingOverlay?.classList.add('hidden'), 600);
     }
   }
 

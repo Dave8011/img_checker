@@ -22,25 +22,6 @@ h1 {
   text-shadow: 1px 1px 1px #ccc;
 }
 
-   /* =========================== 
-Top search — visually prominent
-    =========================== */ 
-
-#topSearch {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  margin-bottom: 10px;
-}
-#topSearch input#searchBar {
-  width: 100%;
-  max-width: 960px;
-  padding: 10px 14px;
-  font-size: 1rem;
-  border-radius: 8px;
-  border: 1px solid #ddd;
-  box-shadow: 0 1px 0 rgba(0,0,0,0.02);
-
 /* ===========================
    Sticky Filter Bar
    =========================== */
@@ -55,20 +36,6 @@ Top search — visually prominent
   gap: 15px;
   margin-bottom: 30px;
   padding: 15px 0;
-}
-   #controlGroup {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  align-items: center;
-}
-#controlGroup select,
-#controlGroup button {
-  padding: 8px 12px;
-  font-size: 0.95rem;
-  border-radius: 8px;
-  border: 1px solid #ddd;
-  background: #fff;
 }
 
 /* ===========================

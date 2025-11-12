@@ -13,16 +13,27 @@
   <!-- ===========================
        🛍️ Page Header & Search
        =========================== -->
-  <h1>🛍️ Product Gallery</h1>
+  <h1 id="pageTitle">🛍️ Product Gallery</h1>
 
   <div id="controls">
-    <!-- 🔍 Search Input (Visible on all screens) -->
-    <input type="text" id="searchBar" placeholder="🔍 Search by SKU or Name..." aria-label="Search products by SKU or Name" />
-    
-    <!-- ☰ Hamburger Menu for Mobile -->
-    <div id="menuToggle" aria-label="Toggle Filters/Actions" tabindex="0">☰</div>
+    <!-- 🔍 Search Input -->
+    <input 
+      type="text" 
+      id="searchBar" 
+      placeholder="🔍 Search by SKU or Name..." 
+      aria-label="Search products by SKU or Name" 
+    />
 
-    <!-- 🎛️ Hidden Filter/Button Group (Toggled on mobile) -->
+    <!-- ☰ Hamburger Menu for Mobile -->
+    <div 
+      id="menuToggle" 
+      aria-label="Toggle Filters/Actions" 
+      aria-expanded="false" 
+      tabindex="0" 
+      role="button"
+    >☰</div>
+
+    <!-- 🎛️ Hidden Filter/Button Group -->
     <div id="controlGroup">
       <select id="categoryFilter" aria-label="Filter by category">
         <option value="">📂 All Categories</option>
@@ -32,8 +43,8 @@
         <option value="">🏷️ All Listing Types</option>
       </select>
 
-      <button id="downloadMissingBtn">⬇️ Missing IMG</button>
-      <button id="downloadZipBtn">📦 IMG_zip</button>
+      <button id="downloadMissingBtn" type="button">⬇️ Missing IMG</button>
+      <button id="downloadZipBtn" type="button">📦 IMG_zip</button>
     </div>
   </div>
 
@@ -43,33 +54,65 @@
   <div id="gallery" role="list" aria-label="Product Gallery"></div>
 
   <!-- 📭 Empty State -->
-  <div id="emptyState" style="display:none; text-align:center; margin-top:40px;" aria-live="polite"></div>
+  <div 
+    id="emptyState" 
+    style="display:none; text-align:center; margin-top:40px;" 
+    aria-live="polite"
+  ></div>
 
   <!-- ===========================
        🔍 Lightbox Viewer
        =========================== -->
-  <div id="lightbox" class="lightbox hidden" aria-modal="true" role="dialog" aria-label="Image viewer">
-    <span id="lightbox-close" aria-label="Close image viewer" tabindex="0" role="button">&times;</span>
-    <img id="lightbox-img" src="" alt="Enlarged Image">
+  <div 
+    id="lightbox" 
+    class="lightbox hidden" 
+    role="dialog" 
+    aria-modal="true" 
+    aria-label="Image viewer"
+    tabindex="-1"
+  >
+    <span 
+      id="lightbox-close" 
+      aria-label="Close image viewer" 
+      tabindex="0" 
+      role="button"
+    >&times;</span>
+    <img id="lightbox-img" src="" alt="Enlarged product image" />
   </div>
 
   <!-- ===========================
        📦 ZIP Search & Confirm Popup
        =========================== -->
-  <div id="zipPopup" class="popup hidden">
+  <div 
+    id="zipPopup" 
+    class="popup hidden" 
+    role="dialog" 
+    aria-modal="true" 
+    aria-labelledby="zipPopupTitle"
+    tabindex="-1"
+  >
     <div class="popup-content">
-      <h3>🔍 Search Product to ZIP</h3>
+      <h3 id="zipPopupTitle">🔍 Search Product to ZIP</h3>
       <input type="text" id="zipSearchInput" placeholder="Search by SKU or Name..." />
       <div id="zipSearchResults" class="zip-results"></div>
-      <button id="zipDownloadConfirmBtn" disabled>⬇️ Download ZIP</button>
-      <button id="zipPopupCloseBtn">❌ Cancel</button>
+      <div class="popup-buttons">
+        <button id="zipDownloadConfirmBtn" type="button" disabled>⬇️ Download ZIP</button>
+        <button id="zipPopupCloseBtn" type="button">❌ Cancel</button>
+      </div>
     </div>
   </div>
 
   <!-- ===========================
        🔄 ZIP Loading Overlay
        =========================== -->
-  <div id="zipLoadingOverlay" class="popup hidden">
+  <div 
+    id="zipLoadingOverlay" 
+    class="popup hidden" 
+    role="dialog" 
+    aria-modal="true" 
+    aria-labelledby="zipProgressText"
+    tabindex="-1"
+  >
     <div class="popup-content">
       <div class="spinner"></div>
       <p style="margin-top: 10px;">Preparing ZIP file, please wait...</p>
@@ -78,22 +121,28 @@
   </div>
 
   <!-- ===========================
-     ⏳ Missing Image Loading Overlay
-     =========================== -->
-<div id="missingLoadingOverlay" class="popup hidden">
-  <div class="popup-content">
-    <div class="spinner"></div>
-    <p style="margin-top: 10px;">Checking for missing images...</p>
-    <p id="missingProgressText" style="font-size: 0.95rem; margin-top: 8px; color: #555;"></p>
+       ⏳ Missing Image Loading Overlay
+       =========================== -->
+  <div 
+    id="missingLoadingOverlay" 
+    class="popup hidden" 
+    role="dialog" 
+    aria-modal="true" 
+    aria-labelledby="missingProgressText"
+    tabindex="-1"
+  >
+    <div class="popup-content">
+      <div class="spinner"></div>
+      <p style="margin-top: 10px;">Checking for missing images...</p>
+      <p id="missingProgressText" style="font-size: 0.95rem; margin-top: 8px; color: #555;"></p>
+    </div>
   </div>
-</div>
-  
-  
+
   <!-- ===========================
        📜 Scripts
        =========================== -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.0/jszip.min.js"></script>
-  <script type="module" src="scripts/main.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.0/jszip.min.js" defer></script>
+  <script type="module" src="scripts/main.js" defer></script>
 
 </body>
 </html>

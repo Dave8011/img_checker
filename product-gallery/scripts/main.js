@@ -464,17 +464,11 @@
       return;
     }
     const asin = entry.asin;
-    const productEl = [...document.querySelectorAll('.product')].find(el =>
-      el.querySelector('h2')?.innerText.includes(product.sku)
-    );
+    const images = product.images.map((url, index) => ({
+  dataset: { full: url },
+  src: url
+}));
 
-    if (!productEl) {
-      zipLoadingOverlay.classList.add('hidden');
-      alert('⚠️ Product not currently visible on screen. Please search/ensure product is visible and try again.');
-      return;
-    }
-
-    const images = Array.from(productEl.querySelectorAll('img'));
     const total = images.length;
     let completed = 0;
 

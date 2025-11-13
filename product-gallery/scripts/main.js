@@ -566,6 +566,27 @@
   listingTypeFilter.addEventListener('change', () => renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value, packagingTypeFilter.value));
   packagingTypeFilter.addEventListener('change', () => renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value, packagingTypeFilter.value));
 
+
+ /*   ===========================
+      🔝 Back to Top Button
+      =========================== */
+const backToTopBtn = document.getElementById("backToTop");
+
+// Show/hide when scrolling
+window.addEventListener("scroll", () => {
+  if (window.scrollY > 300) {
+    backToTopBtn.classList.add("show");
+  } else {
+    backToTopBtn.classList.remove("show");
+  }
+});
+
+// Scroll smoothly to top
+backToTopBtn.addEventListener("click", () => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+
   /* ===========================
      Mobile Menu Toggle
      =========================== */

@@ -21,12 +21,11 @@ h1 {
   color: #2d3748;
   text-shadow: 1px 1px 1px #ccc;
 }
-
 /* ===========================
-   Sticky Filter Bar
+   🧭 Hybrid Sticky + Floating Filter Bar
    =========================== */
 #controls {
-  position: fixed;
+  position: relative; /* normal in-flow when at top */
   top: 0;
   left: 0;
   right: 0;
@@ -39,20 +38,27 @@ h1 {
   margin-bottom: 20px;
   padding: 9px 0;
 
-  /* Smooth slide controlled via CSS variable */
+  /* Default: normal state */
   --controls-offset: 0%;
   transform: translateY(var(--controls-offset));
-  transition: transform 0.5s cubic-bezier(0.25, 1, 0.3, 1), opacity 0.3s ease;
-
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  transition: transform 0.5s cubic-bezier(0.25, 1, 0.3, 1), opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   opacity: 1;
   will-change: transform;
+}
+
+/* Floating mode (after scroll) */
+#controls.floating {
+  position: fixed;
+  background: rgba(240, 242, 245, 0.97);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
 }
 
 #controls.hide {
   --controls-offset: -100%;
   opacity: 0.96;
 }
+
 /* ===========================
    Inputs and Dropdowns
    =========================== */

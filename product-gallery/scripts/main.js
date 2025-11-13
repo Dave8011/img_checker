@@ -566,43 +566,42 @@
   listingTypeFilter.addEventListener('change', () => renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value, packagingTypeFilter.value));
   packagingTypeFilter.addEventListener('change', () => renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value, packagingTypeFilter.value));
 
-
- /*   ===========================
-      🔝 Back to Top Button
-      =========================== */
+   /*===========================
+  🔝 Back to Top & 🔍 Search Toggle
+  =========================== */
 const backToTopBtn = document.getElementById("backToTop");
+const openSearchBtn = document.getElementById("openSearch");
+const controls = document.getElementById("controls");
 
-// Show/hide when scrolling
+// Handle scroll
 window.addEventListener("scroll", () => {
-  if (window.scrollY > 300) {
-    backToTopBtn.classList.add("show");
-  } else {
-    backToTopBtn.classList.remove("show");
+  const scrolled = window.scrollY > 100;
+
+  // Show/hide buttons
+  backToTopBtn.classList.toggle("show", scrolled);
+  openSearchBtn.classList.toggle("show", scrolled);
+
+  // Hide controls when scrolling down
+  controls.classList.toggle("hidden", scrolled);
+
+  // If near top, always show controls normally
+  if (!scrolled) {
+    controls.classList.remove("show");
+    openSearchBtn.textContent = "🔍";
   }
 });
 
-// Scroll smoothly to top
+// Back to Top button click
 backToTopBtn.addEventListener("click", () => {
   window.scrollTo({ top: 0, behavior: "smooth" });
 });
 
- /*   ===========================
-      🔍 Floating Search Button
-      =========================== */
-const openSearchBtn = document.getElementById("openSearch");
-const controls = document.getElementById("controls");
-
-// Show search & back-to-top buttons after scrolling
-window.addEventListener("scroll", () => {
-  const shouldShow = window.scrollY > 300;
-  openSearchBtn.classList.toggle("show", shouldShow);
-});
-
-// Toggle controls slide-down
+// Search button click toggles panel
 openSearchBtn.addEventListener("click", () => {
-  controls.classList.toggle("show");
-  openSearchBtn.textContent = controls.classList.contains("show") ? "❌" : "🔍";
+  const isOpen = controls.classList.toggle("show");
+  openSearchBtn.textContent = isOpen ? "❌" : "🔍";
 });
+
   /* ===========================
      Mobile Menu Toggle
      =========================== */

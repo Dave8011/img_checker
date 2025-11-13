@@ -61,6 +61,32 @@ h1 {
 }
 
 /* ===========================
+   🎛️ Controls (Top Search + Filters)
+   =========================== */
+#controls {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  transition: transform 0.4s ease, box-shadow 0.3s ease;
+  z-index: 9999;
+  padding: 1rem;
+}
+
+/* When hidden while scrolling down */
+#controls.hidden {
+  transform: translateY(-100%);
+  box-shadow: none;
+}
+
+/* When shown by search toggle */
+#controls.show {
+  transform: translateY(0);
+}
+
+/* ===========================
    🔍 Floating Search Button
    =========================== */
 #openSearch {
@@ -85,49 +111,12 @@ h1 {
 #openSearch.show {
   opacity: 1;
   pointer-events: auto;
-  transform: translateY(0);
 }
 
 #openSearch:hover {
   background: #005fa3;
   transform: translateY(-2px);
 }
-
-/* ===========================
-   🎛️ Controls Slide-Down
-   =========================== */
-#controls {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  background: #fff;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  transform: translateY(-100%);
-  transition: transform 0.4s ease;
-  z-index: 9999;
-  padding: 1rem;
-}
-
-#controls.show {
-  transform: translateY(0);
-}
-
-/*  =========================== 
- ✨ Temporary highlight animation when search slides into view 
-  =========================== */
-
-#controls.highlight {
-  animation: pulseHighlight 1.2s ease-out;
-}
-
-@keyframes pulseHighlight {
-  0%   { box-shadow: 0 0 0px 0 rgba(0,120,215,0.4); }
-  40%  { box-shadow: 0 0 12px 4px rgba(0,120,215,0.4); }
-  100% { box-shadow: 0 0 0px 0 rgba(0,120,215,0.0); }
-}
-
-
 
 /* ===========================
  🔝 Back to Top Button 

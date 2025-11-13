@@ -61,34 +61,6 @@ h1 {
 }
 
 /* ===========================
-   🎛️ Controls (Top Search + Filters)
-   =========================== */
-#controls {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  background: #fff;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  transition: transform 0.4s ease, box-shadow 0.3s ease;
-  z-index: 9999;
-  padding: 1rem;
-  backdrop-filter: blur(8px);
-  background: rgba(255, 255, 255, 0.9);
-}
-
-/* When hidden while scrolling down */
-#controls.hidden {
-  transform: translateY(-100%);
-  box-shadow: none;
-}
-
-/* When shown by search toggle */
-#controls.show {
-  transform: translateY(0);
-}
-
-/* ===========================
    🔍 Floating Search Button
    =========================== */
 #openSearch {
@@ -107,7 +79,7 @@ h1 {
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease, transform 0.3s ease;
-  z-index: 10000;
+  z-index: 2000;
 }
 
 #openSearch.show {
@@ -121,7 +93,26 @@ h1 {
 }
 
 /* ===========================
-   🔝 Back to Top
+   🎛️ Overlay Mode (when scrolled)
+   =========================== */
+#controls.overlay-mode {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: rgba(240, 242, 245, 0.98);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  transform: translateY(-100%);
+  transition: transform 0.4s ease;
+  z-index: 1999;
+}
+
+#controls.overlay-mode.show {
+  transform: translateY(0);
+}
+
+/* ===========================
+   🔝 Back to Top Button
    =========================== */
 #backToTop {
   position: fixed;
@@ -134,11 +125,11 @@ h1 {
   padding: 10px 14px;
   font-size: 20px;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease, transform 0.3s ease;
-  z-index: 9999;
+  z-index: 2000;
 }
 
 #backToTop.show {

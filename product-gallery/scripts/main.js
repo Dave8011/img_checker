@@ -566,38 +566,55 @@
   listingTypeFilter.addEventListener('change', () => renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value, packagingTypeFilter.value));
   packagingTypeFilter.addEventListener('change', () => renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value, packagingTypeFilter.value));
 
-// 🔝 Back to Top & 🔍 Search Toggle
+  /* ===========================
+     🔝 Back to Top & 🔍 Search Toggle
+     =========================== */
 const backToTopBtn = document.getElementById("backToTop");
 const openSearchBtn = document.getElementById("openSearch");
 const controls = document.getElementById("controls");
 
-window.addEventListener("scroll", () => {
-  const scrolled = window.scrollY > 120;
+let lastScrollY = 0;
 
-  // Show floating buttons
+window.addEventListener("scroll", () => {
+  const currentScroll = window.scrollY;
+  const scrolled = currentScroll > 120;
+
+  // Show floating buttons when scrolled
   backToTopBtn.classList.toggle("show", scrolled);
   openSearchBtn.classList.toggle("show", scrolled);
 
-  // Switch to overlay mode when scrolled down
-  if (scrolled) {
-    controls.classList.add("overlay-mode");
+  // Smoothly hide bar when scrolling down, show when scrolling up or near top
+  if (currentScroll > lastScrollY && scrolled) {
+    // scrolling down
+    controls.style.setProperty("--controls-offset", "-100%");
   } else {
-    // Restore normal sticky mode at top
-    controls.classList.remove("overlay-mode", "show");
+    // scrolling up
+    controls.style.setProperty("--controls-offset", "0");
+  }
+
+  // Reset overlay icon when at top
+  if (currentScroll < 100) {
     openSearchBtn.textContent = "🔍";
   }
+
+  lastScrollY = currentScroll;
 });
 
-// Scroll-to-top button
+// Smooth scroll to top
 backToTopBtn.addEventListener("click", () => {
   window.scrollTo({ top: 0, behavior: "smooth" });
 });
 
-// Toggle search overlay
+// Toggle overlay (slides bar down/up)
 openSearchBtn.addEventListener("click", () => {
-  if (!controls.classList.contains("overlay-mode")) return; // only active when scrolled
-  const isOpen = controls.classList.toggle("show");
-  openSearchBtn.textContent = isOpen ? "❌" : "🔍";
+  const currentOffset = getComputedStyle(controls)
+    .getPropertyValue("--controls-offset")
+    .trim();
+
+  const isHidden = currentOffset === "-100%";
+
+  controls.style.setProperty("--controls-offset", isHidden ? "0" : "-100%");
+  openSearchBtn.textContent = isHidden ? "❌" : "🔍";
 });
 
   /* ===========================

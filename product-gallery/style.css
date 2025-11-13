@@ -73,6 +73,8 @@ h1 {
   transition: transform 0.4s ease, box-shadow 0.3s ease;
   z-index: 9999;
   padding: 1rem;
+  backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.9);
 }
 
 /* When hidden while scrolling down */

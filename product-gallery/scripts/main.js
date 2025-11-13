@@ -592,23 +592,17 @@ backToTopBtn.addEventListener("click", () => {
 const openSearchBtn = document.getElementById("openSearch");
 const controls = document.getElementById("controls");
 
+// Show search & back-to-top buttons after scrolling
 window.addEventListener("scroll", () => {
-  // Show search + back-to-top buttons after scrolling 300px
   const shouldShow = window.scrollY > 300;
   openSearchBtn.classList.toggle("show", shouldShow);
 });
 
-// When user clicks search icon
+// Toggle controls slide-down
 openSearchBtn.addEventListener("click", () => {
-  // Smoothly scroll up to the controls section
-  controls.scrollIntoView({ behavior: "smooth", block: "start" });
-
-  // Optional: add a little "slide down" highlight animation to make it pop
-  controls.classList.add("highlight");
-  setTimeout(() => controls.classList.remove("highlight"), 1200);
+  controls.classList.toggle("show");
+  openSearchBtn.textContent = controls.classList.contains("show") ? "❌" : "🔍";
 });
-
-
   /* ===========================
      Mobile Menu Toggle
      =========================== */

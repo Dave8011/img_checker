@@ -26,8 +26,10 @@ h1 {
    Sticky Filter Bar
    =========================== */
 #controls {
-  /* position: sticky; */
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   background: #f0f2f5;
   z-index: 1000;
   display: flex;
@@ -36,8 +38,15 @@ h1 {
   gap: 15px;
   margin-bottom: 20px;
   padding: 9px 0;
+  transform: translateY(var(--controls-offset, 0));
+  transition: transform 0.4s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
 }
 
+/* When overlay is open, ensure visible */
+#controls.show {
+  --controls-offset: 0;
+}
 /* ===========================
    Inputs and Dropdowns
    =========================== */
@@ -110,6 +119,7 @@ h1 {
 #controls.overlay-mode.show {
   transform: translateY(0);
 }
+
 
 /* ===========================
    🔝 Back to Top Button

@@ -94,6 +94,20 @@ h1 {
   background: #005fa3;
   transform: translateY(-2px);
 }
+/*  =========================== 
+ ✨ Temporary highlight animation when search slides into view 
+  =========================== */
+
+#controls.highlight {
+  animation: pulseHighlight 1.2s ease-out;
+}
+
+@keyframes pulseHighlight {
+  0%   { box-shadow: 0 0 0px 0 rgba(0,120,215,0.4); }
+  40%  { box-shadow: 0 0 12px 4px rgba(0,120,215,0.4); }
+  100% { box-shadow: 0 0 0px 0 rgba(0,120,215,0.0); }
+}
+
 
 
 /* ===========================

@@ -586,6 +586,28 @@ backToTopBtn.addEventListener("click", () => {
   window.scrollTo({ top: 0, behavior: "smooth" });
 });
 
+ /*   ===========================
+      🔍 Floating Search Button
+      =========================== */
+const openSearchBtn = document.getElementById("openSearch");
+const controls = document.getElementById("controls");
+
+window.addEventListener("scroll", () => {
+  // Show search + back-to-top buttons after scrolling 300px
+  const shouldShow = window.scrollY > 300;
+  openSearchBtn.classList.toggle("show", shouldShow);
+});
+
+// When user clicks search icon
+openSearchBtn.addEventListener("click", () => {
+  // Smoothly scroll up to the controls section
+  controls.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  // Optional: add a little "slide down" highlight animation to make it pop
+  controls.classList.add("highlight");
+  setTimeout(() => controls.classList.remove("highlight"), 1200);
+});
+
 
   /* ===========================
      Mobile Menu Toggle

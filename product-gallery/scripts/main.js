@@ -566,38 +566,36 @@
   listingTypeFilter.addEventListener('change', () => renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value, packagingTypeFilter.value));
   packagingTypeFilter.addEventListener('change', () => renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value, packagingTypeFilter.value));
 
-   /*===========================
-  🔝 Back to Top & 🔍 Search Toggle
-  =========================== */
+// 🔝 Back to Top & 🔍 Search Toggle
 const backToTopBtn = document.getElementById("backToTop");
 const openSearchBtn = document.getElementById("openSearch");
 const controls = document.getElementById("controls");
 
-// Handle scroll
 window.addEventListener("scroll", () => {
-  const scrolled = window.scrollY > 100;
+  const scrolled = window.scrollY > 120;
 
-  // Show/hide buttons
+  // Show floating buttons
   backToTopBtn.classList.toggle("show", scrolled);
   openSearchBtn.classList.toggle("show", scrolled);
 
-  // Hide controls when scrolling down
-  controls.classList.toggle("hidden", scrolled);
-
-  // If near top, always show controls normally
-  if (!scrolled) {
-    controls.classList.remove("show");
+  // Switch to overlay mode when scrolled down
+  if (scrolled) {
+    controls.classList.add("overlay-mode");
+  } else {
+    // Restore normal sticky mode at top
+    controls.classList.remove("overlay-mode", "show");
     openSearchBtn.textContent = "🔍";
   }
 });
 
-// Back to Top button click
+// Scroll-to-top button
 backToTopBtn.addEventListener("click", () => {
   window.scrollTo({ top: 0, behavior: "smooth" });
 });
 
-// Search button click toggles panel
+// Toggle search overlay
 openSearchBtn.addEventListener("click", () => {
+  if (!controls.classList.contains("overlay-mode")) return; // only active when scrolled
   const isOpen = controls.classList.toggle("show");
   openSearchBtn.textContent = isOpen ? "❌" : "🔍";
 });

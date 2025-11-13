@@ -580,11 +580,14 @@ window.addEventListener("scroll", () => {
   const currentScroll = window.scrollY;
   const scrolled = currentScroll > 120;
 
-  // Show floating buttons
+  // Floating buttons
   backToTopBtn.classList.toggle("show", scrolled);
   openSearchBtn.classList.toggle("show", scrolled);
 
-  // Hide filter bar when scrolling down, show when scrolling up or at top
+  // Floating mode only when scrolled
+  controls.classList.toggle("floating", scrolled);
+
+  // Hide bar when scrolling down, show when scrolling up
   if (currentScroll > lastScrollY && scrolled && !isHidden) {
     controls.classList.add("hide");
     isHidden = true;
@@ -593,7 +596,7 @@ window.addEventListener("scroll", () => {
     isHidden = false;
   }
 
-  // Reset icon when near top
+  // Reset search icon at top
   if (currentScroll < 100) {
     openSearchBtn.textContent = "🔍";
   }
@@ -601,12 +604,12 @@ window.addEventListener("scroll", () => {
   lastScrollY = currentScroll;
 });
 
-// 🔝 Smooth scroll to top
+// Back to top
 backToTopBtn.addEventListener("click", () => {
   window.scrollTo({ top: 0, behavior: "smooth" });
 });
 
-// 🔍 Toggle manually
+// Toggle search manually
 openSearchBtn.addEventListener("click", () => {
   isHidden = !isHidden;
   controls.classList.toggle("hide", isHidden);

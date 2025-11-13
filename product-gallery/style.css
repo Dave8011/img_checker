@@ -119,9 +119,8 @@ h1 {
 }
 
 /* ===========================
- 🔝 Back to Top Button 
-=========================== */
-
+   🔝 Back to Top
+   =========================== */
 #backToTop {
   position: fixed;
   right: 20px;
@@ -143,12 +142,6 @@ h1 {
 #backToTop.show {
   opacity: 1;
   pointer-events: auto;
-  transform: translateY(0);
-}
-
-#backToTop:hover {
-  background: #333;
-  transform: translateY(-2px);
 }
 
 /* ===========================

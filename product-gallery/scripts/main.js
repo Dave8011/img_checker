@@ -566,33 +566,34 @@
   listingTypeFilter.addEventListener('change', () => renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value, packagingTypeFilter.value));
   packagingTypeFilter.addEventListener('change', () => renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value, packagingTypeFilter.value));
 
-  /* ===========================
-     🔝 Back to Top & 🔍 Search Toggle
-     =========================== */
+ /* ===========================
+   🔝 Back to Top & 🔍 Search Toggle (Smooth)
+   =========================== */
 const backToTopBtn = document.getElementById("backToTop");
 const openSearchBtn = document.getElementById("openSearch");
 const controls = document.getElementById("controls");
 
 let lastScrollY = 0;
+let isHidden = false;
 
 window.addEventListener("scroll", () => {
   const currentScroll = window.scrollY;
   const scrolled = currentScroll > 120;
 
-  // Show floating buttons when scrolled
+  // Show floating buttons
   backToTopBtn.classList.toggle("show", scrolled);
   openSearchBtn.classList.toggle("show", scrolled);
 
-  // Smoothly hide bar when scrolling down, show when scrolling up or near top
-  if (currentScroll > lastScrollY && scrolled) {
-    // scrolling down
-    controls.style.setProperty("--controls-offset", "-100%");
-  } else {
-    // scrolling up
-    controls.style.setProperty("--controls-offset", "0");
+  // Hide filter bar when scrolling down, show when scrolling up or at top
+  if (currentScroll > lastScrollY && scrolled && !isHidden) {
+    controls.classList.add("hide");
+    isHidden = true;
+  } else if ((currentScroll < lastScrollY || currentScroll < 100) && isHidden) {
+    controls.classList.remove("hide");
+    isHidden = false;
   }
 
-  // Reset overlay icon when at top
+  // Reset icon when near top
   if (currentScroll < 100) {
     openSearchBtn.textContent = "🔍";
   }
@@ -600,21 +601,16 @@ window.addEventListener("scroll", () => {
   lastScrollY = currentScroll;
 });
 
-// Smooth scroll to top
+// 🔝 Smooth scroll to top
 backToTopBtn.addEventListener("click", () => {
   window.scrollTo({ top: 0, behavior: "smooth" });
 });
 
-// Toggle overlay (slides bar down/up)
+// 🔍 Toggle manually
 openSearchBtn.addEventListener("click", () => {
-  const currentOffset = getComputedStyle(controls)
-    .getPropertyValue("--controls-offset")
-    .trim();
-
-  const isHidden = currentOffset === "-100%";
-
-  controls.style.setProperty("--controls-offset", isHidden ? "0" : "-100%");
-  openSearchBtn.textContent = isHidden ? "❌" : "🔍";
+  isHidden = !isHidden;
+  controls.classList.toggle("hide", isHidden);
+  openSearchBtn.textContent = isHidden ? "🔍" : "❌";
 });
 
   /* ===========================

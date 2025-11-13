@@ -30,7 +30,7 @@ h1 {
   top: 0;
   background: #f0f2f5;
   z-index: 1000;
-  display: flex;
+  /* display: flex; */
   justify-content: center;
   flex-wrap: wrap;
   gap: 15px;

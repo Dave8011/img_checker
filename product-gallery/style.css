@@ -544,6 +544,10 @@ h1 {
   align-items: center;
   justify-content: center;
   z-index: 1000;
+
+  /* ✨ Glass Frosted Background */
+  background: rgba(0,0,0,0.35);
+  backdrop-filter: blur(8px);
 }
 
 .popup-content {

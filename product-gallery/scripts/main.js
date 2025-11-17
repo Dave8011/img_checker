@@ -79,6 +79,7 @@ fetch(`../products.json?t=${Date.now()}`)
           <div class="tag-row">
             ${product.category ? `<div class="category-tag">${product.category}</div>` : ''}
             ${product.listingType ? `<div class="listing-type-tag">${product.listingType}</div>` : ''}
+            ${product.packagingType ? `<div class="listing-type-tag">${product.packagingType}</div>` : ''}
           </div>
           <h2>${product.title} (<code>${product.sku}</code>)</h2>
           <div class="images">
@@ -575,7 +576,7 @@ document.getElementById("downloadZipAllBtn").addEventListener("click", async () 
     searchBar.addEventListener('input', () => renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value, packagingTypeFilter.value));
     categoryFilter.addEventListener('change', () => renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value, packagingTypeFilter.value));
     listingTypeFilter.addEventListener('change', () => renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value, packagingTypeFilter.value));
-    packagingTypeFilter.addEventListener('change', () => renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value, packagingTypeFilter.value));
+    // packagingTypeFilter.addEventListener('change', () => renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value, packagingTypeFilter.value));
 
     /* ===========================
        Mobile Menu Toggle

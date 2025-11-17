@@ -493,6 +493,10 @@ h1 {
 .popup.hidden {
   display: none;
 }
+.popup-content button:hover {
+  background-color: rgba(255,255,255,0.8);
+  color: #000 !important;
+}
 .popup-content input {
   width: 100%;
   padding: 10px;
@@ -550,7 +554,7 @@ h1 {
   animation: popIn 0.25s ease-out;
   
   /* ✨ Frosted Glass */
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.32);
   backdrop-filter: blur(18px) saturate(160%);
   -webkit-backdrop-filter: blur(18px) saturate(160%);
   
@@ -560,7 +564,7 @@ h1 {
   /* Shadow for visibility */
   box-shadow: 0 10px 35px rgba(0,0,0,0.25);
 
-  color: #fff;
+  color: #222;
   text-align: center;
 }
 .spinner {

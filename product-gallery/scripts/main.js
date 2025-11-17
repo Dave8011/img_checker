@@ -454,7 +454,7 @@ document.getElementById("downloadZipAllBtn").addEventListener("click", async () 
       return;
     }
 
-    const CHUNK_SIZE = 1500;     // max per ZIP
+    const CHUNK_SIZE = 1000;     // max per ZIP
     const CONCURRENCY = 12;      // multi-thread download
 
     // Safe fetch with timeout + auto skip

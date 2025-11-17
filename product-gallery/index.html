@@ -4,21 +4,20 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>🛍️ Product Gallery</title>
-
+  
   <!-- 💅 Main CSS -->
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-<!-- ===========================
+  <!-- ===========================
        🛍️ Page Header & Search
        =========================== -->
   <h1>🛍️ Product Gallery</h1>
 
   <div id="controls">
     <!-- 🔍 Search Input (Visible on all screens) -->
-  <input type="text" id="searchBar" placeholder="🔍 Search by SKU or Name..." aria-label="Search products by SKU or Name" />
-    <br> 
+    <input type="text" id="searchBar" placeholder="🔍 Search by SKU or Name..." aria-label="Search products by SKU or Name" /> <br>
     
     <!-- ☰ Hamburger Menu for Mobile -->
     <div id="menuToggle" aria-label="Toggle Filters/Actions" tabindex="0">☰</div>
@@ -33,13 +32,13 @@
         <option value="">🏷️ All Listing Types</option>
       </select>
 
-      <!-- New packaging filter to easily pick Glass Bottle / Brown Pouch -->
-      <select id="packagingTypeFilter" aria-label="Filter by raw PackagingType">
-        <option value="">📦 All PackagingTypes</option>
+      <select id="listingTypeFilter" aria-label="Filter by listing type">
+        <option value="">📦 Packaging Type</option>
       </select>
 
       <button id="downloadMissingBtn">⬇️ Missing IMG</button>
       <button id="downloadZipBtn">📬 IMG_zip</button>
+      <button id="downloadZipAllBtn">📮 ZIP ALL (1500 per zip)</button>
     </div>
   </div>
 
@@ -54,7 +53,7 @@
   <!-- ===========================
        🔍 Lightbox Viewer
        =========================== -->
-  <div id="lightbox" class="lightbox hidden" aria-modal="true" role="dialog" aria-label="Image viewer" aria-hidden="true">
+  <div id="lightbox" class="lightbox hidden" aria-modal="true" role="dialog" aria-label="Image viewer">
     <span id="lightbox-close" aria-label="Close image viewer" tabindex="0" role="button">&times;</span>
     <img id="lightbox-img" src="" alt="Enlarged Image">
   </div>
@@ -62,11 +61,11 @@
   <!-- ===========================
        📦 ZIP Search & Confirm Popup
        =========================== -->
-  <div id="zipPopup" class="popup hidden" role="dialog" aria-modal="true" aria-hidden="true">
+  <div id="zipPopup" class="popup hidden">
     <div class="popup-content">
       <h3>🔍 Search Product to ZIP</h3>
-      <input type="text" id="zipSearchInput" placeholder="Search by SKU or Name..." aria-label="Search product for ZIP" />
-      <div id="zipSearchResults" class="zip-results" role="listbox"></div>
+      <input type="text" id="zipSearchInput" placeholder="Search by SKU or Name..." />
+      <div id="zipSearchResults" class="zip-results"></div>
       <button id="zipDownloadConfirmBtn" disabled>⬇️ Download ZIP</button>
       <button id="zipPopupCloseBtn">❌ Cancel</button>
     </div>
@@ -75,9 +74,9 @@
   <!-- ===========================
        🔄 ZIP Loading Overlay
        =========================== -->
-  <div id="zipLoadingOverlay" class="popup hidden" aria-hidden="true">
+  <div id="zipLoadingOverlay" class="popup hidden">
     <div class="popup-content">
-      <div class="spinner" aria-hidden="true"></div>
+      <div class="spinner"></div>
       <p style="margin-top: 10px;">Preparing ZIP file, please wait...</p>
       <p id="zipProgressText" style="font-size: 0.95rem; margin-top: 8px; color: #555;"></p>
     </div>
@@ -86,26 +85,22 @@
   <!-- ===========================
      ⏳ Missing Image Loading Overlay
      =========================== -->
-  <div id="missingLoadingOverlay" class="popup hidden" aria-hidden="true">
-    <div class="popup-content">
-      <div class="spinner" aria-hidden="true"></div>
-      <p style="margin-top: 10px;">Checking for missing images...</p>
-      <p id="missingProgressText" style="font-size: 0.95rem; margin-top: 8px; color: #555;"></p>
-    </div>
+<div id="missingLoadingOverlay" class="popup hidden">
+  <div class="popup-content">
+    <div class="spinner"></div>
+    <p style="margin-top: 10px;">Checking for missing images...</p>
+    <p id="missingProgressText" style="font-size: 0.95rem; margin-top: 8px; color: #555;"></p>
   </div>
-
+</div>
+    
   <!-- ===========================
        📜 Scripts
        =========================== -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.0/jszip.min.js"></script>
   <script type="module" src="scripts/main.js"></script>
 
-<!-- 🔍 Floating Search Button -->
-<button id="openSearch" aria-label="Open search and filters" title="Search">🔍</button>
-  
-  <!-- 🔝 Back to Top Button -->
+<!-- 🔝 Back to Top Button -->
 <button id="backToTop" aria-label="Back to top" title="Back to top">⬆️</button>
 
-  
 </body>
 </html>

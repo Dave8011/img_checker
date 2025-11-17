@@ -408,61 +408,147 @@ function checkImageURL(url, timeout = 20000) {
   a.click();
   document.body.removeChild(a);
 });
+/* ===================================================
+   📦 ZIP ALL IMAGES — SEPARATE BUTTON (SAFE / INDEPENDENT)
+   ASIN-based naming, multi-threaded, skip missing,
+   1500 images per ZIP, uses existing overlay.
+   =================================================== */
 
-     /* ===========================
-   📦 ZIP ALL IMAGES (1500 per ZIP)
-   =========================== */
 document.getElementById("downloadZipAllBtn").addEventListener("click", async () => {
-  const allProducts = window.productData;
-  const allImages = [];
+  const overlay = document.getElementById("zipLoadingOverlay");
+  const progressText = document.getElementById("zipProgressText");
 
-  // Collect all images with filenames
-  allProducts.forEach(product => {
-    product.images.forEach((url, index) => {
-      allImages.push({
-        url,
-        filename: `${product.sku}_${getImageLabel(index)}.jpg`
+  try {
+    overlay.classList.remove("hidden");
+    progressText.textContent = "Loading ASIN mappings...";
+
+    // Load asin_map_zip.json
+    const asinMap = await fetch("asin_map_zip.json").then(r => r.json());
+    const asinBySku = new Map(asinMap.map(e => [e.sku, e.asin]));
+
+    const products = window.productData || [];
+    const allItems = [];
+
+    // Build list (filename = ASIN.MAIN/PT01/PT02/etc)
+    products.forEach(product => {
+      const asin = asinBySku.get(product.sku);
+      if (!asin) return;
+
+      product.images.forEach((imgUrl, idx) => {
+        allItems.push({
+          url: imgUrl,
+          filename: `${asin}.${getImageLabel(idx)}.jpg`
+        });
       });
     });
-  });
 
-  if (allImages.length === 0) {
-    alert("No images found.");
-    return;
-  }
-
-  const CHUNK_SIZE = 1500;
-  let zipIndex = 1;
-
-  for (let i = 0; i < allImages.length; i += CHUNK_SIZE) {
-    const chunk = allImages.slice(i, i + CHUNK_SIZE);
-    const zip = new JSZip();
-
-    let completed = 0;
-    const total = chunk.length;
-
-    for (const img of chunk) {
-      try {
-        const blob = await fetch(img.url).then(r => r.blob());
-        zip.file(img.filename, blob);
-      } catch {
-        console.warn("Skipped failed image:", img.url);
-      }
-
-      completed++;
-      console.log(`ZIP ${zipIndex}: ${completed}/${total}`);
+    if (allItems.length === 0) {
+      overlay.classList.add("hidden");
+      alert("No ASIN-mapped images found.");
+      return;
     }
 
-    const zipBlob = await zip.generateAsync({ type: "blob" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(zipBlob);
-    a.download = `ALL_IMAGES_${zipIndex}.zip`;
-    a.click();
+    const CHUNK_SIZE = 1500;     // max per ZIP
+    const CONCURRENCY = 12;      // multi-thread download
 
-    zipIndex++;
+    // Safe fetch with timeout + auto skip
+    async function fetchWithTimeout(url, timeout = 15000) {
+      try {
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), timeout);
+        const res = await fetch(url, { signal: controller.signal });
+        clearTimeout(id);
+        if (!res.ok) throw new Error();
+        return await res.blob();
+      } catch {
+        return null;
+      }
+    }
+
+    function formatSeconds(sec) {
+      if (!isFinite(sec) || sec <= 0) return "—";
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60);
+      return m ? `${m}m ${s}s` : `${s}s`;
+    }
+
+    let zipNum = 1;
+
+    // ============================
+    // ZIP GENERATION in chunks
+    // ============================
+    for (let start = 0; start < allItems.length; start += CHUNK_SIZE) {
+      const chunk = allItems.slice(start, start + CHUNK_SIZE);
+      const total = chunk.length;
+      let processed = 0;
+      let skipped = 0;
+      let pointer = 0;
+
+      const zip = new JSZip();
+      const startTime = performance.now();
+
+      progressText.textContent = `Starting ZIP ${zipNum} (${total} images)...`;
+
+      // Worker thread
+      async function worker() {
+        while (true) {
+          const idx = pointer++;
+          if (idx >= chunk.length) return;
+
+          const item = chunk[idx];
+          const blob = await fetchWithTimeout(item.url);
+
+          if (blob) zip.file(item.filename, blob);
+          else skipped++;
+
+          processed++;
+
+          // ETA
+          const elapsed = (performance.now() - startTime) / 1000;
+          const avg = elapsed / processed;
+          const eta = avg * (total - processed);
+
+          progressText.textContent =
+            `ZIP ${zipNum}: ${processed}/${total} — Skipped ${skipped} — ETA ${formatSeconds(eta)}`;
+        }
+      }
+
+      // Launch worker pool
+      const workers = [];
+      const count = Math.min(CONCURRENCY, total);
+      for (let i = 0; i < count; i++) workers.push(worker());
+      await Promise.all(workers);
+
+      progressText.textContent = `Generating ZIP ${zipNum}...`;
+
+      const zipBlob = await zip.generateAsync({ type: "blob" }, meta => {
+        progressText.textContent =
+          `ZIP ${zipNum}: creating file ${Math.round(meta.percent)}%`;
+      });
+
+      // Download
+      const url = URL.createObjectURL(zipBlob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `ALL_IMAGES_${zipNum}.zip`;
+      a.click();
+
+      setTimeout(() => URL.revokeObjectURL(url), 8000);
+
+      progressText.textContent = `ZIP ${zipNum} ready.`;
+      zipNum++;
+
+      await new Promise(r => setTimeout(r, 300)); // cool down
+    }
+
+    overlay.classList.add("hidden");
+    alert("🎉 All ZIPs created!");
+
+  } catch (err) {
+    console.error(err);
+    overlay.classList.add("hidden");
+    alert("❌ ZIP ALL failed. Check console.");
   }
-
-  alert("🎉 All ZIP files created!");
 });
 
     /* ===========================

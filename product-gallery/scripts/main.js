@@ -4,11 +4,11 @@
 fetch(`../products.json?t=${Date.now()}`)
   .then(res => res.json())
   .then(data => {
-     // Normalize product keys (fix PackagingType → packagingType)
-data = data.map(p => ({
-  ...p,
-  packagingType: p.packagingType || p.PackagingType || ""
-}));
+    // Normalize product keys (fix PackagingType → packagingType)
+    data = data.map(p => ({
+      ...p,
+      packagingType: p.packagingType || p.PackagingType || ""
+    }));
     window.productData = data;
 
     /* ===========================
@@ -62,7 +62,7 @@ data = data.map(p => ({
 
       const filtered = data.filter(p =>
         (p.title.toLowerCase().includes(filter.toLowerCase()) ||
-         p.sku.toLowerCase().includes(filter.toLowerCase())) &&
+          p.sku.toLowerCase().includes(filter.toLowerCase())) &&
         (category === '' || p.category === category) &&
         (listingType === '' || p.listingType === listingType) &&
         (packagingType === '' || p.packagingType === packagingType)
@@ -96,37 +96,37 @@ data = data.map(p => ({
           </div>
         `;
         gallery.appendChild(div);
-      });function checkImageURL(url, timeout = 10000) {
-  return new Promise((resolve) => {
-    const img = new Image();
-    let completed = false;
+      }); function checkImageURL(url, timeout = 10000) {
+        return new Promise((resolve) => {
+          const img = new Image();
+          let completed = false;
 
-    const timer = setTimeout(() => {
-      if (!completed) {
-        completed = true;
-        resolve(false); // Timeout → failed
+          const timer = setTimeout(() => {
+            if (!completed) {
+              completed = true;
+              resolve(false); // Timeout → failed
+            }
+          }, timeout);
+
+          img.onload = () => {
+            if (!completed) {
+              completed = true;
+              clearTimeout(timer);
+              resolve(true); // Image loaded
+            }
+          };
+
+          img.onerror = () => {
+            if (!completed) {
+              completed = true;
+              clearTimeout(timer);
+              resolve(false); // Image failed to load
+            }
+          };
+
+          img.src = url;
+        });
       }
-    }, timeout);
-
-    img.onload = () => {
-      if (!completed) {
-        completed = true;
-        clearTimeout(timer);
-        resolve(true); // Image loaded
-      }
-    };
-
-    img.onerror = () => {
-      if (!completed) {
-        completed = true;
-        clearTimeout(timer);
-        resolve(false); // Image failed to load
-      }
-    };
-
-    img.src = url;
-  });
-}
 
 
       // Lightbox trigger
@@ -226,341 +226,341 @@ data = data.map(p => ({
     }
 
     // ===========================
-// 🔧 Generate ZIP for selected product
-// ===========================
-async function generateZipForProduct(product) {
-  const zipLoading = document.getElementById('zipLoadingOverlay');
-  const progressText = document.getElementById('zipProgressText');
-  zipLoading.classList.remove('hidden');
-  progressText.textContent = 'Initializing download...';
-
-  const zip = new JSZip();
-
-  // Load ASIN map
-  const asinMap = await fetch('asin_map_zip.json').then(res => res.json());
-  const asinEntry = asinMap.find(entry => entry.sku === product.sku);
-
-  if (!asinEntry) {
-    zipLoading.classList.add('hidden');
-    alert(`❌ No ASIN found for SKU: ${product.sku}`);
-    return;
-  }
-
-  const asin = asinEntry.asin;
-
-  // Find the product element (on screen)
-  const productEl = [...document.querySelectorAll('.product')].find(el =>
-    el.querySelector('h2')?.innerText.includes(product.sku)
-  );
-
-  if (!productEl) {
-    zipLoading.classList.add('hidden');
-    alert(`⚠️ Product not currently visible on screen.`);
-    return;
-  }
-
-  const images = productEl.querySelectorAll('img');
-  const total = images.length;
-  let completed = 0;
-
-  const downloadPromises = Array.from(images).map((img, index) => {
-  const label = getImageLabel(index);
-  const imgURL = img.src;
-
-  return new Promise(async (resolve) => {
-    const timeout = new Promise((res) => setTimeout(res, 5000)); // 5 sec timeout
-    const waitForImage = new Promise((res, rej) => {
-      if (img.complete && img.naturalWidth > 0) {
-        res();
-      } else {
-        img.onload = res;
-        img.onerror = rej;
-      }
-    });
-
-    try {
-      await Promise.race([waitForImage, timeout]); // Whichever finishes first
-      const blob = await fetchImageAsBlob(imgURL);
-      zip.file(`${asin}.${label}.jpg`, blob);
-    } catch (e) {
-      console.warn(`❌ Skipped: ${label} (timeout or error)`);
-    }
-
-    completed++;
-    progressText.textContent = `📷 Processed ${completed} of ${total} images...`;
-    resolve();
-  });
-});
-
-
-  await Promise.all(downloadPromises);
-progressText.textContent = '✅ All images processed. Generating ZIP...';
-
-  const zipBlob = await zip.generateAsync({ type: 'blob' });
-  const url = URL.createObjectURL(zipBlob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `${asin}_images.zip`;
-  a.click();
-
-  zipLoading.classList.add('hidden');
-}
-
-/* ===========================
-   Missing Image CSV Logic (Grouped by Product)
-   =========================== */
-document.getElementById('downloadMissingBtn').addEventListener('click', async () => {
-  const overlay = document.getElementById('missingLoadingOverlay');
-  const progressText = document.getElementById('missingProgressText');
-  overlay.classList.remove('hidden');
-  progressText.textContent = '🔍 Checking image URLs...';
-
-  const missingMap = new Map(); // Map SKU → { title, category, listingType, labels[] }
-  const products = window.productData;
-  let totalChecked = 0;
-  const totalImages = products.reduce((sum, p) => sum + p.images.length, 0);
-
-  // Utility: Wait for a bit to stagger fetches
-  function delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
-
-  // ✅ Accurate image existence check without downloading the full image
- // ✅ More reliable image check using <img> element
-function checkImageURL(url, timeout = 20000) {
-  return new Promise((resolve) => {
-    const img = new Image();
-    let done = false;
-
-    const timer = setTimeout(() => {
-      if (!done) {
-        done = true;
-        resolve(false); // Timed out = failed
-      }
-    }, timeout);
-
-    img.onload = () => {
-      if (!done) {
-        done = true;
-        clearTimeout(timer);
-        resolve(true); // Loaded successfully
-      }
-    };
-
-    img.onerror = () => {
-      if (!done) {
-        done = true;
-        clearTimeout(timer);
-        resolve(false); // Failed to load
-      }
-    };
-
-    img.src = url;
-  });
-}
-
-
-  const allChecks = [];
-
-  for (const product of products) {
-    const { sku, title, category = '', listingType = '', images } = product;
-
-    images.forEach((url, index) => {
-      const label = getImageLabel(index); // MAIN, PT01, PT02...
-
-      allChecks.push(
-        delay(index * 50).then(() => checkImageURL(url).then(exists => {
-          totalChecked++;
-          progressText.textContent = `🖼️ Checked ${totalChecked} of ${totalImages} images...`;
-
-          if (!exists) {
-            if (!missingMap.has(sku)) {
-              missingMap.set(sku, {
-                sku,
-                title,
-                category,
-                listingType,
-                labels: []
-              });
-            }
-            missingMap.get(sku).labels.push(label);
-          }
-        }))
-      );
-    });
-  }
-
-  await Promise.allSettled(allChecks);
-  overlay.classList.add('hidden');
-
-  if (missingMap.size === 0) {
-    alert("✅ No missing images found!");
-    return;
-  }
-
-  // 🧾 Generate CSV content
-  const csvHeader = 'sku,title,category,listingType,missingImageLabels\n';
-  const csvRows = Array.from(missingMap.values()).map(item =>
-    `${item.sku},"${item.title.replace(/"/g, '""')}",${item.category},${item.listingType},"${item.labels.join(', ')}"`
-  );
-
-  const csvContent = csvHeader + csvRows.join('\n');
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'missing_images_report.csv';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-});
-/* ===================================================
-   📦 ZIP ALL IMAGES — SEPARATE BUTTON (SAFE / INDEPENDENT)
-   ASIN-based naming, multi-threaded, skip missing,
-   1500 images per ZIP, uses existing overlay.
-   =================================================== */
-
-document.getElementById("downloadZipAllBtn").addEventListener("click", async () => {
-  const overlay = document.getElementById("zipLoadingOverlay");
-  const progressText = document.getElementById("zipProgressText");
-
-  try {
-    overlay.classList.remove("hidden");
-    progressText.textContent = "Loading ASIN mappings...";
-
-    // Load asin_map_zip.json
-    const asinMap = await fetch("asin_map_zip.json").then(r => r.json());
-    const asinBySku = new Map(asinMap.map(e => [e.sku, e.asin]));
-
-    const products = window.productData || [];
-    const allItems = [];
-
-    // Build list (filename = ASIN.MAIN/PT01/PT02/etc)
-    products.forEach(product => {
-      const asin = asinBySku.get(product.sku);
-      if (!asin) return;
-
-      product.images.forEach((imgUrl, idx) => {
-        allItems.push({
-          url: imgUrl,
-          filename: `${asin}.${getImageLabel(idx)}.jpg`
-        });
-      });
-    });
-
-    if (allItems.length === 0) {
-      overlay.classList.add("hidden");
-      alert("No ASIN-mapped images found.");
-      return;
-    }
-
-    const CHUNK_SIZE = 1000;     // max per ZIP
-    const CONCURRENCY = 12;      // multi-thread download
-
-    // Safe fetch with timeout + auto skip
-    async function fetchWithTimeout(url, timeout = 15000) {
-      try {
-        const controller = new AbortController();
-        const id = setTimeout(() => controller.abort(), timeout);
-        const res = await fetch(url, { signal: controller.signal });
-        clearTimeout(id);
-        if (!res.ok) throw new Error();
-        return await res.blob();
-      } catch {
-        return null;
-      }
-    }
-
-    function formatSeconds(sec) {
-      if (!isFinite(sec) || sec <= 0) return "—";
-      const m = Math.floor(sec / 60);
-      const s = Math.floor(sec % 60);
-      return m ? `${m}m ${s}s` : `${s}s`;
-    }
-
-    let zipNum = 1;
-
-    // ============================
-    // ZIP GENERATION in chunks
-    // ============================
-    for (let start = 0; start < allItems.length; start += CHUNK_SIZE) {
-      const chunk = allItems.slice(start, start + CHUNK_SIZE);
-      const total = chunk.length;
-      let processed = 0;
-      let skipped = 0;
-      let pointer = 0;
+    // 🔧 Generate ZIP for selected product
+    // ===========================
+    async function generateZipForProduct(product) {
+      const zipLoading = document.getElementById('zipLoadingOverlay');
+      const progressText = document.getElementById('zipProgressText');
+      zipLoading.classList.remove('hidden');
+      progressText.textContent = 'Initializing download...';
 
       const zip = new JSZip();
-      const startTime = performance.now();
 
-      progressText.textContent = `Starting ZIP ${zipNum} (${total} images)...`;
+      // Load ASIN map
+      const asinMap = await fetch('asin_map_zip.json').then(res => res.json());
+      const asinEntry = asinMap.find(entry => entry.sku === product.sku);
 
-      // Worker thread
-      async function worker() {
-        while (true) {
-          const idx = pointer++;
-          if (idx >= chunk.length) return;
-
-          const item = chunk[idx];
-          const blob = await fetchWithTimeout(item.url);
-
-          if (blob) zip.file(item.filename, blob);
-          else skipped++;
-
-          processed++;
-
-          // ETA
-          const elapsed = (performance.now() - startTime) / 1000;
-          const avg = elapsed / processed;
-          const eta = avg * (total - processed);
-
-          progressText.textContent =
-            `ZIP ${zipNum}: ${processed}/${total} — Skipped ${skipped} — ETA ${formatSeconds(eta)}`;
-        }
+      if (!asinEntry) {
+        zipLoading.classList.add('hidden');
+        alert(`❌ No ASIN found for SKU: ${product.sku}`);
+        return;
       }
 
-      // Launch worker pool
-      const workers = [];
-      const count = Math.min(CONCURRENCY, total);
-      for (let i = 0; i < count; i++) workers.push(worker());
-      await Promise.all(workers);
+      const asin = asinEntry.asin;
 
-      progressText.textContent = `Generating ZIP ${zipNum}...`;
+      // Find the product element (on screen)
+      const productEl = [...document.querySelectorAll('.product')].find(el =>
+        el.querySelector('h2')?.innerText.includes(product.sku)
+      );
 
-      const zipBlob = await zip.generateAsync({ type: "blob" }, meta => {
-        progressText.textContent =
-          `ZIP ${zipNum}: creating file ${Math.round(meta.percent)}%`;
+      if (!productEl) {
+        zipLoading.classList.add('hidden');
+        alert(`⚠️ Product not currently visible on screen.`);
+        return;
+      }
+
+      const images = productEl.querySelectorAll('img');
+      const total = images.length;
+      let completed = 0;
+
+      const downloadPromises = Array.from(images).map((img, index) => {
+        const label = getImageLabel(index);
+        const imgURL = img.src;
+
+        return new Promise(async (resolve) => {
+          const timeout = new Promise((res) => setTimeout(res, 5000)); // 5 sec timeout
+          const waitForImage = new Promise((res, rej) => {
+            if (img.complete && img.naturalWidth > 0) {
+              res();
+            } else {
+              img.onload = res;
+              img.onerror = rej;
+            }
+          });
+
+          try {
+            await Promise.race([waitForImage, timeout]); // Whichever finishes first
+            const blob = await fetchImageAsBlob(imgURL);
+            zip.file(`${asin}.${label}.jpg`, blob);
+          } catch (e) {
+            console.warn(`❌ Skipped: ${label} (timeout or error)`);
+          }
+
+          completed++;
+          progressText.textContent = `📷 Processed ${completed} of ${total} images...`;
+          resolve();
+        });
       });
 
-      // Download
+
+      await Promise.all(downloadPromises);
+      progressText.textContent = '✅ All images processed. Generating ZIP...';
+
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
       const url = URL.createObjectURL(zipBlob);
-      const a = document.createElement("a");
+      const a = document.createElement('a');
       a.href = url;
-      a.download = `ALL_IMAGES_${zipNum}.zip`;
+      a.download = `${asin}_images.zip`;
       a.click();
 
-      setTimeout(() => URL.revokeObjectURL(url), 8000);
-
-      progressText.textContent = `ZIP ${zipNum} ready.`;
-      zipNum++;
-
-      await new Promise(r => setTimeout(r, 300)); // cool down
+      zipLoading.classList.add('hidden');
     }
 
-    overlay.classList.add("hidden");
-    alert("🎉 All ZIPs created!");
+    /* ===========================
+       Missing Image CSV Logic (Grouped by Product)
+       =========================== */
+    document.getElementById('downloadMissingBtn').addEventListener('click', async () => {
+      const overlay = document.getElementById('missingLoadingOverlay');
+      const progressText = document.getElementById('missingProgressText');
+      overlay.classList.remove('hidden');
+      progressText.textContent = '🔍 Checking image URLs...';
 
-  } catch (err) {
-    console.error(err);
-    overlay.classList.add("hidden");
-    alert("❌ ZIP ALL failed. Check console.");
-  }
-});
+      const missingMap = new Map(); // Map SKU → { title, category, listingType, labels[] }
+      const products = window.productData;
+      let totalChecked = 0;
+      const totalImages = products.reduce((sum, p) => sum + p.images.length, 0);
+
+      // Utility: Wait for a bit to stagger fetches
+      function delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+      }
+
+      // ✅ Accurate image existence check without downloading the full image
+      // ✅ More reliable image check using <img> element
+      function checkImageURL(url, timeout = 20000) {
+        return new Promise((resolve) => {
+          const img = new Image();
+          let done = false;
+
+          const timer = setTimeout(() => {
+            if (!done) {
+              done = true;
+              resolve(false); // Timed out = failed
+            }
+          }, timeout);
+
+          img.onload = () => {
+            if (!done) {
+              done = true;
+              clearTimeout(timer);
+              resolve(true); // Loaded successfully
+            }
+          };
+
+          img.onerror = () => {
+            if (!done) {
+              done = true;
+              clearTimeout(timer);
+              resolve(false); // Failed to load
+            }
+          };
+
+          img.src = url;
+        });
+      }
+
+
+      const allChecks = [];
+
+      for (const product of products) {
+        const { sku, title, category = '', listingType = '', images } = product;
+
+        images.forEach((url, index) => {
+          const label = getImageLabel(index); // MAIN, PT01, PT02...
+
+          allChecks.push(
+            delay(index * 50).then(() => checkImageURL(url).then(exists => {
+              totalChecked++;
+              progressText.textContent = `🖼️ Checked ${totalChecked} of ${totalImages} images...`;
+
+              if (!exists) {
+                if (!missingMap.has(sku)) {
+                  missingMap.set(sku, {
+                    sku,
+                    title,
+                    category,
+                    listingType,
+                    labels: []
+                  });
+                }
+                missingMap.get(sku).labels.push(label);
+              }
+            }))
+          );
+        });
+      }
+
+      await Promise.allSettled(allChecks);
+      overlay.classList.add('hidden');
+
+      if (missingMap.size === 0) {
+        alert("✅ No missing images found!");
+        return;
+      }
+
+      // 🧾 Generate CSV content
+      const csvHeader = 'sku,title,category,listingType,missingImageLabels\n';
+      const csvRows = Array.from(missingMap.values()).map(item =>
+        `${item.sku},"${item.title.replace(/"/g, '""')}",${item.category},${item.listingType},"${item.labels.join(', ')}"`
+      );
+
+      const csvContent = csvHeader + csvRows.join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'missing_images_report.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    });
+    /* ===================================================
+       📦 ZIP ALL IMAGES — SEPARATE BUTTON (SAFE / INDEPENDENT)
+       ASIN-based naming, multi-threaded, skip missing,
+       1500 images per ZIP, uses existing overlay.
+       =================================================== */
+
+    document.getElementById("downloadZipAllBtn").addEventListener("click", async () => {
+      const overlay = document.getElementById("zipLoadingOverlay");
+      const progressText = document.getElementById("zipProgressText");
+
+      try {
+        overlay.classList.remove("hidden");
+        progressText.textContent = "Loading ASIN mappings...";
+
+        // Load asin_map_zip.json
+        const asinMap = await fetch("asin_map_zip.json").then(r => r.json());
+        const asinBySku = new Map(asinMap.map(e => [e.sku, e.asin]));
+
+        const products = window.productData || [];
+        const allItems = [];
+
+        // Build list (filename = ASIN.MAIN/PT01/PT02/etc)
+        products.forEach(product => {
+          const asin = asinBySku.get(product.sku);
+          if (!asin) return;
+
+          product.images.forEach((imgUrl, idx) => {
+            allItems.push({
+              url: imgUrl,
+              filename: `${asin}.${getImageLabel(idx)}.jpg`
+            });
+          });
+        });
+
+        if (allItems.length === 0) {
+          overlay.classList.add("hidden");
+          alert("No ASIN-mapped images found.");
+          return;
+        }
+
+        const CHUNK_SIZE = 1000;     // max per ZIP
+        const CONCURRENCY = 12;      // multi-thread download
+
+        // Safe fetch with timeout + auto skip
+        async function fetchWithTimeout(url, timeout = 15000) {
+          try {
+            const controller = new AbortController();
+            const id = setTimeout(() => controller.abort(), timeout);
+            const res = await fetch(url, { signal: controller.signal });
+            clearTimeout(id);
+            if (!res.ok) throw new Error();
+            return await res.blob();
+          } catch {
+            return null;
+          }
+        }
+
+        function formatSeconds(sec) {
+          if (!isFinite(sec) || sec <= 0) return "—";
+          const m = Math.floor(sec / 60);
+          const s = Math.floor(sec % 60);
+          return m ? `${m}m ${s}s` : `${s}s`;
+        }
+
+        let zipNum = 1;
+
+        // ============================
+        // ZIP GENERATION in chunks
+        // ============================
+        for (let start = 0; start < allItems.length; start += CHUNK_SIZE) {
+          const chunk = allItems.slice(start, start + CHUNK_SIZE);
+          const total = chunk.length;
+          let processed = 0;
+          let skipped = 0;
+          let pointer = 0;
+
+          const zip = new JSZip();
+          const startTime = performance.now();
+
+          progressText.textContent = `Starting ZIP ${zipNum} (${total} images)...`;
+
+          // Worker thread
+          async function worker() {
+            while (true) {
+              const idx = pointer++;
+              if (idx >= chunk.length) return;
+
+              const item = chunk[idx];
+              const blob = await fetchWithTimeout(item.url);
+
+              if (blob) zip.file(item.filename, blob);
+              else skipped++;
+
+              processed++;
+
+              // ETA
+              const elapsed = (performance.now() - startTime) / 1000;
+              const avg = elapsed / processed;
+              const eta = avg * (total - processed);
+
+              progressText.textContent =
+                `ZIP ${zipNum}: ${processed}/${total} — Skipped ${skipped} — ETA ${formatSeconds(eta)}`;
+            }
+          }
+
+          // Launch worker pool
+          const workers = [];
+          const count = Math.min(CONCURRENCY, total);
+          for (let i = 0; i < count; i++) workers.push(worker());
+          await Promise.all(workers);
+
+          progressText.textContent = `Generating ZIP ${zipNum}...`;
+
+          const zipBlob = await zip.generateAsync({ type: "blob" }, meta => {
+            progressText.textContent =
+              `ZIP ${zipNum}: creating file ${Math.round(meta.percent)}%`;
+          });
+
+          // Download
+          const url = URL.createObjectURL(zipBlob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `ALL_IMAGES_${zipNum}.zip`;
+          a.click();
+
+          setTimeout(() => URL.revokeObjectURL(url), 8000);
+
+          progressText.textContent = `ZIP ${zipNum} ready.`;
+          zipNum++;
+
+          await new Promise(r => setTimeout(r, 300)); // cool down
+        }
+
+        overlay.classList.add("hidden");
+        alert("🎉 All ZIPs created!");
+
+      } catch (err) {
+        console.error(err);
+        overlay.classList.add("hidden");
+        alert("❌ ZIP ALL failed. Check console.");
+      }
+    });
 
     /* ===========================
       🔝 Back to Top Button
          =========================== */
-        const backToTopBtn = document.getElementById("backToTop");
+    const backToTopBtn = document.getElementById("backToTop");
     // Show/hide when scrolling
     window.addEventListener("scroll", () => {
       if (window.scrollY > 300) {
@@ -578,10 +578,54 @@ document.getElementById("downloadZipAllBtn").addEventListener("click", async () 
     /* ===========================
        Search & Filters
        =========================== */
-    searchBar.addEventListener('input', () => renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value, packagingTypeFilter.value));
-    categoryFilter.addEventListener('change', () => renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value, packagingTypeFilter.value));
-    listingTypeFilter.addEventListener('change', () => renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value, packagingTypeFilter.value));
-    packagingTypeFilter.addEventListener('change', () => renderProducts(searchBar.value, categoryFilter.value, listingTypeFilter.value, packagingTypeFilter.value));
+    /* ===========================
+       Search & Filters (With URL Sync)
+       =========================== */
+    function updateStateAndRender() {
+      const filter = searchBar.value;
+      const category = categoryFilter.value;
+      const listingType = listingTypeFilter.value;
+      const packagingType = packagingTypeFilter.value;
+
+      updateURLParams(filter, category, listingType, packagingType);
+      renderProducts(filter, category, listingType, packagingType);
+    }
+
+    searchBar.addEventListener('input', updateStateAndRender);
+    categoryFilter.addEventListener('change', updateStateAndRender);
+    listingTypeFilter.addEventListener('change', updateStateAndRender);
+    packagingTypeFilter.addEventListener('change', updateStateAndRender);
+
+    /* ===========================
+       URL Management Helpers
+       =========================== */
+    function updateURLParams(search, category, listingType, packagingType) {
+      const url = new URL(window.location);
+
+      if (search) url.searchParams.set('search', search); else url.searchParams.delete('search');
+      if (category) url.searchParams.set('category', category); else url.searchParams.delete('category');
+      if (listingType) url.searchParams.set('listingType', listingType); else url.searchParams.delete('listingType');
+      if (packagingType) url.searchParams.set('packagingType', packagingType); else url.searchParams.delete('packagingType');
+
+      window.history.replaceState({}, '', url);
+    }
+
+    function applyURLParams() {
+      const params = new URLSearchParams(window.location.search);
+      const search = params.get('search') || '';
+      const category = params.get('category') || '';
+      const listingType = params.get('listingType') || '';
+      const packagingType = params.get('packagingType') || '';
+
+      // Set DOM elements
+      searchBar.value = search;
+      categoryFilter.value = category;
+      listingTypeFilter.value = listingType;
+      packagingTypeFilter.value = packagingType;
+
+      // Render with these initial values
+      renderProducts(search, category, listingType, packagingType);
+    }
 
     /* ===========================
        Mobile Menu Toggle
@@ -593,5 +637,5 @@ document.getElementById("downloadZipAllBtn").addEventListener("click", async () 
     /* ===========================
        Initial Render
        =========================== */
-    renderProducts();
+    applyURLParams();
   });

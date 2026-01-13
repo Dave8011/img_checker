@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>🛍️ Product Gallery</title>
-  
+
   <!-- 💅 Main CSS -->
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
 
   <!-- ===========================
@@ -17,8 +19,9 @@
 
   <div id="controls">
     <!-- 🔍 Search Input (Visible on all screens) -->
-    <input type="text" id="searchBar" placeholder="🔍 Search by SKU or Name..." aria-label="Search products by SKU or Name" /> <br>
-    
+    <input type="text" id="searchBar" placeholder="🔍 Search by SKU or Name..."
+      aria-label="Search products by SKU or Name" /> <br>
+
     <!-- ☰ Hamburger Menu for Mobile -->
     <div id="menuToggle" aria-label="Toggle Filters/Actions" tabindex="0">☰</div>
 
@@ -38,6 +41,7 @@
 
       <button id="downloadMissingBtn">⬇️ Missing IMG</button>
       <button id="downloadZipBtn">📬 Product ZIP</button>
+      <button id="downloadTypeBtn">📑 Type ZIP</button>
       <button id="downloadZipAllBtn">📮 ZIP ALL</button>
     </div>
   </div>
@@ -72,6 +76,25 @@
   </div>
 
   <!-- ===========================
+       📑 ZIP Type Selection Popup
+       =========================== -->
+  <div id="typeZipPopup" class="popup hidden">
+    <div class="popup-content">
+      <h3>📑 Select Image Type to Download</h3>
+      <p style="font-size: 0.9rem; color: #666; margin-bottom: 15px;">
+        Select an image type (e.g., MAIN, PT01) to download that specific image from ALL products.
+      </p>
+
+      <select id="typeSelect" style="width: 100%; padding: 10px; font-size: 1.1rem; margin-bottom: 20px;">
+        <!-- Options populated by JS -->
+      </select>
+
+      <button id="typeZipConfirmBtn">⬇️ Download All of Type</button>
+      <button id="typeZipPopupCloseBtn" style="background: #e74c3c; margin-top: 10px;">❌ Cancel</button>
+    </div>
+  </div>
+
+  <!-- ===========================
        🔄 ZIP Loading Overlay
        =========================== -->
   <div id="zipLoadingOverlay" class="popup hidden">
@@ -85,22 +108,23 @@
   <!-- ===========================
      ⏳ Missing Image Loading Overlay
      =========================== -->
-<div id="missingLoadingOverlay" class="popup hidden">
-  <div class="popup-content">
-    <div class="spinner"></div>
-    <p style="margin-top: 10px;">Checking for missing images...</p>
-    <p id="missingProgressText" style="font-size: 0.95rem; margin-top: 8px; color: #555;"></p>
+  <div id="missingLoadingOverlay" class="popup hidden">
+    <div class="popup-content">
+      <div class="spinner"></div>
+      <p style="margin-top: 10px;">Checking for missing images...</p>
+      <p id="missingProgressText" style="font-size: 0.95rem; margin-top: 8px; color: #555;"></p>
+    </div>
   </div>
-</div>
-    
+
   <!-- ===========================
        📜 Scripts
        =========================== -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.0/jszip.min.js"></script>
   <script type="module" src="scripts/main.js"></script>
 
-<!-- 🔝 Back to Top Button -->
-<button id="backToTop" aria-label="Back to top" title="Back to top">⬆️</button>
+  <!-- 🔝 Back to Top Button -->
+  <button id="backToTop" aria-label="Back to top" title="Back to top">⬆️</button>
 
 </body>
+
 </html>

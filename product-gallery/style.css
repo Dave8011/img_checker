@@ -441,6 +441,9 @@ h1 {
 #downloadZipBtn {
   background-color: #2c922c;
 }
+#downloadTypeBtn {
+  background-color: #8e44ad;
+}
 #downloadZipAllBtn {
   background-color: #ff9800;
   color: white;

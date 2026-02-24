@@ -98,7 +98,7 @@ fetch(`../products.json?t=${Date.now()}`)
             ${product.listingType ? `<div class="listing-type-tag">${product.listingType}</div>` : ''}
             ${product.packagingType ? `<div class="packaging-type-tag">${product.packagingType}</div>` : ''}
           </div>
-          <h2>${product.title} (<code>${product.sku}</code>) - ${product.asin || 'No ASIN'}</h2>
+          <h2>${product.title} (<code>${product.sku}</code>) - ${product.asin ? product.asin.split(',').map(a => `<a href="https://amazon.in/dp/${a.trim()}" target="_blank" style="text-decoration: none; color: #204ea8;">${a.trim()}</a>`).join(', ') : 'No ASIN'}</h2>
           <div class="images">
             ${product.images.map((url, i) => `
               <div class="image-wrapper" tabindex="0">

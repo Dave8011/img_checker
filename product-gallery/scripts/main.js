@@ -98,7 +98,7 @@ fetch(`../products.json?t=${Date.now()}`)
             ${product.listingType ? `<div class="listing-type-tag">${product.listingType}</div>` : ''}
             ${product.packagingType ? `<div class="packaging-type-tag">${product.packagingType}</div>` : ''}
           </div>
-          <h2>${product.title} (<code>${product.sku}</code>)</h2>
+          <h2>${product.title} (<code>${product.sku}</code>) - ${product.asin || 'No ASIN'}</h2>
           <div class="images">
             ${product.images.map((url, i) => `
               <div class="image-wrapper" tabindex="0">

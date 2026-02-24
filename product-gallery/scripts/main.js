@@ -7,7 +7,8 @@ fetch(`../products.json?t=${Date.now()}`)
     // Normalize product keys (fix PackagingType → packagingType)
     data = data.map(p => ({
       ...p,
-      packagingType: p.packagingType || p.PackagingType || ""
+      packagingType: p.packagingType || p.PackagingType || "",
+      brand: p.brandName || p.BrandName || p.brand || p.Brand || ""
     }));
     window.productData = data;
 
@@ -20,6 +21,7 @@ fetch(`../products.json?t=${Date.now()}`)
     const gallery = document.getElementById('gallery');
     const searchBar = document.getElementById('searchBar');
     const categoryFilter = document.getElementById('categoryFilter');
+    const brandFilter = document.getElementById('brandFilter');
     const listingTypeFilter = document.getElementById('listingTypeFilter');
     const packagingTypeFilter = document.getElementById('packagingTypeFilter');
     const lightbox = document.getElementById('lightbox');
@@ -30,6 +32,14 @@ fetch(`../products.json?t=${Date.now()}`)
     /* ===========================
        Populate Filters
        =========================== */
+    const brands = [...new Set(data.map(p => p.brand).filter(Boolean))];
+    brands.forEach(brand => {
+      const opt = document.createElement('option');
+      opt.value = brand;
+      opt.textContent = brand;
+      brandFilter.appendChild(opt);
+    });
+
     const categories = [...new Set(data.map(p => p.category).filter(Boolean))];
     categories.forEach(cat => {
       const opt = document.createElement('option');
@@ -57,13 +67,15 @@ fetch(`../products.json?t=${Date.now()}`)
     /* ===========================
        Render Product Gallery
        =========================== */
-    function renderProducts(filter = '', category = '', listingType = '', packagingType = '') {
+    function renderProducts(filter = '', category = '', listingType = '', packagingType = '', brand = '') {
       gallery.innerHTML = '';
 
       const filtered = data.filter(p =>
         (p.title.toLowerCase().includes(filter.toLowerCase()) ||
-          p.sku.toLowerCase().includes(filter.toLowerCase())) &&
+          p.sku.toLowerCase().includes(filter.toLowerCase()) ||
+          (p.asin && p.asin.toLowerCase().includes(filter.toLowerCase()))) &&
         (category === '' || p.category === category) &&
+        (brand === '' || p.brand === brand) &&
         (listingType === '' || p.listingType === listingType) &&
         (packagingType === '' || p.packagingType === packagingType)
       );
@@ -196,7 +208,7 @@ fetch(`../products.json?t=${Date.now()}`)
         resultsDiv.innerHTML = '';
 
         const matches = window.productData.filter(p =>
-          p.sku.toLowerCase().includes(query) || p.title.toLowerCase().includes(query)
+          p.sku.toLowerCase().includes(query) || p.title.toLowerCase().includes(query) || (p.asin && p.asin.toLowerCase().includes(query))
         );
 
         matches.forEach(product => {
@@ -748,26 +760,29 @@ fetch(`../products.json?t=${Date.now()}`)
     function updateStateAndRender() {
       const filter = searchBar.value;
       const category = categoryFilter.value;
+      const brand = brandFilter?.value || '';
       const listingType = listingTypeFilter.value;
       const packagingType = packagingTypeFilter.value;
 
-      updateURLParams(filter, category, listingType, packagingType);
-      renderProducts(filter, category, listingType, packagingType);
+      updateURLParams(filter, category, listingType, packagingType, brand);
+      renderProducts(filter, category, listingType, packagingType, brand);
     }
 
     searchBar.addEventListener('input', updateStateAndRender);
     categoryFilter.addEventListener('change', updateStateAndRender);
+    if (brandFilter) brandFilter.addEventListener('change', updateStateAndRender);
     listingTypeFilter.addEventListener('change', updateStateAndRender);
     packagingTypeFilter.addEventListener('change', updateStateAndRender);
 
     /* ===========================
        URL Management Helpers
        =========================== */
-    function updateURLParams(search, category, listingType, packagingType) {
+    function updateURLParams(search, category, listingType, packagingType, brand) {
       const url = new URL(window.location);
 
       if (search) url.searchParams.set('search', search); else url.searchParams.delete('search');
       if (category) url.searchParams.set('category', category); else url.searchParams.delete('category');
+      if (brand) url.searchParams.set('brand', brand); else url.searchParams.delete('brand');
       if (listingType) url.searchParams.set('listingType', listingType); else url.searchParams.delete('listingType');
       if (packagingType) url.searchParams.set('packagingType', packagingType); else url.searchParams.delete('packagingType');
 
@@ -778,17 +793,19 @@ fetch(`../products.json?t=${Date.now()}`)
       const params = new URLSearchParams(window.location.search);
       const search = params.get('search') || '';
       const category = params.get('category') || '';
+      const brand = params.get('brand') || '';
       const listingType = params.get('listingType') || '';
       const packagingType = params.get('packagingType') || '';
 
       // Set DOM elements
       searchBar.value = search;
       categoryFilter.value = category;
+      if (brandFilter) brandFilter.value = brand;
       listingTypeFilter.value = listingType;
       packagingTypeFilter.value = packagingType;
 
       // Render with these initial values
-      renderProducts(search, category, listingType, packagingType);
+      renderProducts(search, category, listingType, packagingType, brand);
     }
 
     /* ===========================

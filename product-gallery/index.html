@@ -19,14 +19,18 @@
 
   <div id="controls">
     <!-- 🔍 Search Input (Visible on all screens) -->
-    <input type="text" id="searchBar" placeholder="🔍 Search by SKU or Name..."
-      aria-label="Search products by SKU or Name" /> <br>
+    <input type="text" id="searchBar" placeholder="🔍 Search by SKU, Name or ASIN..."
+      aria-label="Search products by SKU, Name, or ASIN" /> <br>
 
     <!-- ☰ Hamburger Menu for Mobile -->
     <div id="menuToggle" aria-label="Toggle Filters/Actions" tabindex="0">☰</div>
 
     <!-- 🎛️ Hidden Filter/Button Group (Toggled on mobile) -->
     <div id="controlGroup">
+      <select id="brandFilter" aria-label="Filter by brand">
+        <option value="">🏢 All Brands</option>
+      </select>
+
       <select id="categoryFilter" aria-label="Filter by category">
         <option value="">📂 All Categories</option>
       </select>
@@ -37,6 +41,10 @@
 
       <select id="packagingTypeFilter" aria-label="Filter by packaging type">
         <option value="">📦 Packaging Type</option>
+      </select>
+
+      <select id="brandNameFilter" aria-label="Filter by brand name">
+        <option value="">📦 Brand Name</option>
       </select>
 
       <button id="downloadMissingBtn" title="Check for missing images and download a CSV report">⬇️ Missing IMG</button>
@@ -72,7 +80,7 @@
   <div id="zipPopup" class="popup hidden">
     <div class="popup-content">
       <h3>🔍 Search Product to ZIP</h3>
-      <input type="text" id="zipSearchInput" placeholder="Search by SKU or Name..." />
+      <input type="text" id="zipSearchInput" placeholder="Search by SKU, Name or ASIN..." />
       <div id="zipSearchResults" class="zip-results"></div>
       <button id="zipDownloadConfirmBtn" disabled>⬇️ Download ZIP</button>
       <button id="zipPopupCloseBtn">❌ Cancel</button>

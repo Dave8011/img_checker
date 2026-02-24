@@ -62,7 +62,7 @@ h1 {
 /* ===========================
    Inputs and Dropdowns
    =========================== */
-#searchBar, #categoryFilter, #listingTypeFilter, #packagingTypeFilter {
+#searchBar, #brandFilter, #categoryFilter, #listingTypeFilter, #packagingTypeFilter {
   padding: 12px 20px;
   font-size: 16px;
   border-radius: 30px;
@@ -76,7 +76,7 @@ h1 {
   max-width: 500px;
 }
 
-#categoryFilter, #listingTypeFilter, #packagingTypeFilter {
+#brandFilter, #categoryFilter, #listingTypeFilter, #packagingTypeFilter {
   background: #fff;
   cursor: pointer;
 }
@@ -477,6 +477,7 @@ h1 {
     display: flex; /* shown when toggled */
   }
 
+  #brandFilter,
   #categoryFilter,
   #listingTypeFilter,
   #packagingTypeFilter,

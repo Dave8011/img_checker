@@ -108,38 +108,7 @@ fetch(`../products.json?t=${Date.now()}`)
           </div>
         `;
         gallery.appendChild(div);
-      }); function checkImageURL(url, timeout = 10000) {
-        return new Promise((resolve) => {
-          const img = new Image();
-          let completed = false;
-
-          const timer = setTimeout(() => {
-            if (!completed) {
-              completed = true;
-              resolve(false); // Timeout → failed
-            }
-          }, timeout);
-
-          img.onload = () => {
-            if (!completed) {
-              completed = true;
-              clearTimeout(timer);
-              resolve(true); // Image loaded
-            }
-          };
-
-          img.onerror = () => {
-            if (!completed) {
-              completed = true;
-              clearTimeout(timer);
-              resolve(false); // Image failed to load
-            }
-          };
-
-          img.src = url;
-        });
-      }
-
+      });
 
       // Lightbox trigger
       document.querySelectorAll('.image-wrapper').forEach(wrapper => {
@@ -320,6 +289,7 @@ fetch(`../products.json?t=${Date.now()}`)
 
     /* ===========================
        Missing Image CSV Logic (Grouped by Product)
+       Controlled concurrency to avoid false negatives
        =========================== */
     document.getElementById('downloadMissingBtn').addEventListener('click', async () => {
       const overlay = document.getElementById('missingLoadingOverlay');
@@ -332,14 +302,8 @@ fetch(`../products.json?t=${Date.now()}`)
       let totalChecked = 0;
       const totalImages = products.reduce((sum, p) => sum + p.images.length, 0);
 
-      // Utility: Wait for a bit to stagger fetches
-      function delay(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-      }
-
-      // ✅ Accurate image existence check without downloading the full image
-      // ✅ More reliable image check using <img> element
-      function checkImageURL(url, timeout = 20000) {
+      // ✅ Reliable image check with retry support
+      function checkImageURL(url, timeout = 25000) {
         return new Promise((resolve) => {
           const img = new Image();
           let done = false;
@@ -347,6 +311,7 @@ fetch(`../products.json?t=${Date.now()}`)
           const timer = setTimeout(() => {
             if (!done) {
               done = true;
+              img.src = ''; // Cancel the load
               resolve(false); // Timed out = failed
             }
           }, timeout);
@@ -371,38 +336,65 @@ fetch(`../products.json?t=${Date.now()}`)
         });
       }
 
+      // ✅ Retry wrapper — retry up to `retries` times on failure
+      async function checkWithRetry(url, retries = 2) {
+        for (let attempt = 0; attempt <= retries; attempt++) {
+          const exists = await checkImageURL(url);
+          if (exists) return true;
+          // Small delay before retry to let connections free up
+          if (attempt < retries) {
+            await new Promise(r => setTimeout(r, 500));
+          }
+        }
+        return false;
+      }
 
-      const allChecks = [];
-
+      // ✅ Build a flat task list: [{ sku, title, category, listingType, url, label }, ...]
+      const tasks = [];
       for (const product of products) {
         const { sku, title, category = '', listingType = '', images } = product;
-
         images.forEach((url, index) => {
-          const label = getImageLabel(index); // MAIN, PT01, PT02...
-
-          allChecks.push(
-            delay(index * 50).then(() => checkImageURL(url).then(exists => {
-              totalChecked++;
-              progressText.textContent = `🖼️ Checked ${totalChecked} of ${totalImages} images...`;
-
-              if (!exists) {
-                if (!missingMap.has(sku)) {
-                  missingMap.set(sku, {
-                    sku,
-                    title,
-                    category,
-                    listingType,
-                    labels: []
-                  });
-                }
-                missingMap.get(sku).labels.push(label);
-              }
-            }))
-          );
+          tasks.push({ sku, title, category, listingType, url, label: getImageLabel(index) });
         });
       }
 
-      await Promise.allSettled(allChecks);
+      // ✅ Controlled concurrency — max 8 parallel image checks
+      const CONCURRENCY = 8;
+      let pointer = 0;
+
+      async function worker() {
+        while (true) {
+          const idx = pointer++;
+          if (idx >= tasks.length) return;
+
+          const task = tasks[idx];
+          const exists = await checkWithRetry(task.url);
+
+          totalChecked++;
+          progressText.textContent = `🖼️ Checked ${totalChecked} of ${totalImages} images...`;
+
+          if (!exists) {
+            if (!missingMap.has(task.sku)) {
+              missingMap.set(task.sku, {
+                sku: task.sku,
+                title: task.title,
+                category: task.category,
+                listingType: task.listingType,
+                labels: []
+              });
+            }
+            missingMap.get(task.sku).labels.push(task.label);
+          }
+        }
+      }
+
+      // Launch worker pool
+      const workers = [];
+      for (let i = 0; i < Math.min(CONCURRENCY, tasks.length); i++) {
+        workers.push(worker());
+      }
+      await Promise.all(workers);
+
       overlay.classList.add('hidden');
 
       if (missingMap.size === 0) {
@@ -751,9 +743,6 @@ fetch(`../products.json?t=${Date.now()}`)
       window.scrollTo({ top: 0, behavior: "smooth" });
     });
 
-    /* ===========================
-       Search & Filters
-       =========================== */
     /* ===========================
        Search & Filters (With URL Sync)
        =========================== */

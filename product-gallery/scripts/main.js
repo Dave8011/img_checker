@@ -303,35 +303,33 @@ fetch(`../products.json?t=${Date.now()}`)
       const totalImages = products.reduce((sum, p) => sum + p.images.length, 0);
       const startTime = performance.now();
 
-      // ⚡ Fast GET check — abort immediately after status (no body downloaded)
-      // HEAD is unreliable on some CDNs, so we use GET but abort the body transfer
-      function checkImageURL(url, timeout = 8000) {
-        const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), timeout);
+      // ✅ Accurate image check using new Image() (CORS-free, works on all CDNs)
+      function checkImageURL(url, timeout = 10000) {
+        return new Promise((resolve) => {
+          const img = new Image();
+          let done = false;
 
-        return fetch(url, { method: 'GET', signal: controller.signal })
-          .then(res => {
-            clearTimeout(timer);
-            const ok = res.ok;
-            controller.abort(); // Cancel body download immediately
-            return ok;
-          })
-          .catch(() => {
-            clearTimeout(timer);
-            return false;
-          });
+          const timer = setTimeout(() => {
+            if (!done) { done = true; img.src = ''; resolve(false); }
+          }, timeout);
+
+          img.onload = () => {
+            if (!done) { done = true; clearTimeout(timer); resolve(true); }
+          };
+          img.onerror = () => {
+            if (!done) { done = true; clearTimeout(timer); resolve(false); }
+          };
+
+          img.src = url;
+        });
       }
 
-      // ⚡ Retry once on failure (down from 2)
-      async function checkWithRetry(url, retries = 1) {
-        for (let attempt = 0; attempt <= retries; attempt++) {
-          const exists = await checkImageURL(url);
-          if (exists) return true;
-          if (attempt < retries) {
-            await new Promise(r => setTimeout(r, 200));
-          }
-        }
-        return false;
+      // ⚡ Single retry on failure
+      async function checkWithRetry(url) {
+        const exists = await checkImageURL(url);
+        if (exists) return true;
+        await new Promise(r => setTimeout(r, 200));
+        return await checkImageURL(url);
       }
 
       function formatSeconds(sec) {
@@ -350,7 +348,7 @@ fetch(`../products.json?t=${Date.now()}`)
         });
       }
 
-      // ⚡ High concurrency — 30 parallel GET checks (aborted after status)
+      // ⚡ High concurrency — 30 parallel image checks (up from 8)
       const CONCURRENCY = 30;
       let pointer = 0;
 

@@ -303,25 +303,23 @@ fetch(`../products.json?t=${Date.now()}`)
       const totalImages = products.reduce((sum, p) => sum + p.images.length, 0);
       const startTime = performance.now();
 
-      // ⚡ Fast HEAD-request check (no image data downloaded)
+      // ⚡ Fast GET check — abort immediately after status (no body downloaded)
+      // HEAD is unreliable on some CDNs, so we use GET but abort the body transfer
       function checkImageURL(url, timeout = 8000) {
-        return new Promise((resolve) => {
-          const controller = new AbortController();
-          const timer = setTimeout(() => {
-            controller.abort();
-            resolve(false);
-          }, timeout);
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeout);
 
-          fetch(url, { method: 'HEAD', signal: controller.signal })
-            .then(res => {
-              clearTimeout(timer);
-              resolve(res.ok);
-            })
-            .catch(() => {
-              clearTimeout(timer);
-              resolve(false);
-            });
-        });
+        return fetch(url, { method: 'GET', signal: controller.signal })
+          .then(res => {
+            clearTimeout(timer);
+            const ok = res.ok;
+            controller.abort(); // Cancel body download immediately
+            return ok;
+          })
+          .catch(() => {
+            clearTimeout(timer);
+            return false;
+          });
       }
 
       // ⚡ Retry once on failure (down from 2)
@@ -352,8 +350,8 @@ fetch(`../products.json?t=${Date.now()}`)
         });
       }
 
-      // ⚡ High concurrency — 50 parallel HEAD checks
-      const CONCURRENCY = 50;
+      // ⚡ High concurrency — 30 parallel GET checks (aborted after status)
+      const CONCURRENCY = 30;
       let pointer = 0;
 
       async function worker() {

@@ -289,7 +289,7 @@ fetch(`../products.json?t=${Date.now()}`)
 
     /* ===========================
        Missing Image CSV Logic (Grouped by Product)
-       Controlled concurrency to avoid false negatives
+       ⚡ Optimized: fetch HEAD + high concurrency
        =========================== */
     document.getElementById('downloadMissingBtn').addEventListener('click', async () => {
       const overlay = document.getElementById('missingLoadingOverlay');
@@ -301,55 +301,49 @@ fetch(`../products.json?t=${Date.now()}`)
       const products = window.productData;
       let totalChecked = 0;
       const totalImages = products.reduce((sum, p) => sum + p.images.length, 0);
+      const startTime = performance.now();
 
-      // ✅ Reliable image check with retry support
-      function checkImageURL(url, timeout = 25000) {
+      // ⚡ Fast HEAD-request check (no image data downloaded)
+      function checkImageURL(url, timeout = 8000) {
         return new Promise((resolve) => {
-          const img = new Image();
-          let done = false;
-
+          const controller = new AbortController();
           const timer = setTimeout(() => {
-            if (!done) {
-              done = true;
-              img.src = ''; // Cancel the load
-              resolve(false); // Timed out = failed
-            }
+            controller.abort();
+            resolve(false);
           }, timeout);
 
-          img.onload = () => {
-            if (!done) {
-              done = true;
+          fetch(url, { method: 'HEAD', signal: controller.signal })
+            .then(res => {
               clearTimeout(timer);
-              resolve(true); // Loaded successfully
-            }
-          };
-
-          img.onerror = () => {
-            if (!done) {
-              done = true;
+              resolve(res.ok);
+            })
+            .catch(() => {
               clearTimeout(timer);
-              resolve(false); // Failed to load
-            }
-          };
-
-          img.src = url;
+              resolve(false);
+            });
         });
       }
 
-      // ✅ Retry wrapper — retry up to `retries` times on failure
-      async function checkWithRetry(url, retries = 2) {
+      // ⚡ Retry once on failure (down from 2)
+      async function checkWithRetry(url, retries = 1) {
         for (let attempt = 0; attempt <= retries; attempt++) {
           const exists = await checkImageURL(url);
           if (exists) return true;
-          // Small delay before retry to let connections free up
           if (attempt < retries) {
-            await new Promise(r => setTimeout(r, 500));
+            await new Promise(r => setTimeout(r, 200));
           }
         }
         return false;
       }
 
-      // ✅ Build a flat task list: [{ sku, title, category, listingType, url, label }, ...]
+      function formatSeconds(sec) {
+        if (!isFinite(sec) || sec <= 0) return '—';
+        const m = Math.floor(sec / 60);
+        const s = Math.floor(sec % 60);
+        return m ? `${m}m ${s}s` : `${s}s`;
+      }
+
+      // ✅ Build a flat task list
       const tasks = [];
       for (const product of products) {
         const { sku, title, category = '', listingType = '', images } = product;
@@ -358,8 +352,8 @@ fetch(`../products.json?t=${Date.now()}`)
         });
       }
 
-      // ✅ Controlled concurrency — max 8 parallel image checks
-      const CONCURRENCY = 8;
+      // ⚡ High concurrency — 50 parallel HEAD checks
+      const CONCURRENCY = 50;
       let pointer = 0;
 
       async function worker() {
@@ -371,7 +365,12 @@ fetch(`../products.json?t=${Date.now()}`)
           const exists = await checkWithRetry(task.url);
 
           totalChecked++;
-          progressText.textContent = `🖼️ Checked ${totalChecked} of ${totalImages} images...`;
+
+          // ETA calculation
+          const elapsed = (performance.now() - startTime) / 1000;
+          const speed = totalChecked / elapsed;
+          const remaining = (totalImages - totalChecked) / speed;
+          progressText.textContent = `🖼️ ${totalChecked}/${totalImages} — ${speed.toFixed(0)} img/s — ETA ${formatSeconds(remaining)}`;
 
           if (!exists) {
             if (!missingMap.has(task.sku)) {
@@ -395,10 +394,11 @@ fetch(`../products.json?t=${Date.now()}`)
       }
       await Promise.all(workers);
 
+      const totalElapsed = ((performance.now() - startTime) / 1000).toFixed(1);
       overlay.classList.add('hidden');
 
       if (missingMap.size === 0) {
-        alert("✅ No missing images found!");
+        alert(`✅ No missing images found! (${totalElapsed}s)`);
         return;
       }
 
@@ -417,6 +417,8 @@ fetch(`../products.json?t=${Date.now()}`)
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
+
+      alert(`✅ Done! Found ${missingMap.size} products with missing images. (${totalElapsed}s)`);
     });
     /* ===================================================
        📦 ZIP ALL IMAGES — SEPARATE BUTTON (SAFE / INDEPENDENT)

@@ -78,6 +78,12 @@
       <h3>🔍 Search Product to ZIP</h3>
       <input type="text" id="zipSearchInput" placeholder="Search by SKU, Name or ASIN..." />
       <div id="zipSearchResults" class="zip-results"></div>
+      <label for="zipNamingFormat" style="font-size:0.9rem;color:#555;margin-top:10px;display:block;">📝 File
+        naming:</label>
+      <select id="zipNamingFormat" style="width:100%;padding:8px;font-size:1rem;margin-bottom:12px;">
+        <option value="asin">ASIN (e.g. B09WN1B6JZ.MAIN.jpg)</option>
+        <option value="sku">SKU (e.g. PT0001-000080GB.MAIN.jpg)</option>
+      </select>
       <button id="zipDownloadConfirmBtn" disabled>⬇️ Download ZIP</button>
       <button id="zipPopupCloseBtn">❌ Cancel</button>
     </div>
@@ -93,8 +99,14 @@
         Select an image type (e.g., MAIN, PT01) to download that specific image from ALL products.
       </p>
 
-      <select id="typeSelect" style="width: 100%; padding: 10px; font-size: 1.1rem; margin-bottom: 20px;">
+      <select id="typeSelect" style="width: 100%; padding: 10px; font-size: 1.1rem; margin-bottom: 12px;">
         <!-- Options populated by JS -->
+      </select>
+
+      <label for="typeZipNamingFormat" style="font-size:0.9rem;color:#555;display:block;">📝 File naming:</label>
+      <select id="typeZipNamingFormat" style="width:100%;padding:8px;font-size:1rem;margin-bottom:16px;">
+        <option value="asin">ASIN (e.g. B09WN1B6JZ.MAIN.jpg)</option>
+        <option value="sku">SKU (e.g. PT0001-000080GB.MAIN.jpg)</option>
       </select>
 
       <button id="typeZipConfirmBtn">⬇️ Download All of Type</button>
@@ -110,6 +122,24 @@
       <div class="spinner"></div>
       <p style="margin-top: 10px;">Preparing ZIP file, please wait...</p>
       <p id="zipProgressText" style="font-size: 0.95rem; margin-top: 8px; color: #555;"></p>
+    </div>
+  </div>
+
+  <!-- ===========================
+       📮 ZIP ALL Naming Format Popup
+       =========================== -->
+  <div id="zipAllNamingPopup" class="popup hidden">
+    <div class="popup-content">
+      <h3>📮 ZIP All — Choose File Naming</h3>
+      <p style="font-size: 0.9rem; color: #666; margin-bottom: 15px;">
+        Choose how files inside the ZIP should be named.
+      </p>
+      <select id="zipAllNamingFormat" style="width:100%;padding:10px;font-size:1.1rem;margin-bottom:20px;">
+        <option value="asin">ASIN (e.g. B09WN1B6JZ.MAIN.jpg)</option>
+        <option value="sku">SKU (e.g. PT0001-000080GB.MAIN.jpg)</option>
+      </select>
+      <button id="zipAllNamingConfirmBtn">⬇️ Start ZIP All</button>
+      <button id="zipAllNamingCloseBtn" style="background: #e74c3c; margin-top: 10px;">❌ Cancel</button>
     </div>
   </div>
 

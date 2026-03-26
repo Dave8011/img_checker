@@ -199,9 +199,10 @@ fetch(`../products.json?t=${Date.now()}`)
       };
 
       confirmBtn.onclick = () => {
+        const namingFormat = document.getElementById('zipNamingFormat').value;
         popup.classList.add('hidden');
         if (selectedZipProduct) {
-          generateZipForProduct(selectedZipProduct);
+          generateZipForProduct(selectedZipProduct, namingFormat);
         }
       };
     }
@@ -209,7 +210,7 @@ fetch(`../products.json?t=${Date.now()}`)
     // ===========================
     // 🔧 Generate ZIP for selected product
     // ===========================
-    async function generateZipForProduct(product) {
+    async function generateZipForProduct(product, namingFormat = 'asin') {
       const zipLoading = document.getElementById('zipLoadingOverlay');
       const progressText = document.getElementById('zipProgressText');
       zipLoading.classList.remove('hidden');
@@ -217,17 +218,22 @@ fetch(`../products.json?t=${Date.now()}`)
 
       const zip = new JSZip();
 
-      // Load ASIN map
-      const asinMap = await fetch('asin_map_zip.json').then(res => res.json());
-      const asinEntry = asinMap.find(entry => entry.sku === product.sku);
+      // Determine file prefix based on naming format
+      let filePrefix;
+      if (namingFormat === 'sku') {
+        filePrefix = product.sku.substring(0, 15);
+      } else {
+        // Load ASIN map
+        const asinMap = await fetch('asin_map_zip.json').then(res => res.json());
+        const asinEntry = asinMap.find(entry => entry.sku === product.sku);
 
-      if (!asinEntry) {
-        zipLoading.classList.add('hidden');
-        alert(`❌ No ASIN found for SKU: ${product.sku}`);
-        return;
+        if (!asinEntry) {
+          zipLoading.classList.add('hidden');
+          alert(`❌ No ASIN found for SKU: ${product.sku}`);
+          return;
+        }
+        filePrefix = asinEntry.asin;
       }
-
-      const asin = asinEntry.asin;
 
       // Find the product element (on screen)
       const productEl = [...document.querySelectorAll('.product')].find(el =>
@@ -262,7 +268,7 @@ fetch(`../products.json?t=${Date.now()}`)
           try {
             await Promise.race([waitForImage, timeout]); // Whichever finishes first
             const blob = await fetchImageAsBlob(imgURL);
-            zip.file(`${asin}.${label}.jpg`, blob);
+            zip.file(`${filePrefix}.${label}.jpg`, blob);
           } catch (e) {
             console.warn(`❌ Skipped: ${label} (timeout or error)`);
           }
@@ -281,7 +287,7 @@ fetch(`../products.json?t=${Date.now()}`)
       const url = URL.createObjectURL(zipBlob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${asin}_images.zip`;
+      a.download = `${filePrefix}_images.zip`;
       a.click();
 
       zipLoading.classList.add('hidden');
@@ -422,37 +428,62 @@ fetch(`../products.json?t=${Date.now()}`)
        1500 images per ZIP, uses existing overlay.
        =================================================== */
 
-    document.getElementById("downloadZipAllBtn").addEventListener("click", async () => {
+    document.getElementById("downloadZipAllBtn").addEventListener("click", () => {
+      // Show naming format popup first
+      const namingPopup = document.getElementById("zipAllNamingPopup");
+      namingPopup.classList.remove("hidden");
+
+      document.getElementById("zipAllNamingCloseBtn").onclick = () => {
+        namingPopup.classList.add("hidden");
+      };
+
+      document.getElementById("zipAllNamingConfirmBtn").onclick = async () => {
+        const namingFormat = document.getElementById("zipAllNamingFormat").value;
+        namingPopup.classList.add("hidden");
+        await runZipAll(namingFormat);
+      };
+    });
+
+    async function runZipAll(namingFormat = 'asin') {
       const overlay = document.getElementById("zipLoadingOverlay");
       const progressText = document.getElementById("zipProgressText");
 
       try {
         overlay.classList.remove("hidden");
-        progressText.textContent = "Loading ASIN mappings...";
 
-        // Load asin_map_zip.json
-        const asinMap = await fetch("asin_map_zip.json").then(r => r.json());
-        const asinBySku = new Map(asinMap.map(e => [e.sku, e.asin]));
+        let asinBySku = new Map();
+        if (namingFormat === 'asin') {
+          progressText.textContent = "Loading ASIN mappings...";
+          const asinMap = await fetch("asin_map_zip.json").then(r => r.json());
+          asinBySku = new Map(asinMap.map(e => [e.sku, e.asin]));
+        } else {
+          progressText.textContent = "Preparing SKU-based download...";
+        }
 
         const products = window.productData || [];
         const allItems = [];
 
-        // Build list (filename = ASIN.MAIN/PT01/PT02/etc)
+        // Build list based on naming format
         products.forEach(product => {
-          const asin = asinBySku.get(product.sku);
-          if (!asin) return;
+          let prefix;
+          if (namingFormat === 'sku') {
+            prefix = product.sku.substring(0, 15);
+          } else {
+            prefix = asinBySku.get(product.sku);
+            if (!prefix) return;
+          }
 
           product.images.forEach((imgUrl, idx) => {
             allItems.push({
               url: imgUrl,
-              filename: `${asin}.${getImageLabel(idx)}.jpg`
+              filename: `${prefix}.${getImageLabel(idx)}.jpg`
             });
           });
         });
 
         if (allItems.length === 0) {
           overlay.classList.add("hidden");
-          alert("No ASIN-mapped images found.");
+          alert("No images found.");
           return;
         }
 
@@ -557,7 +588,7 @@ fetch(`../products.json?t=${Date.now()}`)
         overlay.classList.add("hidden");
         alert("❌ ZIP ALL failed. Check console.");
       }
-    });
+    }
 
     /* ===========================
        📦 ZIP BY TYPE Logic
@@ -589,36 +620,47 @@ fetch(`../products.json?t=${Date.now()}`)
 
     typeZipConfirmBtn.onclick = () => {
       const selectedType = typeSelect.value;
+      const namingFormat = document.getElementById('typeZipNamingFormat').value;
       typeZipPopup.classList.add('hidden');
       if (selectedType) {
-        downloadImagesByType(selectedType);
+        downloadImagesByType(selectedType, namingFormat);
       }
     };
 
-    async function downloadImagesByType(targetLabel) {
+    async function downloadImagesByType(targetLabel, namingFormat = 'asin') {
       const overlay = document.getElementById("zipLoadingOverlay");
       const progressText = document.getElementById("zipProgressText");
 
       try {
         overlay.classList.remove("hidden");
-        progressText.textContent = "Loading ASIN mappings...";
 
-        const asinMap = await fetch("asin_map_zip.json").then(r => r.json());
-        const asinBySku = new Map(asinMap.map(e => [e.sku, e.asin]));
+        let asinBySku = new Map();
+        if (namingFormat === 'asin') {
+          progressText.textContent = "Loading ASIN mappings...";
+          const asinMap = await fetch("asin_map_zip.json").then(r => r.json());
+          asinBySku = new Map(asinMap.map(e => [e.sku, e.asin]));
+        } else {
+          progressText.textContent = "Preparing SKU-based download...";
+        }
 
         const products = window.productData || [];
         const allItems = [];
 
         products.forEach(product => {
-          const asin = asinBySku.get(product.sku);
-          if (!asin) return;
+          let prefix;
+          if (namingFormat === 'sku') {
+            prefix = product.sku.substring(0, 15);
+          } else {
+            prefix = asinBySku.get(product.sku);
+            if (!prefix) return;
+          }
 
           product.images.forEach((imgUrl, idx) => {
             const label = getImageLabel(idx);
             if (label === targetLabel) {
               allItems.push({
                 url: imgUrl,
-                filename: `${asin}.${label}.jpg`
+                filename: `${prefix}.${label}.jpg`
               });
             }
           });

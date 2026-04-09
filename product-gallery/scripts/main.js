@@ -766,6 +766,180 @@ fetch(`../products.json?t=${Date.now()}`)
     }
 
     /* ===========================
+       🏢 BRAND ZIP Logic
+       =========================== */
+    const brandZipPopup = document.getElementById('brandZipPopup');
+    const brandZipSelect = document.getElementById('brandZipSelect');
+    const brandZipConfirmBtn = document.getElementById('brandZipConfirmBtn');
+
+    document.getElementById('downloadBrandBtn').addEventListener('click', () => {
+      if (!window.productData) return;
+
+      const brands = [...new Set(window.productData.map(p => p.brand).filter(Boolean))];
+      brandZipSelect.innerHTML = '';
+
+      brands.forEach(b => {
+        const opt = document.createElement('option');
+        opt.value = b;
+        opt.textContent = b;
+        brandZipSelect.appendChild(opt);
+      });
+
+      brandZipPopup.classList.remove('hidden');
+    });
+
+    document.getElementById('brandZipPopupCloseBtn').onclick = () => {
+      brandZipPopup.classList.add('hidden');
+    };
+
+    brandZipConfirmBtn.onclick = () => {
+      const selectedBrand = brandZipSelect.value;
+      const namingFormat = document.getElementById('brandZipNamingFormat').value;
+      brandZipPopup.classList.add('hidden');
+      if (selectedBrand) {
+        downloadImagesByBrand(selectedBrand, namingFormat);
+      }
+    };
+
+    async function downloadImagesByBrand(targetBrand, namingFormat = 'asin') {
+      const overlay = document.getElementById("zipLoadingOverlay");
+      const progressText = document.getElementById("zipProgressText");
+
+      try {
+        overlay.classList.remove("hidden");
+
+        let asinBySku = new Map();
+        if (namingFormat === 'asin') {
+          progressText.textContent = "Loading ASIN mappings...";
+          const asinMap = await fetch("asin_map_zip.json").then(r => r.json());
+          asinBySku = new Map(asinMap.map(e => [e.sku, e.asin]));
+        } else {
+          progressText.textContent = "Preparing SKU-based download...";
+        }
+
+        const products = window.productData || [];
+        const allItems = [];
+
+        products.forEach(product => {
+          if (product.brand !== targetBrand) return;
+
+          let prefix;
+          if (namingFormat === 'sku') {
+            prefix = product.sku.substring(0, 15);
+          } else {
+            prefix = asinBySku.get(product.sku);
+            if (!prefix) return;
+          }
+
+          product.images.forEach((imgUrl, idx) => {
+            const label = getImageLabel(idx);
+            allItems.push({
+              url: imgUrl,
+              filename: `${prefix}.${label}.jpg`
+            });
+          });
+        });
+
+        if (allItems.length === 0) {
+          overlay.classList.add("hidden");
+          alert(`No images found for brand: ${targetBrand}`);
+          return;
+        }
+
+        const CHUNK_SIZE = 1000;
+        const CONCURRENCY = 12;
+
+        async function fetchWithTimeout(url, timeout = 15000) {
+          try {
+            const controller = new AbortController();
+            const id = setTimeout(() => controller.abort(), timeout);
+            const res = await fetch(url, { signal: controller.signal });
+            clearTimeout(id);
+            if (!res.ok) throw new Error();
+            return await res.blob();
+          } catch {
+            return null;
+          }
+        }
+
+        function formatSeconds(sec) {
+          if (!isFinite(sec) || sec <= 0) return "—";
+          const m = Math.floor(sec / 60);
+          const s = Math.floor(sec % 60);
+          return m ? `${m}m ${s}s` : `${s}s`;
+        }
+
+        let zipNum = 1;
+
+        for (let start = 0; start < allItems.length; start += CHUNK_SIZE) {
+          const chunk = allItems.slice(start, start + CHUNK_SIZE);
+          const total = chunk.length;
+          let processed = 0;
+          let skipped = 0;
+          let pointer = 0;
+
+          const zip = new JSZip();
+          const startTime = performance.now();
+
+          progressText.textContent = `Starting ZIP ${zipNum} (${total} images)...`;
+
+          async function worker() {
+            while (true) {
+              const idx = pointer++;
+              if (idx >= chunk.length) return;
+
+              const item = chunk[idx];
+              const blob = await fetchWithTimeout(item.url);
+
+              if (blob) zip.file(item.filename, blob);
+              else skipped++;
+
+              processed++;
+
+              const elapsed = (performance.now() - startTime) / 1000;
+              const avg = elapsed / processed;
+              const eta = avg * (total - processed);
+
+              progressText.textContent =
+                `ZIP ${zipNum} (${targetBrand.substring(0, 15)}...): ${processed}/${total} — Skipped ${skipped} — ETA ${formatSeconds(eta)}`;
+            }
+          }
+
+          const workers = [];
+          const count = Math.min(CONCURRENCY, total);
+          for (let i = 0; i < count; i++) workers.push(worker());
+          await Promise.all(workers);
+
+          progressText.textContent = `Generating ZIP ${zipNum}...`;
+
+          const zipBlob = await zip.generateAsync({ type: "blob" }, meta => {
+            progressText.textContent = `ZIP ${zipNum}: creating file ${Math.round(meta.percent)}%`;
+          });
+
+          const url = URL.createObjectURL(zipBlob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `${targetBrand.replace(/[^a-z0-9]/gi, '_')}_IMAGES_${zipNum}.zip`;
+          a.click();
+
+          setTimeout(() => URL.revokeObjectURL(url), 8000);
+
+          progressText.textContent = `ZIP ${zipNum} ready.`;
+          zipNum++;
+          await new Promise(r => setTimeout(r, 300));
+        }
+
+        overlay.classList.add("hidden");
+        alert(`🎉 All ${targetBrand} images ZIPs created!`);
+
+      } catch (err) {
+        console.error(err);
+        overlay.classList.add("hidden");
+        alert("❌ ZIP failed. Check console.");
+      }
+    }
+
+    /* ===========================
       🔝 Back to Top Button
          =========================== */
     const backToTopBtn = document.getElementById("backToTop");

@@ -48,6 +48,7 @@
         Product ZIP</button>
       <button id="downloadTypeBtn" title="Download all images of a specific type (e.g., MAIN or PT01..)">📑 Download
         Type</button>
+      <button id="downloadBrandBtn" title="Download all images belonging to a specific selected brand">🏢 Brand ZIP</button>
       <button id="downloadZipAllBtn"
         title="Download ALL images for ALL products as ZIP files (chunked) with Name As/In ASIN">📮 ZIP
         ALL</button>
@@ -140,6 +141,31 @@
       </select>
       <button id="zipAllNamingConfirmBtn">⬇️ Start ZIP All</button>
       <button id="zipAllNamingCloseBtn" style="background: #e74c3c; margin-top: 10px;">❌ Cancel</button>
+    </div>
+  </div>
+
+  <!-- ===========================
+       🏢 Brand ZIP Selection Popup
+       =========================== -->
+  <div id="brandZipPopup" class="popup hidden">
+    <div class="popup-content">
+      <h3>🏢 Select Brand to Download</h3>
+      <p style="font-size: 0.9rem; color: #666; margin-bottom: 15px;">
+        Download all images scoped to a specific brand.
+      </p>
+
+      <select id="brandZipSelect" style="width: 100%; padding: 10px; font-size: 1.1rem; margin-bottom: 12px;">
+        <!-- Options populated by JS -->
+      </select>
+
+      <label for="brandZipNamingFormat" style="font-size:0.9rem;color:#555;display:block;">📝 File naming:</label>
+      <select id="brandZipNamingFormat" style="width:100%;padding:8px;font-size:1rem;margin-bottom:16px;">
+        <option value="asin">ASIN (e.g. B09WN1B6JZ.MAIN.jpg)</option>
+        <option value="sku">SKU (e.g. PT0001-000080GB.MAIN.jpg)</option>
+      </select>
+
+      <button id="brandZipConfirmBtn">⬇️ Download Brand ZIP</button>
+      <button id="brandZipPopupCloseBtn" style="background: #e74c3c; margin-top: 10px;">❌ Cancel</button>
     </div>
   </div>
 

@@ -24,6 +24,7 @@ fetch(`../products.json?t=${Date.now()}`)
     const brandFilter = document.getElementById('brandFilter');
     const listingTypeFilter = document.getElementById('listingTypeFilter');
     const packagingTypeFilter = document.getElementById('packagingTypeFilter');
+    const clearFiltersBtn = document.getElementById('clearFiltersBtn');
     const lightbox = document.getElementById('lightbox');
     const lightboxImg = document.getElementById('lightbox-img');
     const lightboxClose = document.getElementById('lightbox-close');
@@ -1027,6 +1028,21 @@ fetch(`../products.json?t=${Date.now()}`)
 
       updateURLParams(filter, category, listingType, packagingType, brand);
       renderProducts(filter, category, listingType, packagingType, brand);
+      updateClearFiltersVisibility(filter, category, listingType, packagingType, brand);
+    }
+
+    function updateClearFiltersVisibility(search = '', category = '', listingType = '', packagingType = '', brand = '') {
+      const hasActiveFilters = [search, category, listingType, packagingType, brand].some(Boolean);
+      clearFiltersBtn.hidden = !hasActiveFilters;
+    }
+
+    function clearAllFilters() {
+      searchBar.value = '';
+      categoryFilter.value = '';
+      if (brandFilter) brandFilter.value = '';
+      listingTypeFilter.value = '';
+      packagingTypeFilter.value = '';
+      updateStateAndRender();
     }
 
     searchBar.addEventListener('input', updateStateAndRender);
@@ -1034,6 +1050,7 @@ fetch(`../products.json?t=${Date.now()}`)
     if (brandFilter) brandFilter.addEventListener('change', updateStateAndRender);
     listingTypeFilter.addEventListener('change', updateStateAndRender);
     packagingTypeFilter.addEventListener('change', updateStateAndRender);
+    clearFiltersBtn.addEventListener('click', clearAllFilters);
 
     /* ===========================
        URL Management Helpers
@@ -1067,6 +1084,7 @@ fetch(`../products.json?t=${Date.now()}`)
 
       // Render with these initial values
       renderProducts(search, category, listingType, packagingType, brand);
+      updateClearFiltersVisibility(search, category, listingType, packagingType, brand);
     }
 
     /* ===========================

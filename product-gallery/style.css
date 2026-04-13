@@ -597,6 +597,15 @@ h1 {
   box-shadow: 0 3px 10px rgba(32, 78, 168, 0.22);
 }
 
+#clearFiltersBtn {
+  background: linear-gradient(135deg, #475569, #64748b);
+  box-shadow: 0 3px 10px rgba(71, 85, 105, 0.22);
+}
+
+#clearFiltersBtn[hidden] {
+  display: none !important;
+}
+
 #downloadZipBtn {
   background: linear-gradient(135deg, #2c922c, #41b041);
   box-shadow: 0 3px 10px rgba(44, 146, 44, 0.22);

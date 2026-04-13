@@ -102,7 +102,7 @@ fetch(`../products.json?t=${Date.now()}`)
           <div class="images">
             ${product.images.map((url, i) => `
               <div class="image-wrapper" tabindex="0">
-                <img src="${url}" data-full="${url}" style="width: 200px;" loading="lazy" />
+                <img src="${url}" data-full="${url}" loading="lazy" />
                 <span class="image-number">${getImageLabel(i)}</span>
               </div>`).join('')}
           </div>

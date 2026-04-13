@@ -90,13 +90,41 @@ fetch(`../products.json?t=${Date.now()}`)
       }
 
       filtered.forEach(product => {
+        const safeCategory = escapeHTML(product.category || '');
+        const safeListingType = escapeHTML(product.listingType || '');
+        const safePackagingType = escapeHTML(product.packagingType || '');
+
         const div = document.createElement('div');
         div.className = 'product';
         div.innerHTML = `
           <div class="tag-row">
-            ${product.category ? `<div class="category-tag">${product.category}</div>` : ''}
-            ${product.listingType ? `<div class="listing-type-tag">${product.listingType}</div>` : ''}
-            ${product.packagingType ? `<div class="packaging-type-tag">${product.packagingType}</div>` : ''}
+            ${product.category ? `
+              <button
+                type="button"
+                class="category-tag${category === product.category ? ' is-active' : ''}"
+                data-filter-type="category"
+                data-filter-value="${safeCategory}"
+                aria-pressed="${category === product.category ? 'true' : 'false'}"
+                title="Show all products in ${safeCategory}"
+              >${safeCategory}</button>` : ''}
+            ${product.listingType ? `
+              <button
+                type="button"
+                class="listing-type-tag${listingType === product.listingType ? ' is-active' : ''}"
+                data-filter-type="listingType"
+                data-filter-value="${safeListingType}"
+                aria-pressed="${listingType === product.listingType ? 'true' : 'false'}"
+                title="Show all products with listing type ${safeListingType}"
+              >${safeListingType}</button>` : ''}
+            ${product.packagingType ? `
+              <button
+                type="button"
+                class="packaging-type-tag${packagingType === product.packagingType ? ' is-active' : ''}"
+                data-filter-type="packagingType"
+                data-filter-value="${safePackagingType}"
+                aria-pressed="${packagingType === product.packagingType ? 'true' : 'false'}"
+                title="Show all products with packaging type ${safePackagingType}"
+              >${safePackagingType}</button>` : ''}
           </div>
           <h2>${product.title} (<code>${product.sku}</code>) - ${product.asin ? product.asin.split(',').map(a => `<a href="https://amazon.in/dp/${a.trim()}" target="_blank" style="text-decoration: none; color: #204ea8;">${a.trim()}</a>`).join(', ') : 'No ASIN'}</h2>
           <div class="images">
@@ -122,6 +150,26 @@ fetch(`../products.json?t=${Date.now()}`)
       });
     }
 
+    gallery.addEventListener('click', event => {
+      const tagButton = event.target.closest('[data-filter-type]');
+      if (!tagButton) return;
+
+      const { filterType, filterValue } = tagButton.dataset;
+      if (!filterType) return;
+
+      const filterMap = {
+        category: categoryFilter,
+        listingType: listingTypeFilter,
+        packagingType: packagingTypeFilter
+      };
+
+      const targetFilter = filterMap[filterType];
+      if (!targetFilter) return;
+
+      targetFilter.value = targetFilter.value === filterValue ? '' : filterValue;
+      updateStateAndRender();
+    });
+
     /* ===========================
        Lightbox Navigation
        =========================== */
@@ -143,6 +191,16 @@ fetch(`../products.json?t=${Date.now()}`)
        =========================== */
     function getImageLabel(i) {
       return i === 0 ? 'MAIN' : `PT${String(i).padStart(2, '0')}`;
+    }
+
+    function escapeHTML(value) {
+      return String(value).replace(/[&<>"']/g, char => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      }[char]));
     }
 
     function fetchImageAsBlob(url) {

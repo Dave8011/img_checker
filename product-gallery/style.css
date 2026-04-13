@@ -264,7 +264,7 @@ h1 {
 }
 
 .product h2 code {
-  font-size: 0.85em;
+  font-size: 1.14em;
   background: #f1f5f9;
   padding: 1px 6px;
   border-radius: 6px;
@@ -742,7 +742,7 @@ h1 {
 #typeZipConfirmBtn,
 #zipAllNamingConfirmBtn,
 #brandZipConfirmBtn {
-  background: linear-gradient(135deg, #2c922c, #41b041);
+  background: linear-gradient(135deg, #17cbde, #110101);
   color: white;
 }
 
@@ -751,10 +751,10 @@ h1 {
 #typeZipPopupCloseBtn,
 #zipAllNamingCloseBtn,
 #brandZipPopupCloseBtn {
-  background: linear-gradient(135deg, #e74c3c, #f06050) !important;
+  background: linear-gradient(135deg, #3400f7, #ff1a00) !important;
   color: white !important;
   font-weight: 600;
-  box-shadow: 0 4px 10px rgba(231, 76, 60, 0.25);
+  box-shadow: 0 4px 10px #00eaff6e;
 }
 
 /* ===========================
@@ -894,7 +894,7 @@ h1 {
   }
 
   .product h2 {
-    font-size: 13.5px;
+    font-size: 17.5px;
   }
 
   /* Image thumbnails smaller grid on mobile */

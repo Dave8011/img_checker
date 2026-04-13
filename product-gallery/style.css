@@ -1,114 +1,150 @@
 /* ===========================
-   General Body & Typography
+   🌍 Base Reset + Typography
    =========================== */
+* {
+  box-sizing: border-box;
+}
+
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: #f0f2f5;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: #f5f7fb;
   margin: 0;
-  padding: 20px;
-  color: #333;
-  max-width: 1500px;
-  margin: auto;
+  padding: 16px;
+  color: #1f2937;
+  max-width: 1400px;
+  margin-inline: auto;
 }
 
 /* ===========================
-   Title Styling
+   🧠 Typography
    =========================== */
 h1 {
   text-align: center;
-  margin-bottom: 30px;
-  font-size: 2.5rem;
-  color: #2d3748;
-  text-shadow: 1px 1px 1px #ccc;
+  font-size: clamp(1.8rem, 2.5vw, 2.4rem);
+  margin-bottom: 20px;
+  font-weight: 600;
+  color: #111827;
 }
 
 /* ===========================
-   🧭 Hybrid Sticky + Floating Filter Bar
+   🧭 Sticky Filter Bar
    =========================== */
 #controls {
-  position: relative;
-  /* normal in-flow when at top */
+  position: sticky;
   top: 0;
-  left: 0;
-  right: 0;
-  background: #f0f2f5;
   z-index: 1000;
+  background: rgba(245, 247, 251, 0.9);
+  backdrop-filter: blur(10px);
+
   display: flex;
-  justify-content: center;
   flex-wrap: wrap;
-  gap: 15px;
-  margin-bottom: 20px;
-  padding: 9px 0;
+  justify-content: center;
+  gap: 10px;
 
-  /* Default: normal state */
-  --controls-offset: 0%;
-  transform: translateY(var(--controls-offset));
-  transition: transform 0.5s cubic-bezier(0.25, 1, 0.3, 1), opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  opacity: 1;
-  will-change: transform;
+  padding: 10px;
+  border-radius: 12px;
+  margin-bottom: 15px;
+
+  transition: all 0.3s ease;
 }
 
-/* Floating mode (after scroll) */
+/* Floating shadow */
 #controls.floating {
-  position: fixed;
-  background: rgba(240, 242, 245, 0.97);
-  backdrop-filter: blur(6px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-}
-
-#controls.hide {
-  --controls-offset: -100%;
-  opacity: 0.96;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
 }
 
 /* ===========================
-   Inputs and Dropdowns
+   🔍 Inputs & Filters
    =========================== */
 #searchBar,
 #brandFilter,
 #categoryFilter,
 #listingTypeFilter,
 #packagingTypeFilter {
-  padding: 12px 20px;
-  font-size: 16px;
-  border-radius: 30px;
-  border: 1px solid #ccc;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
+  padding: 12px 16px;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  font-size: 15px;
+  background: #fff;
+  transition: all 0.25s ease;
 }
 
 #searchBar {
-  width: 75%;
-  max-width: 500px;
+  flex: 1;
+  min-width: 220px;
+  max-width: 480px;
 }
 
-#brandFilter,
-#categoryFilter,
-#listingTypeFilter,
-#packagingTypeFilter {
-  background: #fff;
+select {
   cursor: pointer;
+}
+
+/* Focus state */
+input:focus,
+select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
 /* ===========================
-   🔝 Back to Top Button
+   🔘 Buttons (Unified)
+   =========================== */
+button {
+  border-radius: 999px;
+  padding: 10px 16px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.25s ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+/* Variants */
+.btn-primary {
+  background: #2563eb;
+  color: #fff;
+}
+
+.btn-success {
+  background: #16a34a;
+  color: #fff;
+}
+
+.btn-warning {
+  background: #f59e0b;
+  color: #fff;
+}
+
+.btn-purple {
+  background: #7c3aed;
+  color: #fff;
+}
+
+.btn-danger {
+  background: #ef4444;
+  color: #fff;
+}
+
+/* ===========================
+   ⬆️ Back To Top
    =========================== */
 #backToTop {
   position: fixed;
-  right: 20px;
-  bottom: 20px;
+  right: 16px;
+  bottom: 16px;
   background: #111;
   color: #fff;
-  border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 10px 14px;
-  font-size: 29px;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  font-size: 22px;
+
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.3s ease, transform 0.3s ease;
-  z-index: 2000;
+  transition: all 0.3s ease;
 }
 
 #backToTop.show {
@@ -117,184 +153,106 @@ h1 {
 }
 
 /* ===========================
-   Gallery Grid Layout
+   🧱 Grid Layout
    =========================== */
 #gallery {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
 }
 
 /* ===========================
-   Product Card Styling
+   🛍️ Product Card
    =========================== */
 .product {
-  background: white;
-  border: 1.5px solid #bbb;
-  border-radius: 16px;
-  padding: 15px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.07);
-  transition: transform 0.2s ease;
+  background: #fff;
+  border-radius: 14px;
+  padding: 14px;
+
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  transition: all 0.25s ease;
+
   opacity: 0;
   transform: translateY(10px);
   animation: fadeIn 0.4s ease forwards;
 }
 
 .product:hover {
-  transform: translateY(-5px) scale(1.02);
+  transform: translateY(-4px);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.08);
 }
 
 .product h2 {
-  font-size: 18px;
-  margin: 0 0 15px;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 8px;
-  color: #222;
-  letter-spacing: 0.01em;
+  font-size: 16px;
+  margin-bottom: 10px;
+  font-weight: 600;
 }
 
 /* ===========================
-   Tag Row for Category & Listing Type
+   🏷️ Tags
    =========================== */
 .tag-row {
   display: flex;
-  gap: 8px;
-  margin-bottom: 7px;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
 }
 
-/* ===========================
-   Category Tag
-   =========================== */
+.tag {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .category-tag {
-  display: flex;
-  align-items: center;
-  background: #f7fafd;
-  color: #204ea8;
-  font-size: 0.93rem;
-  font-weight: 400;
-  border-radius: 99px;
-  padding: 2.5px 12px 2.5px 8px;
-  border: 1.3px solid #204ea8;
-  letter-spacing: 0.01em;
-  min-width: 0;
-  max-width: 140px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  background: #eef2ff;
+  color: #3730a3;
+  border-color: #c7d2fe;
 }
 
-.category-tag::before {
-  content: "📂";
-  margin-right: 6px;
-  font-size: 1.07em;
-}
-
-/* ===========================
-   Listing Type Tag
-   =========================== */
 .listing-type-tag {
-  display: flex;
-  align-items: center;
-  background: #f7fdf7;
-  color: #2c922c;
-  font-size: 0.93rem;
-  font-weight: 400;
-  border-radius: 99px;
-  padding: 2.5px 12px 2.5px 8px;
-  border: 1.3px solid #2c922c;
-  letter-spacing: 0.01em;
-  min-width: 0;
-  max-width: 140px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  background: #ecfdf5;
+  color: #065f46;
+  border-color: #a7f3d0;
 }
 
-.listing-type-tag::before {
-  content: "🏷️";
-  margin-right: 6px;
-  font-size: 1.07em;
-}
-
-/* ===========================
-   Packaging Type Tag
-   =========================== */
 .packaging-type-tag {
-  display: flex;
-  align-items: center;
-  background: #f7fdf7;
-  color: #2c922c;
-  font-size: 0.93rem;
-  font-weight: 400;
-  border-radius: 99px;
-  padding: 2.5px 12px 2.5px 8px;
-  border: 1.3px solid #2c922c;
-  letter-spacing: 0.01em;
-  min-width: 0;
-  max-width: 140px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.packaging-type-tag::before {
-  content: "📦";
-  margin-right: 6px;
-  font-size: 1.07em;
+  background: #fff7ed;
+  color: #9a3412;
+  border-color: #fed7aa;
 }
 
 /* ===========================
-   Image Styling
+   🖼️ Images
    =========================== */
 .images {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.image-wrapper {
-  position: relative;
-  flex: 0 1 120px;
-  cursor: pointer;
-  outline: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 8px;
 }
 
 .image-wrapper img {
-  width: 207px;
-  height: auto;
+  width: 100%;
   border-radius: 8px;
-  border: 1px solid #ddd;
-  transition: transform 0.2s ease, box-shadow 0.2s;
+  transition: all 0.2s ease;
 }
 
-.image-wrapper img:hover,
-.image-wrapper:focus img {
-  transform: scale(1.07);
-  box-shadow: 0 0 0 3px #204ea855;
-}
-
-.image-number {
-  position: absolute;
-  bottom: 4px;
-  right: 8px;
-  background-color: rgba(0, 0, 0, 0.6);
-  color: white;
-  font-size: 12px;
-  padding: 2px 6px;
-  border-radius: 10px;
+.image-wrapper img:hover {
+  transform: scale(1.05);
 }
 
 /* ===========================
-   Lightbox Styles
+   🔦 Lightbox
    =========================== */
 .lightbox {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+
   display: flex;
   align-items: center;
   justify-content: center;
@@ -308,101 +266,78 @@ h1 {
 #lightbox-img {
   max-width: 90vw;
   max-height: 80vh;
-  border-radius: 10px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
-  position: relative;
-  background: #fff;
+  border-radius: 12px;
 }
 
+/* Close Button */
 #lightbox-close {
   position: absolute;
-  top: 40px;
-  right: 60px;
-  font-size: 3rem;
+  top: 20px;
+  right: 20px;
+
+  width: 40px;
+  height: 40px;
+
+  border-radius: 50%;
+  background: #111;
   color: #fff;
-  background: #222;
-  border-radius: 50%;
-  width: 2.5rem;
-  height: 2.5rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 2100;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
-  outline: none;
-  border: none;
-  transition: background 0.2s;
-}
-
-#lightbox-close:focus,
-#lightbox-close:hover {
-  background: #444;
+  font-size: 20px;
 }
 
 /* ===========================
-   Lightbox Navigation Arrows (HIDDEN by default)
-   Uncomment display: flex; if you want to show them.
+   📦 Popup (Improved)
    =========================== */
-.lightbox-arrow {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(255, 255, 255, 0.82);
-  border: none;
-  border-radius: 50%;
-  width: 48px;
-  height: 48px;
-  font-size: 2.3rem;
-  color: #333;
-  cursor: pointer;
-  z-index: 2100;
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.13);
+.popup {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+
+  display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.17s;
+}
+
+.popup.hidden {
   display: none;
-  /* HIDDEN by default */
 }
 
-.lightbox-arrow.left {
-  left: 32px;
-}
+.popup-content {
+  width: 90%;
+  max-width: 380px;
+  padding: 20px;
 
-.lightbox-arrow.right {
-  right: 32px;
-}
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(14px);
 
-.lightbox-arrow:active,
-.lightbox-arrow:focus {
-  background: #e0eaff;
+  border-radius: 14px;
+  text-align: center;
+
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 /* ===========================
-   Swipe hint for mobile (optional, hidden by default)
+   🔄 Spinner
    =========================== */
-@media (pointer: coarse) {
-  #lightbox-img::after {
-    content: '';
-    /* To show a hint like "← Swipe →", replace above with: content: '← Swipe →'; */
-    display: none;
-    /* Hidden by default */
-  }
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 4px solid #eee;
+  border-top: 4px solid #333;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
 }
 
 /* ===========================
-   Empty state
+   📭 Empty State
    =========================== */
 #emptyState {
-  margin: 80px auto 0 auto;
   text-align: center;
-  color: #888;
-  display: none;
-  max-width: 420px;
+  margin-top: 60px;
+  color: #9ca3af;
 }
 
 /* ===========================
-   Fade-in Animation for Product Cards
+   🎬 Animations
    =========================== */
 @keyframes fadeIn {
   to {
@@ -411,282 +346,35 @@ h1 {
   }
 }
 
-/* ===========================
-   Responsive Adjustments
-   =========================== */
-@media (max-width: 600px) {
-  #controls {
-    flex-direction: column;
-    gap: 10px;
-    padding: 10px 0;
-  }
-
-  #searchBar {
-    width: 100%;
-    max-width: none;
-  }
-
-  #gallery {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* ===========================
-   Mobile-Optimized Control Bar
-   =========================== */
-
-/* Hide menuToggle by default (visible on small screens only) */
-#menuToggle {
-  display: none;
-  font-size: 26px;
-  font-weight: bold;
-  padding: 10px 16px;
-  background-color: #204ea8;
-  color: #fff;
-  border-radius: 8px;
-  cursor: pointer;
-  user-select: none;
-}
-
-/* Group of dropdowns & buttons (initially visible, hidden on mobile) */
-#controlGroup {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-/* Button base style (already included, redefining for clarity) */
-#controlGroup button {
-  padding: 10px 18px;
-  border-radius: 30px;
-  font-size: 16px;
-  border: none;
-  cursor: pointer;
-  color: white;
-}
-
-/* Specific buttons */
-#downloadMissingBtn {
-  background-color: #204ea8;
-}
-
-#downloadZipBtn {
-  background-color: #2c922c;
-}
-
-#downloadTypeBtn {
-  background-color: #8e44ad;
-}
-
-#downloadBrandBtn {
-  background-color: #008CBA;
-  color: white;
-}
-
-#downloadZipAllBtn {
-  background-color: #ff9800;
-  color: white;
-}
-
-/* ===========================
-   Responsive Controls for Mobile
-   =========================== */
-@media screen and (max-width: 768px) {
-  #controls {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  #menuToggle {
-    display: block;
-    margin-top: 10px;
-  }
-
-  #controlGroup {
-    display: none;
-    /* hidden by default on mobile */
-    flex-direction: column;
-    width: 100%;
-    padding: 10px;
-    background: #ffffff;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  }
-
-  #controlGroup.show {
-    display: flex;
-    /* shown when toggled */
-  }
-
-  #brandFilter,
-  #categoryFilter,
-  #listingTypeFilter,
-  #packagingTypeFilter,
-  #controlGroup button {
-    width: 100%;
-  }
-
-  #searchBar {
-    width: 100%;
-    max-width: none;
-  }
-}
-
-/* ===========================
-   ZIP Popup Styling
-   =========================== */
-.popup.hidden {
-  display: none;
-}
-
-.popup-content button:hover {
-  background-color: rgba(255, 255, 255, 0.8);
-  color: #000 !important;
-}
-
-.popup-content input {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 10px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-}
-
-#zipSearchResults {
-  max-height: 150px;
-  overflow-y: auto;
-  margin-bottom: 12px;
-  text-align: left;
-}
-
-.zip-result-item {
-  padding: 6px 8px;
-  cursor: pointer;
-  border-bottom: 1px solid #eee;
-}
-
-.zip-result-item:hover {
-  background: #f0f0f0;
-}
-
-.popup-content button {
-  padding: 10px 14px;
-  border: none;
-  border-radius: 6px;
-  font-size: 15px;
-  margin: 5px;
-  cursor: pointer;
-}
-
-#zipDownloadConfirmBtn,
-#typeZipConfirmBtn,
-#zipAllNamingConfirmBtn,
-#brandZipConfirmBtn {
-  background-color: #2c922c;
-  color: white;
-  transition: background-color 0.2s ease;
-}
-
-#zipDownloadConfirmBtn:hover,
-#typeZipConfirmBtn:hover,
-#zipAllNamingConfirmBtn:hover,
-#brandZipConfirmBtn:hover {
-  background-color: #217321;
-}
-
-#zipPopupCloseBtn,
-#typeZipPopupCloseBtn,
-#zipAllNamingCloseBtn,
-#brandZipPopupCloseBtn {
-  background-color: #e74c3c !important;
-  color: white !important;
-  font-weight: 600;
-  border-radius: 6px;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 6px rgba(231, 76, 60, 0.3);
-}
-
-#zipPopupCloseBtn:hover,
-#typeZipPopupCloseBtn:hover,
-#zipAllNamingCloseBtn:hover,
-#brandZipPopupCloseBtn:hover {
-  background-color: #c0392b !important;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(192, 57, 43, 0.4);
-}
-
-/* ===========================
-   ZIP Loader Spinner Styles
-   =========================== */
-.popup {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.55);
-  z-index: 9999;
-}
-
-.popup-content {
-  width: 380px;
-  max-width: 90%;
-  padding: 25px;
-  animation: popIn 0.25s ease-out;
-
-  /* ✨ Frosted Glass */
-  background: rgba(255, 255, 255, 0.32);
-  backdrop-filter: blur(18px) saturate(160%);
-  -webkit-backdrop-filter: blur(18px) saturate(160%);
-
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-
-  /* Shadow for visibility */
-  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.25);
-
-  color: #222;
-  text-align: center;
-}
-
-.spinner {
-  border: 4px solid #eee;
-  border-top: 4px solid #555;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  margin: 0 auto;
-  animation: spin 1s linear infinite;
-}
-
 @keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
+  to {
     transform: rotate(360deg);
   }
 }
 
-@keyframes popIn {
-  from {
-    opacity: 0;
-    transform: scale(0.9);
+/* ===========================
+   📱 Mobile Enhancements
+   =========================== */
+@media (max-width: 768px) {
+
+  body {
+    padding: 12px;
   }
 
-  to {
-    opacity: 1;
-    transform: scale(1);
+  #controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  #searchBar {
+    width: 100%;
+  }
+
+  .product {
+    padding: 12px;
+  }
+
+  .images {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
-
-/* ===========================
-   NOTES:
-   - Lightbox navigation (arrows/swipe) is available via JS, but arrow buttons are hidden by default.
-   - To enable visual arrow buttons, set display:flex on .lightbox-arrow.
-   - Keyboard navigation (←/→) and swipe gestures will work as coded in JS.
-   - All style changes are integrated with your existing theme and structure.
-   =========================== */

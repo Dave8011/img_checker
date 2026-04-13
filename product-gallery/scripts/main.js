@@ -1015,7 +1015,11 @@ fetch(`../products.json?t=${Date.now()}`)
        Mobile Menu Toggle
        =========================== */
     document.getElementById('menuToggle').addEventListener('click', () => {
-      document.getElementById('controlGroup').classList.toggle('show');
+      const toggle = document.getElementById('menuToggle');
+      const group = document.getElementById('controlGroup');
+      const isOpen = group.classList.toggle('show');
+      toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      toggle.textContent = isOpen ? '✕ Close' : '☰ Filters';
     });
 
     /* ===========================

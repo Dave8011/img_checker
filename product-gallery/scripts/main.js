@@ -90,68 +90,81 @@ fetch(`../products.json?t=${Date.now()}`)
         emptyState.style.display = 'none';
       }
 
-      filtered.forEach(product => {
+      const limitedFiltered = filtered.slice(0, 100);
+
+      const htmlBlocks = limitedFiltered.map(product => {
         const safeCategory = escapeHTML(product.category || '');
         const safeListingType = escapeHTML(product.listingType || '');
         const safePackagingType = escapeHTML(product.packagingType || '');
 
-        const div = document.createElement('div');
-        div.className = 'product';
-        div.innerHTML = `
-          <div class="tag-row">
-            ${product.category ? `
-              <button
-                type="button"
-                class="category-tag${category === product.category ? ' is-active' : ''}"
-                data-filter-type="category"
-                data-filter-value="${safeCategory}"
-                aria-pressed="${category === product.category ? 'true' : 'false'}"
-                title="Show all products in ${safeCategory}"
-              >${safeCategory}</button>` : ''}
-            ${product.listingType ? `
-              <button
-                type="button"
-                class="listing-type-tag${listingType === product.listingType ? ' is-active' : ''}"
-                data-filter-type="listingType"
-                data-filter-value="${safeListingType}"
-                aria-pressed="${listingType === product.listingType ? 'true' : 'false'}"
-                title="Show all products with listing type ${safeListingType}"
-              >${safeListingType}</button>` : ''}
-            ${product.packagingType ? `
-              <button
-                type="button"
-                class="packaging-type-tag${packagingType === product.packagingType ? ' is-active' : ''}"
-                data-filter-type="packagingType"
-                data-filter-value="${safePackagingType}"
-                aria-pressed="${packagingType === product.packagingType ? 'true' : 'false'}"
-                title="Show all products with packaging type ${safePackagingType}"
-              >${safePackagingType}</button>` : ''}
-          </div>
-          <h2>${product.title} (<code>${product.sku}</code>) - ${product.asin ? product.asin.split(',').map(a => `<a href="https://amazon.in/dp/${a.trim()}" target="_blank" style="text-decoration: none; color: #204ea8;">${a.trim()}</a>`).join(', ') : 'No ASIN'}</h2>
-          <div class="images">
-            ${product.images.map((url, i) => `
-              <div class="image-wrapper" tabindex="0">
-                <img src="${url}" data-full="${url}" loading="lazy" />
-                <span class="image-number">${getImageLabel(i)}</span>
-              </div>`).join('')}
+        return `
+          <div class="product">
+            <div class="tag-row">
+              ${product.category ? `
+                <button
+                  type="button"
+                  class="category-tag${category === product.category ? ' is-active' : ''}"
+                  data-filter-type="category"
+                  data-filter-value="${safeCategory}"
+                  aria-pressed="${category === product.category ? 'true' : 'false'}"
+                  title="Show all products in ${safeCategory}"
+                >${safeCategory}</button>` : ''}
+              ${product.listingType ? `
+                <button
+                  type="button"
+                  class="listing-type-tag${listingType === product.listingType ? ' is-active' : ''}"
+                  data-filter-type="listingType"
+                  data-filter-value="${safeListingType}"
+                  aria-pressed="${listingType === product.listingType ? 'true' : 'false'}"
+                  title="Show all products with listing type ${safeListingType}"
+                >${safeListingType}</button>` : ''}
+              ${product.packagingType ? `
+                <button
+                  type="button"
+                  class="packaging-type-tag${packagingType === product.packagingType ? ' is-active' : ''}"
+                  data-filter-type="packagingType"
+                  data-filter-value="${safePackagingType}"
+                  aria-pressed="${packagingType === product.packagingType ? 'true' : 'false'}"
+                  title="Show all products with packaging type ${safePackagingType}"
+                >${safePackagingType}</button>` : ''}
+            </div>
+            <h2>${product.title} (<code>${product.sku}</code>) - ${product.asin ? product.asin.split(',').map(a => `<a href="https://amazon.in/dp/${a.trim()}" target="_blank" style="text-decoration: none; color: #204ea8;">${a.trim()}</a>`).join(', ') : 'No ASIN'}</h2>
+            <div class="images">
+              ${product.images.map((url, i) => `
+                <div class="image-wrapper" tabindex="0">
+                  <img src="${url}" data-full="${url}" loading="lazy" />
+                  <span class="image-number">${getImageLabel(i)}</span>
+                </div>`).join('')}
+            </div>
           </div>
         `;
-        gallery.appendChild(div);
       });
 
-      // Lightbox trigger
-      document.querySelectorAll('.image-wrapper').forEach(wrapper => {
-        const productDiv = wrapper.closest('.product');
-        wrapper.addEventListener('click', () => {
-          currentImages = Array.from(productDiv.querySelectorAll('img')).map(img => img.dataset.full);
-          currentIndex = currentImages.indexOf(wrapper.querySelector('img').dataset.full);
-          updateLightboxImage();
-          lightbox.classList.remove('hidden');
-        });
-      });
+      gallery.innerHTML = htmlBlocks.join('');
+
+      if (filtered.length > 100) {
+        const warning = document.createElement('div');
+        warning.style.textAlign = 'center';
+        warning.style.marginTop = '20px';
+        warning.style.paddingBottom = '30px';
+        warning.style.color = '#666';
+        warning.style.fontSize = '0.9rem';
+        warning.innerText = `Showing 100 of ${filtered.length} results to maintain performance. Please refine your filter to see more.`;
+        gallery.appendChild(warning);
+      }
     }
 
     gallery.addEventListener('click', event => {
+      const imageWrapper = event.target.closest('.image-wrapper');
+      if (imageWrapper) {
+        const productDiv = imageWrapper.closest('.product');
+        currentImages = Array.from(productDiv.querySelectorAll('img')).map(img => img.dataset.full);
+        currentIndex = currentImages.indexOf(imageWrapper.querySelector('img').dataset.full);
+        updateLightboxImage();
+        lightbox.classList.remove('hidden');
+        return;
+      }
+
       const tagButton = event.target.closest('[data-filter-type]');
       if (!tagButton) return;
 
@@ -368,25 +381,34 @@ fetch(`../products.json?t=${Date.now()}`)
       const totalImages = products.reduce((sum, p) => sum + p.images.length, 0);
       const startTime = performance.now();
 
-      // ✅ Accurate image check using new Image() (CORS-free, works on all CDNs)
-      function checkImageURL(url, timeout = 10000) {
-        return new Promise((resolve) => {
-          const img = new Image();
-          let done = false;
+      // ✅ Accurate image check using fetch HEAD with a reliable fallback
+      async function checkImageURL(url, timeoutLimit = 10000) {
+        try {
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), timeoutLimit);
+          const res = await fetch(url, { method: 'HEAD', signal: controller.signal });
+          clearTimeout(timeout);
+          return res.ok;
+        } catch (err) {
+          // Fallback to Image() loading if fetch fails (e.g. CORS)
+          return new Promise((resolve) => {
+            const img = new Image();
+            let done = false;
 
-          const timer = setTimeout(() => {
-            if (!done) { done = true; img.src = ''; resolve(false); }
-          }, timeout);
+            const timer = setTimeout(() => {
+              if (!done) { done = true; img.src = ''; resolve(false); }
+            }, timeoutLimit);
 
-          img.onload = () => {
-            if (!done) { done = true; clearTimeout(timer); resolve(true); }
-          };
-          img.onerror = () => {
-            if (!done) { done = true; clearTimeout(timer); resolve(false); }
-          };
+            img.onload = () => {
+              if (!done) { done = true; clearTimeout(timer); resolve(true); }
+            };
+            img.onerror = () => {
+              if (!done) { done = true; clearTimeout(timer); resolve(false); }
+            };
 
-          img.src = url;
-        });
+            img.src = url;
+          });
+        }
       }
 
       // ⚡ Single retry on failure
@@ -413,8 +435,8 @@ fetch(`../products.json?t=${Date.now()}`)
         });
       }
 
-      // ⚡ High concurrency — 30 parallel image checks (up from 8)
-      const CONCURRENCY = 30;
+      // ⚡ High concurrency — up to 80 parallel image checks (since HEAD is lightweight)
+      const CONCURRENCY = 80;
       let pointer = 0;
 
       async function worker() {
@@ -1045,7 +1067,11 @@ fetch(`../products.json?t=${Date.now()}`)
       updateStateAndRender();
     }
 
-    searchBar.addEventListener('input', updateStateAndRender);
+    let searchTimeout;
+    searchBar.addEventListener('input', () => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(updateStateAndRender, 300);
+    });
     categoryFilter.addEventListener('change', updateStateAndRender);
     if (brandFilter) brandFilter.addEventListener('change', updateStateAndRender);
     listingTypeFilter.addEventListener('change', updateStateAndRender);

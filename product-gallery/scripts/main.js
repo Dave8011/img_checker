@@ -421,9 +421,10 @@ fetch(`../products.json?t=${Date.now()}`)
 
       function formatSeconds(sec) {
         if (!isFinite(sec) || sec <= 0) return '—';
-        const m = Math.floor(sec / 60);
-        const s = Math.floor(sec % 60);
-        return m ? `${m}m ${s}s` : `${s}s`;
+        const rounded = Math.round(sec);
+        const m = Math.floor(rounded / 60);
+        const s = rounded % 60;
+        return m ? `${m}m ${s.toString().padStart(2, '0')}s` : `${s}s`;
       }
 
       // ✅ Build a flat task list
@@ -439,6 +440,10 @@ fetch(`../products.json?t=${Date.now()}`)
       const CONCURRENCY = 80;
       let pointer = 0;
 
+      let lastUpdateCount = 0;
+      let lastUpdateTime = performance.now();
+      let currentSpeed = 0;
+
       async function worker() {
         while (true) {
           const idx = pointer++;
@@ -449,11 +454,21 @@ fetch(`../products.json?t=${Date.now()}`)
 
           totalChecked++;
 
-          // ETA calculation
-          const elapsed = (performance.now() - startTime) / 1000;
-          const speed = totalChecked / elapsed;
-          const remaining = (totalImages - totalChecked) / speed;
-          progressText.textContent = `🖼️ ${totalChecked}/${totalImages} — ${speed.toFixed(0)} img/s — ETA ${formatSeconds(remaining)}`;
+          // Rolling ETA calculation
+          const now = performance.now();
+          const elapsedStep = (now - lastUpdateTime) / 1000;
+          if (elapsedStep >= 0.5) {
+            const stepSpeed = (totalChecked - lastUpdateCount) / elapsedStep;
+            currentSpeed = currentSpeed === 0 ? stepSpeed : (currentSpeed * 0.8 + stepSpeed * 0.2);
+            lastUpdateCount = totalChecked;
+            lastUpdateTime = now;
+          }
+
+          const overallElapsed = (now - startTime) / 1000;
+          const displaySpeed = currentSpeed > 0 ? currentSpeed : (totalChecked / overallElapsed);
+          const remaining = displaySpeed > 0 ? (tasks.length - totalChecked) / displaySpeed : 0;
+
+          progressText.textContent = `🖼️ ${totalChecked}/${totalImages} — ${Math.round(displaySpeed)} img/s — ETA ${formatSeconds(remaining)}`;
 
           if (!exists) {
             if (!missingMap.has(task.sku)) {
@@ -587,9 +602,10 @@ fetch(`../products.json?t=${Date.now()}`)
 
         function formatSeconds(sec) {
           if (!isFinite(sec) || sec <= 0) return "—";
-          const m = Math.floor(sec / 60);
-          const s = Math.floor(sec % 60);
-          return m ? `${m}m ${s}s` : `${s}s`;
+          const rounded = Math.round(sec);
+          const m = Math.floor(rounded / 60);
+          const s = rounded % 60;
+          return m ? `${m}m ${s.toString().padStart(2, '0')}s` : `${s}s`;
         }
 
         let zipNum = 1;
@@ -609,6 +625,10 @@ fetch(`../products.json?t=${Date.now()}`)
 
           progressText.textContent = `Starting ZIP ${zipNum} (${total} images)...`;
 
+          let lastUpdateCount = 0;
+          let lastUpdateTime = performance.now();
+          let currentSpeed = 0;
+
           // Worker thread
           async function worker() {
             while (true) {
@@ -623,10 +643,19 @@ fetch(`../products.json?t=${Date.now()}`)
 
               processed++;
 
-              // ETA
-              const elapsed = (performance.now() - startTime) / 1000;
-              const avg = elapsed / processed;
-              const eta = avg * (total - processed);
+              // Rolling ETA
+              const now = performance.now();
+              const elapsedStep = (now - lastUpdateTime) / 1000;
+              if (elapsedStep >= 0.5) {
+                const stepSpeed = (processed - lastUpdateCount) / elapsedStep;
+                currentSpeed = currentSpeed === 0 ? stepSpeed : (currentSpeed * 0.8 + stepSpeed * 0.2);
+                lastUpdateCount = processed;
+                lastUpdateTime = now;
+              }
+
+              const overallElapsed = (now - startTime) / 1000;
+              const displaySpeed = currentSpeed > 0 ? currentSpeed : (processed / overallElapsed);
+              const eta = displaySpeed > 0 ? (total - processed) / displaySpeed : 0;
 
               progressText.textContent =
                 `ZIP ${zipNum}: ${processed}/${total} — Skipped ${skipped} — ETA ${formatSeconds(eta)}`;
@@ -771,9 +800,10 @@ fetch(`../products.json?t=${Date.now()}`)
 
         function formatSeconds(sec) {
           if (!isFinite(sec) || sec <= 0) return "—";
-          const m = Math.floor(sec / 60);
-          const s = Math.floor(sec % 60);
-          return m ? `${m}m ${s}s` : `${s}s`;
+          const rounded = Math.round(sec);
+          const m = Math.floor(rounded / 60);
+          const s = rounded % 60;
+          return m ? `${m}m ${s.toString().padStart(2, '0')}s` : `${s}s`;
         }
 
         let zipNum = 1;
@@ -790,6 +820,10 @@ fetch(`../products.json?t=${Date.now()}`)
 
           progressText.textContent = `Starting ZIP ${zipNum} (${total} images)...`;
 
+          let lastUpdateCount = 0;
+          let lastUpdateTime = performance.now();
+          let currentSpeed = 0;
+
           async function worker() {
             while (true) {
               const idx = pointer++;
@@ -803,9 +837,18 @@ fetch(`../products.json?t=${Date.now()}`)
 
               processed++;
 
-              const elapsed = (performance.now() - startTime) / 1000;
-              const avg = elapsed / processed;
-              const eta = avg * (total - processed);
+              const now = performance.now();
+              const elapsedStep = (now - lastUpdateTime) / 1000;
+              if (elapsedStep >= 0.5) {
+                const stepSpeed = (processed - lastUpdateCount) / elapsedStep;
+                currentSpeed = currentSpeed === 0 ? stepSpeed : (currentSpeed * 0.8 + stepSpeed * 0.2);
+                lastUpdateCount = processed;
+                lastUpdateTime = now;
+              }
+
+              const overallElapsed = (now - startTime) / 1000;
+              const displaySpeed = currentSpeed > 0 ? currentSpeed : (processed / overallElapsed);
+              const eta = displaySpeed > 0 ? (total - processed) / displaySpeed : 0;
 
               progressText.textContent =
                 `ZIP ${zipNum} (${targetLabel}): ${processed}/${total} — Skipped ${skipped} — ETA ${formatSeconds(eta)}`;
@@ -945,9 +988,10 @@ fetch(`../products.json?t=${Date.now()}`)
 
         function formatSeconds(sec) {
           if (!isFinite(sec) || sec <= 0) return "—";
-          const m = Math.floor(sec / 60);
-          const s = Math.floor(sec % 60);
-          return m ? `${m}m ${s}s` : `${s}s`;
+          const rounded = Math.round(sec);
+          const m = Math.floor(rounded / 60);
+          const s = rounded % 60;
+          return m ? `${m}m ${s.toString().padStart(2, '0')}s` : `${s}s`;
         }
 
         let zipNum = 1;
@@ -964,6 +1008,10 @@ fetch(`../products.json?t=${Date.now()}`)
 
           progressText.textContent = `Starting ZIP ${zipNum} (${total} images)...`;
 
+          let lastUpdateCount = 0;
+          let lastUpdateTime = performance.now();
+          let currentSpeed = 0;
+
           async function worker() {
             while (true) {
               const idx = pointer++;
@@ -977,9 +1025,18 @@ fetch(`../products.json?t=${Date.now()}`)
 
               processed++;
 
-              const elapsed = (performance.now() - startTime) / 1000;
-              const avg = elapsed / processed;
-              const eta = avg * (total - processed);
+              const now = performance.now();
+              const elapsedStep = (now - lastUpdateTime) / 1000;
+              if (elapsedStep >= 0.5) {
+                const stepSpeed = (processed - lastUpdateCount) / elapsedStep;
+                currentSpeed = currentSpeed === 0 ? stepSpeed : (currentSpeed * 0.8 + stepSpeed * 0.2);
+                lastUpdateCount = processed;
+                lastUpdateTime = now;
+              }
+
+              const overallElapsed = (now - startTime) / 1000;
+              const displaySpeed = currentSpeed > 0 ? currentSpeed : (processed / overallElapsed);
+              const eta = displaySpeed > 0 ? (total - processed) / displaySpeed : 0;
 
               progressText.textContent =
                 `ZIP ${zipNum} (${targetBrand.substring(0, 15)}...): ${processed}/${total} — Skipped ${skipped} — ETA ${formatSeconds(eta)}`;

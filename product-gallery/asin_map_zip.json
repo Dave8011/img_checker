@@ -2502,5 +2502,373 @@
   {
     "sku": "IS06026-3",
     "asin": "B0DHD1MD6X"
+  },
+  {
+    "sku": "PTG00P-00GM-1",
+    "asin": "B0DFPTMHHZ"
+  },
+  {
+    "sku": "PTG00P-00PR-1",
+    "asin": "B0DFPWBRJT"
+  },
+  {
+    "sku": "PTG00P-00GR-1",
+    "asin": "B0DFPQ5DWJ"
+  },
+  {
+    "sku": "PTG00P-0SBP-1",
+    "asin": "B0DFPSLXG9"
+  },
+  {
+    "sku": "PTG00P-0NDM-1",
+    "asin": "B0DFPS6HZ3"
+  },
+  {
+    "sku": "PTG00P-00PM-1",
+    "asin": "B0DFPQ2RN7"
+  },
+  {
+    "sku": "PTG00P-0RWM-1",
+    "asin": "B0DFPQ9R74"
+  },
+  {
+    "sku": "PTG00P-00GP-1",
+    "asin": "B0DFPVVRDB"
+  },
+  {
+    "sku": "PTG00P-0BSC-1",
+    "asin": "B0DFPVMQSW"
+  },
+  {
+    "sku": "PTG0PS-00GM-1",
+    "asin": "B0DFPQ6WGN"
+  },
+  {
+    "sku": "PTG0PS-00PR-1",
+    "asin": "B0DFPKNFBP"
+  },
+  {
+    "sku": "PTG0PS-00GR-1",
+    "asin": "B0DFPST7KG"
+  },
+  {
+    "sku": "PTG0PS-0SBP-1",
+    "asin": "B0DFPRTVDM"
+  },
+  {
+    "sku": "PTG0PS-0NDM-1",
+    "asin": "B0DFPW6NQJ"
+  },
+  {
+    "sku": "PTG0PS-00PM-1",
+    "asin": "B0DFPWBB73"
+  },
+  {
+    "sku": "PTG0PS-0RWM-1",
+    "asin": "B0DFPY8G5H"
+  },
+  {
+    "sku": "PTG0PS-00GP-1",
+    "asin": "B0DFPRMDMP"
+  },
+  {
+    "sku": "PTG0PS-0BSC-1",
+    "asin": "B0DFPRWMRP"
+  },
+  {
+    "sku": "PTG0WS-00GM-1",
+    "asin": "B0DFPW6247"
+  },
+  {
+    "sku": "PTG0WS-00PR-1",
+    "asin": "B0DFPTRRHH"
+  },
+  {
+    "sku": "PTG0WS-00GR-1",
+    "asin": "B0DFPTTZH9"
+  },
+  {
+    "sku": "PTG0WS-0SBP-1",
+    "asin": "B0DFPRKSNJ"
+  },
+  {
+    "sku": "PTG0WS-0NDM-1",
+    "asin": "B0DFPW2LV8"
+  },
+  {
+    "sku": "PTG0WS-00PM-1",
+    "asin": "B0DFPRQRCN"
+  },
+  {
+    "sku": "PTG0WS-0RWM-1",
+    "asin": "B0DFPQD9QM"
+  },
+  {
+    "sku": "PTG0WS-00GP-1",
+    "asin": "B0DFPS6HZC"
+  },
+  {
+    "sku": "PTG0WS-0BSC-1",
+    "asin": "B0DFPW5Q7S"
+  },
+  {
+    "sku": "PTG00S-00GM-1",
+    "asin": "B0DFPVS3DW"
+  },
+  {
+    "sku": "PTG00S-00PR-1",
+    "asin": "B0DFPVV2TX"
+  },
+  {
+    "sku": "PTG00S-00GR-1",
+    "asin": "B0DFPVV91K"
+  },
+  {
+    "sku": "PTG00S-0SBP-1",
+    "asin": "B0DFPVSKBN"
+  },
+  {
+    "sku": "PTG00S-0NDM-1",
+    "asin": "B0DFPVC3XZ"
+  },
+  {
+    "sku": "PTG00S-00PM-1",
+    "asin": "B0DFPTY842"
+  },
+  {
+    "sku": "PTG00S-0RWM-1",
+    "asin": "B0DFPX69KC"
+  },
+  {
+    "sku": "PTG00S-00GP-1",
+    "asin": "B0DFPRTRSP"
+  },
+  {
+    "sku": "PTG00S-0BSC-1",
+    "asin": "B0DFPVFT32"
+  },
+  {
+    "sku": "PTG0DF-00GM-1",
+    "asin": "B0DFPRT41R"
+  },
+  {
+    "sku": "PTG0DF-00PR-1",
+    "asin": "B0DFPTHKPP"
+  },
+  {
+    "sku": "PTG0DF-00GR-1",
+    "asin": "B0DFPSK7XC"
+  },
+  {
+    "sku": "PTG0DF-0SBP-1",
+    "asin": "B0DFPW172J"
+  },
+  {
+    "sku": "PTG0DF-0NDM-1",
+    "asin": "B0DFPVTVS2"
+  },
+  {
+    "sku": "PTG0DF-00PM-1",
+    "asin": "B0DFPVL28W"
+  },
+  {
+    "sku": "PTG0DF-0RWM-1",
+    "asin": "B0DFPVTVT3"
+  },
+  {
+    "sku": "PTG0DF-00GP-1",
+    "asin": "B0DFPW49B4"
+  },
+  {
+    "sku": "PTG0DF-0BSC-1",
+    "asin": "B0DFPQ613W"
+  },
+  {
+    "sku": "PTG4MP-00GM-1",
+    "asin": "B0DHY3RHJP"
+  },
+  {
+    "sku": "PTG5MP-0NDM-1",
+    "asin": "B0DHXGY3VR"
+  },
+  {
+    "sku": "PTG40P-00GM-1",
+    "asin": "B0DJQVD6FY"
+  },
+  {
+    "sku": "PTG40P-00PR-1",
+    "asin": "B0DJQSTB79"
+  },
+  {
+    "sku": "PTG40P-00GR-1",
+    "asin": "B0DJQTSCD6"
+  },
+  {
+    "sku": "PTG40P-0SBP-1",
+    "asin": "B0DJQTRWPW"
+  },
+  {
+    "sku": "PTG40P-0NDM-1",
+    "asin": "B0DJQVC11N"
+  },
+  {
+    "sku": "PTG40P-00PM-1",
+    "asin": "B0DJQTP8SJ"
+  },
+  {
+    "sku": "PTG40P-0RWM-1",
+    "asin": "B0DJQSHPM7"
+  },
+  {
+    "sku": "PTG40P-00GP-1",
+    "asin": "B0DJQTP8QS"
+  },
+  {
+    "sku": "PTG40P-0BSC-1",
+    "asin": "B0DJQTL8C9"
+  },
+  {
+    "sku": "PTG4PS-00GM-1",
+    "asin": "B0DJQTW5BV"
+  },
+  {
+    "sku": "PTG4PS-00PR-1",
+    "asin": "B0DJQTQ8J6"
+  },
+  {
+    "sku": "PTG4PS-00GR-1",
+    "asin": "B0DJQSY36L"
+  },
+  {
+    "sku": "PTG4PS-0SBP-1",
+    "asin": "B0DJQTKVMG"
+  },
+  {
+    "sku": "PTG4PS-0NDM-1",
+    "asin": "B0DJQVBN1M"
+  },
+  {
+    "sku": "PTG4PS-00PM-1",
+    "asin": "B0DJQTVQ6X"
+  },
+  {
+    "sku": "PTG4PS-0RWM-1",
+    "asin": "B0DJQTXZBG"
+  },
+  {
+    "sku": "PTG4PS-00GP-1",
+    "asin": "B0DJQVGPFY"
+  },
+  {
+    "sku": "PTG4PS-0BSC-1",
+    "asin": "B0DJQV1HRZ"
+  },
+  {
+    "sku": "PTG4WS-00GM-1",
+    "asin": "B0DJQVD35J"
+  },
+  {
+    "sku": "PTG4WS-00PR-1",
+    "asin": "B0DJQVC8JP"
+  },
+  {
+    "sku": "PTG4WS-00GR-1",
+    "asin": "B0DJQVBV54"
+  },
+  {
+    "sku": "PTG4WS-0SBP-1",
+    "asin": "B0DJQTP9MW"
+  },
+  {
+    "sku": "PTG4WS-0NDM-1",
+    "asin": "B0DJQTGVYS"
+  },
+  {
+    "sku": "PTG4WS-00PM-1",
+    "asin": "B0DJQTMMJK"
+  },
+  {
+    "sku": "PTG4WS-0RWM-1",
+    "asin": "B0DJQV1KZS"
+  },
+  {
+    "sku": "PTG4WS-00GP-1",
+    "asin": "B0DJQTSQFT"
+  },
+  {
+    "sku": "PTG4WS-0BSC-1",
+    "asin": "B0DJQVF8VL"
+  },
+  {
+    "sku": "PTG40S-00GM-1",
+    "asin": "B0DJQSXBJJ"
+  },
+  {
+    "sku": "PTG40S-00PR-1",
+    "asin": "B0DJQTZB1D"
+  },
+  {
+    "sku": "PTG40S-00GR-1",
+    "asin": "B0DJQV6BFH"
+  },
+  {
+    "sku": "PTG40S-0SBP-1",
+    "asin": "B0DJQSNHT2"
+  },
+  {
+    "sku": "PTG40S-0NDM-1",
+    "asin": "B0DJQTY2N8"
+  },
+  {
+    "sku": "PTG40S-00PM-1",
+    "asin": "B0DJQSVMQH"
+  },
+  {
+    "sku": "PTG40S-0RWM-1",
+    "asin": "B0DJQSJCMX"
+  },
+  {
+    "sku": "PTG40S-00GP-1",
+    "asin": "B0DJQTQ5Z1"
+  },
+  {
+    "sku": "PTG40S-0BSC-1",
+    "asin": "B0DJQVDJMQ"
+  },
+  {
+    "sku": "PTG4DF-00GM-1",
+    "asin": "B0DJQTFXKM"
+  },
+  {
+    "sku": "PTG4DF-00PR-1",
+    "asin": "B0DJQSRZM4"
+  },
+  {
+    "sku": "PTG4DF-00GR-1",
+    "asin": "B0DJQTGVZW"
+  },
+  {
+    "sku": "PTG4DF-0SBP-1",
+    "asin": "B0DJQSRRG4"
+  },
+  {
+    "sku": "PTG4DF-0NDM-1",
+    "asin": "B0DJQT59ST"
+  },
+  {
+    "sku": "PTG4DF-00PM-1",
+    "asin": "B0DJQVJTQM"
+  },
+  {
+    "sku": "PTG4DF-0RWM-1",
+    "asin": "B0DJQVD35S"
+  },
+  {
+    "sku": "PTG4DF-00GP-1",
+    "asin": "B0DJQTZB1G"
+  },
+  {
+    "sku": "PTG4DF-0BSC-1",
+    "asin": "B0DJQTNZWW"
   }
 ]

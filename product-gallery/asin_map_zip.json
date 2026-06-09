@@ -636,6 +636,14 @@
     "asin": "B0CH817R4C"
   },
   {
+    "sku": "PT0041-005000BP-1",
+    "asin": "B0H3VCX98Z"
+  },
+  {
+    "sku": "PT0041-010000BP-1",
+    "asin": "B0H3V1VG8Q"
+  },
+  {
     "sku": "PT0042-000850BP-1",
     "asin": "B09M3SJ771"
   },
@@ -1228,6 +1236,10 @@
     "asin": "B0GV7RKF24"
   },
   {
+    "sku": "PT0076-010000BP-1",
+    "asin": "B0H4GZQ8TR"
+  },
+  {
     "sku": "PT0077-000050BP-1",
     "asin": "B0BY4KKVFM"
   },
@@ -1297,15 +1309,15 @@
   },
   {
     "sku": "PT0081-000100BP-1",
-    "asin": "B0H1VX8GG4"
+    "asin": "33"
   },
   {
     "sku": "PT0081-000250BP-1",
-    "asin": "B0H1W3DWHF"
+    "asin": "34"
   },
   {
     "sku": "PT0081-000350BP-1",
-    "asin": "B0H1VZZBMG"
+    "asin": "35"
   },
   {
     "sku": "PT0083-000350BP-1",
@@ -2294,6 +2306,18 @@
   {
     "sku": "PT0180-010000BP-1",
     "asin": "B0GTTW8KSF"
+  },
+  {
+    "sku": "PT0181-000100BP-1",
+    "asin": "1"
+  },
+  {
+    "sku": "PT0181-000250BP-1",
+    "asin": "2"
+  },
+  {
+    "sku": "PT0181-000350BP-1",
+    "asin": "3"
   },
   {
     "sku": "PTC0001",

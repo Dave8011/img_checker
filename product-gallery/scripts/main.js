@@ -1,7 +1,7 @@
 /* ===========================
    Fetch Product Data
    =========================== */
-fetch(`../products.json?t=${Date.now()}`)
+fetch(`products.json?t=${Date.now()}`)
   .then(res => res.json())
   .then(data => {
     // Normalize product keys (fix PackagingType → packagingType)

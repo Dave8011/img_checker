@@ -154,11 +154,11 @@ fetch(`../products.json?t=${Date.now()}`)
                 if (isVideo) {
                   return `
                     <div class="image-wrapper video-thumb" tabindex="0">
-                      <video src="${url}#t=0.1" preload="metadata" data-full="${url}" loading="lazy"></video>
+                      <video src="${url}#t=1.0" preload="metadata" muted playsinline data-full="${url}" onloadedmetadata="this.currentTime=1.0;"></video>
                       <span class="image-number">${label}</span>
-                      <a href="${url}" download class="copy-btn" style="position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.7); padding: 4px; border-radius: 4px; color: white;" title="Download Video" target="_blank" onclick="event.stopPropagation();">
+                      <button class="copy-btn" style="position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.7); padding: 4px; border-radius: 4px; color: white; border: none; cursor: pointer;" title="Download Video" onclick="forceDownload('${url}', event)">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:16px;height:16px;"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
-                      </a>
+                      </button>
                     </div>`;
                 } else {
                   return `
@@ -252,11 +252,11 @@ fetch(`../products.json?t=${Date.now()}`)
                 if (isVideo) {
                   return `
                     <div class="image-wrapper video-thumb" tabindex="0">
-                      <video src="${url}#t=0.1" preload="metadata" data-full="${url}" loading="lazy"></video>
+                      <video src="${url}#t=1.0" preload="metadata" muted playsinline data-full="${url}" onloadedmetadata="this.currentTime=1.0;"></video>
                       <span class="image-number">${label}</span>
-                      <a href="${url}" download class="copy-btn" style="position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.7); padding: 4px; border-radius: 4px; color: white;" title="Download Video" target="_blank" onclick="event.stopPropagation();">
+                      <button class="copy-btn" style="position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.7); padding: 4px; border-radius: 4px; color: white; border: none; cursor: pointer;" title="Download Video" onclick="forceDownload('${url}', event)">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:16px;height:16px;"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
-                      </a>
+                      </button>
                     </div>`;
                 } else {
                   return `
@@ -389,6 +389,35 @@ fetch(`../products.json?t=${Date.now()}`)
           exportDropdown.classList.remove('open');
         }
       });
+    }
+
+    
+    /* ===========================
+       Force Download Helper
+       =========================== */
+    async function forceDownload(url, e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      try {
+        // Attempt to fetch the file directly to force download via blob
+        // This will only work if the server has CORS enabled or it's same-origin
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('Fetch failed');
+        const blob = await res.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = url.split('/').pop() || 'video.mp4';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(blobUrl);
+      } catch (err) {
+        // If CORS blocked the fetch, fallback to opening it with clear instructions
+        alert("Server security prevents direct downloads. The video will now open in a new tab.\n\nTo save it: Click the three dots (⋮) in the video player and select 'Download'.");
+        window.open(url, '_blank');
+      }
     }
 
     /* ===========================

@@ -17,6 +17,11 @@ fetch(`../products.json?t=${Date.now()}`)
        =========================== */
     let currentImages = [];
     let currentIndex = 0;
+    
+    // Pagination state
+    let displayLimit = 40;
+    let currentFiltered = [];
+
 
     const gallery = document.getElementById('gallery');
     const searchBar = document.getElementById('searchBar');
@@ -27,6 +32,7 @@ fetch(`../products.json?t=${Date.now()}`)
     const clearFiltersBtn = document.getElementById('clearFiltersBtn');
     const lightbox = document.getElementById('lightbox');
     const lightboxImg = document.getElementById('lightbox-img');
+    const lightboxVideo = document.getElementById('lightbox-video');
     const lightboxClose = document.getElementById('lightbox-close');
     const emptyState = document.getElementById('emptyState');
 
@@ -69,8 +75,6 @@ fetch(`../products.json?t=${Date.now()}`)
        Render Product Gallery
        =========================== */
     function renderProducts(filter = '', category = '', listingType = '', packagingType = '', brand = '') {
-      gallery.innerHTML = '';
-
       const filtered = data.filter(p =>
         (p.title.toLowerCase().includes(filter.toLowerCase()) ||
           p.sku.toLowerCase().includes(filter.toLowerCase()) ||
@@ -81,6 +85,15 @@ fetch(`../products.json?t=${Date.now()}`)
         (packagingType === '' || p.packagingType === packagingType)
       );
 
+      currentFiltered = filtered;
+      displayLimit = 40; // reset limit on new filter
+      renderGalleryContent();
+    }
+    
+    function renderGalleryContent() {
+      gallery.innerHTML = '';
+      const filtered = currentFiltered;
+
       if (filtered.length === 0) {
         emptyState.innerHTML = `<img src="https://cdn.jsdelivr.net/gh/edent/SuperTinyIcons/images/svg/emoji-sad.svg" width="120" style="margin-bottom:20px;opacity:.7;" />
           <div style="font-size:1.4rem;color:#888;">No products found. Try adjusting your filter or search terms!</div>`;
@@ -90,12 +103,14 @@ fetch(`../products.json?t=${Date.now()}`)
         emptyState.style.display = 'none';
       }
 
-      const limitedFiltered = filtered.slice(0, 100);
+      const limitedFiltered = filtered.slice(0, displayLimit);
 
       const htmlBlocks = limitedFiltered.map(product => {
         const safeCategory = escapeHTML(product.category || '');
         const safeListingType = escapeHTML(product.listingType || '');
         const safePackagingType = escapeHTML(product.packagingType || '');
+        
+        const copySvg = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184" /></svg>`;
 
         return `
           <div class="product">
@@ -103,64 +118,207 @@ fetch(`../products.json?t=${Date.now()}`)
               ${product.category ? `
                 <button
                   type="button"
-                  class="category-tag${category === product.category ? ' is-active' : ''}"
+                  class="category-tag${categoryFilter.value === product.category ? ' is-active' : ''}"
                   data-filter-type="category"
                   data-filter-value="${safeCategory}"
-                  aria-pressed="${category === product.category ? 'true' : 'false'}"
                   title="Show all products in ${safeCategory}"
                 >${safeCategory}</button>` : ''}
               ${product.listingType ? `
                 <button
                   type="button"
-                  class="listing-type-tag${listingType === product.listingType ? ' is-active' : ''}"
+                  class="listing-type-tag${listingTypeFilter.value === product.listingType ? ' is-active' : ''}"
                   data-filter-type="listingType"
                   data-filter-value="${safeListingType}"
-                  aria-pressed="${listingType === product.listingType ? 'true' : 'false'}"
                   title="Show all products with listing type ${safeListingType}"
                 >${safeListingType}</button>` : ''}
               ${product.packagingType ? `
                 <button
                   type="button"
-                  class="packaging-type-tag${packagingType === product.packagingType ? ' is-active' : ''}"
+                  class="packaging-type-tag${packagingTypeFilter.value === product.packagingType ? ' is-active' : ''}"
                   data-filter-type="packagingType"
                   data-filter-value="${safePackagingType}"
-                  aria-pressed="${packagingType === product.packagingType ? 'true' : 'false'}"
                   title="Show all products with packaging type ${safePackagingType}"
                 >${safePackagingType}</button>` : ''}
             </div>
-            <h2>${product.title} (<code>${product.sku}</code>) - ${product.asin ? product.asin.split(',').map(a => `<a href="https://amazon.in/dp/${a.trim()}" target="_blank" style="text-decoration: none; color: #204ea8;">${a.trim()}</a>`).join(', ') : 'No ASIN'}</h2>
+            <h2>
+              ${product.title} 
+              (<code>${product.sku}</code>
+              <button class="copy-btn" data-copy="${product.sku}" title="Copy SKU">${copySvg}</button>)
+              - 
+              ${product.asin ? product.asin.split(',').map(a => `<a href="https://amazon.in/dp/${a.trim()}" target="_blank" style="text-decoration: none; color: var(--accent);">${a.trim()}</a><button class="copy-btn" data-copy="${a.trim()}" title="Copy ASIN">${copySvg}</button>`).join(', ') : 'No ASIN'}
+            </h2>
             <div class="images">
-              ${product.images.map((url, i) => `
-                <div class="image-wrapper" tabindex="0">
-                  <img src="${url}" data-full="${url}" loading="lazy" />
-                  <span class="image-number">${getImageLabel(i)}</span>
-                </div>`).join('')}
+              ${product.images.map((url, i) => {
+                const isVideo = url.toLowerCase().endsWith('.mp4');
+                const label = getImageLabel(url, i);
+                if (isVideo) {
+                  return `
+                    <div class="image-wrapper video-thumb" tabindex="0">
+                      <video src="${url}#t=0.1" preload="metadata" data-full="${url}" loading="lazy"></video>
+                      <span class="image-number">${label}</span>
+                      <a href="${url}" download class="copy-btn" style="position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.7); padding: 4px; border-radius: 4px; color: white;" title="Download Video" target="_blank" onclick="event.stopPropagation();">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:16px;height:16px;"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+                      </a>
+                    </div>`;
+                } else {
+                  return `
+                    <div class="image-wrapper" tabindex="0">
+                      <img src="${url}" data-full="${url}" loading="lazy" />
+                      <span class="image-number">${label}</span>
+                    </div>`;
+                }
+              }).join('')}
             </div>
           </div>
         `;
       });
+      
+      gallery.insertAdjacentHTML('beforeend', htmlBlocks.join(''));
+      
+      const oldObserver = document.getElementById('scroll-observer');
+      if (oldObserver) oldObserver.remove();
 
-      gallery.innerHTML = htmlBlocks.join('');
+      if (filtered.length > displayLimit) {
+        const observerDiv = document.createElement('div');
+        observerDiv.id = 'scroll-observer';
+        observerDiv.style.height = '20px';
+        observerDiv.style.marginTop = '20px';
+        observerDiv.style.width = '100%';
+        
+        gallery.parentElement.appendChild(observerDiv);
 
-      if (filtered.length > 100) {
-        const warning = document.createElement('div');
-        warning.style.textAlign = 'center';
-        warning.style.marginTop = '20px';
-        warning.style.paddingBottom = '30px';
-        warning.style.color = '#666';
-        warning.style.fontSize = '0.9rem';
-        warning.innerText = `Showing 100 of ${filtered.length} results to maintain performance. Please refine your filter to see more.`;
-        gallery.appendChild(warning);
+        const observer = new IntersectionObserver((entries) => {
+          if (entries[0].isIntersecting) {
+            const nextStart = displayLimit;
+            displayLimit += 40;
+            observer.disconnect();
+            renderGalleryContentAppended(filtered, nextStart);
+          }
+        }, { rootMargin: '200px' });
+        
+        observer.observe(observerDiv);
+      }
+    }
+
+    function renderGalleryContentAppended(filtered, startIndex) {
+        const limitedFiltered = filtered.slice(startIndex, displayLimit);
+        
+        const htmlBlocks = limitedFiltered.map(product => {
+        const safeCategory = escapeHTML(product.category || '');
+        const safeListingType = escapeHTML(product.listingType || '');
+        const safePackagingType = escapeHTML(product.packagingType || '');
+        
+        const copySvg = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184" /></svg>`;
+
+        return `
+          <div class="product">
+            <div class="tag-row">
+              ${product.category ? `
+                <button
+                  type="button"
+                  class="category-tag${categoryFilter.value === product.category ? ' is-active' : ''}"
+                  data-filter-type="category"
+                  data-filter-value="${safeCategory}"
+                  title="Show all products in ${safeCategory}"
+                >${safeCategory}</button>` : ''}
+              ${product.listingType ? `
+                <button
+                  type="button"
+                  class="listing-type-tag${listingTypeFilter.value === product.listingType ? ' is-active' : ''}"
+                  data-filter-type="listingType"
+                  data-filter-value="${safeListingType}"
+                  title="Show all products with listing type ${safeListingType}"
+                >${safeListingType}</button>` : ''}
+              ${product.packagingType ? `
+                <button
+                  type="button"
+                  class="packaging-type-tag${packagingTypeFilter.value === product.packagingType ? ' is-active' : ''}"
+                  data-filter-type="packagingType"
+                  data-filter-value="${safePackagingType}"
+                  title="Show all products with packaging type ${safePackagingType}"
+                >${safePackagingType}</button>` : ''}
+            </div>
+            <h2>
+              ${product.title} 
+              (<code>${product.sku}</code>
+              <button class="copy-btn" data-copy="${product.sku}" title="Copy SKU">${copySvg}</button>)
+              - 
+              ${product.asin ? product.asin.split(',').map(a => `<a href="https://amazon.in/dp/${a.trim()}" target="_blank" style="text-decoration: none; color: var(--accent);">${a.trim()}</a><button class="copy-btn" data-copy="${a.trim()}" title="Copy ASIN">${copySvg}</button>`).join(', ') : 'No ASIN'}
+            </h2>
+            <div class="images">
+              ${product.images.map((url, i) => {
+                const isVideo = url.toLowerCase().endsWith('.mp4');
+                const label = getImageLabel(url, i);
+                if (isVideo) {
+                  return `
+                    <div class="image-wrapper video-thumb" tabindex="0">
+                      <video src="${url}#t=0.1" preload="metadata" data-full="${url}" loading="lazy"></video>
+                      <span class="image-number">${label}</span>
+                      <a href="${url}" download class="copy-btn" style="position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.7); padding: 4px; border-radius: 4px; color: white;" title="Download Video" target="_blank" onclick="event.stopPropagation();">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:16px;height:16px;"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+                      </a>
+                    </div>`;
+                } else {
+                  return `
+                    <div class="image-wrapper" tabindex="0">
+                      <img src="${url}" data-full="${url}" loading="lazy" />
+                      <span class="image-number">${label}</span>
+                    </div>`;
+                }
+              }).join('')}
+            </div>
+          </div>
+        `;
+      });
+      
+      gallery.insertAdjacentHTML('beforeend', htmlBlocks.join(''));
+      
+      const oldObserver = document.getElementById('scroll-observer');
+      if (oldObserver) oldObserver.remove();
+
+      if (filtered.length > displayLimit) {
+        const observerDiv = document.createElement('div');
+        observerDiv.id = 'scroll-observer';
+        observerDiv.style.height = '20px';
+        observerDiv.style.marginTop = '20px';
+        observerDiv.style.width = '100%';
+        
+        gallery.parentElement.appendChild(observerDiv);
+
+        const observer = new IntersectionObserver((entries) => {
+          if (entries[0].isIntersecting) {
+            const nextStart = displayLimit;
+            displayLimit += 40;
+            observer.disconnect();
+            renderGalleryContentAppended(filtered, nextStart);
+          }
+        }, { rootMargin: '200px' });
+        
+        observer.observe(observerDiv);
       }
     }
 
     gallery.addEventListener('click', event => {
+      const copyBtn = event.target.closest('.copy-btn');
+      if (copyBtn) {
+        const textToCopy = copyBtn.dataset.copy;
+        navigator.clipboard.writeText(textToCopy).then(() => {
+          const originalHTML = copyBtn.innerHTML;
+          copyBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="color: var(--green);"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" /></svg>`;
+          setTimeout(() => copyBtn.innerHTML = originalHTML, 1500);
+        });
+        return;
+      }
+
       const imageWrapper = event.target.closest('.image-wrapper');
       if (imageWrapper) {
         const productDiv = imageWrapper.closest('.product');
-        currentImages = Array.from(productDiv.querySelectorAll('img')).map(img => img.dataset.full);
-        currentIndex = currentImages.indexOf(imageWrapper.querySelector('img').dataset.full);
-        updateLightboxImage();
+        // Select both imgs and videos
+        const mediaElements = Array.from(productDiv.querySelectorAll('img, video'));
+        currentImages = mediaElements.map(el => el.dataset.full);
+        const clickedMedia = imageWrapper.querySelector('img, video');
+        currentIndex = currentImages.indexOf(clickedMedia.dataset.full);
+        updateLightboxMedia();
         lightbox.classList.remove('hidden');
         return;
       }
@@ -187,23 +345,57 @@ fetch(`../products.json?t=${Date.now()}`)
     /* ===========================
        Lightbox Navigation
        =========================== */
-    function updateLightboxImage() {
-      lightboxImg.src = currentImages[currentIndex];
+    function updateLightboxMedia() {
+      const url = currentImages[currentIndex];
+      if (url.toLowerCase().endsWith('.mp4')) {
+        lightboxImg.classList.add('hidden');
+        lightboxImg.src = '';
+        lightboxVideo.src = url;
+        lightboxVideo.classList.remove('hidden');
+        lightboxVideo.play().catch(e => console.warn('Autoplay prevented', e));
+      } else {
+        lightboxVideo.classList.add('hidden');
+        lightboxVideo.pause();
+        lightboxVideo.src = '';
+        lightboxImg.src = url;
+        lightboxImg.classList.remove('hidden');
+      }
     }
 
-    lightboxClose.onclick = () => lightbox.classList.add('hidden');
+    lightboxClose.onclick = () => { lightbox.classList.add('hidden'); lightboxVideo.pause(); lightboxVideo.src = ''; lightboxImg.src = ''; };
     window.addEventListener('keydown', e => {
       if (lightbox.classList.contains('hidden')) return;
       if (e.key === 'ArrowRight') currentIndex = Math.min(currentIndex + 1, currentImages.length - 1);
       if (e.key === 'ArrowLeft') currentIndex = Math.max(currentIndex - 1, 0);
-      if (e.key === 'Escape') lightbox.classList.add('hidden');
-      updateLightboxImage();
+      if (e.key === 'Escape') { lightbox.classList.add('hidden'); lightboxVideo.pause(); lightboxVideo.src = ''; lightboxImg.src = ''; }
+      updateLightboxMedia();
     });
+
+    
+    /* ===========================
+       Dropdown Logic
+       =========================== */
+    const exportDropdown = document.getElementById('exportDropdown');
+    const exportToggleBtn = document.getElementById('exportToggleBtn');
+    
+    if (exportToggleBtn) {
+      exportToggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        exportDropdown.classList.toggle('open');
+      });
+      
+      document.addEventListener('click', (e) => {
+        if (!exportDropdown.contains(e.target)) {
+          exportDropdown.classList.remove('open');
+        }
+      });
+    }
 
     /* ===========================
        Helpers
        =========================== */
-    function getImageLabel(i) {
+    function getImageLabel(url, i) {
+      if (url.toLowerCase().endsWith('.mp4')) return 'VIDEO';
       return i === 0 ? 'MAIN' : `PT${String(i).padStart(2, '0')}`;
     }
 
@@ -318,13 +510,14 @@ fetch(`../products.json?t=${Date.now()}`)
         return;
       }
 
-      const images = productEl.querySelectorAll('img');
+      const images = productEl.querySelectorAll('img, video');
       const total = images.length;
       let completed = 0;
 
       const downloadPromises = Array.from(images).map((img, index) => {
-        const label = getImageLabel(index);
-        const imgURL = img.src;
+        const imgURL = img.src || img.dataset.full;
+        const label = getImageLabel(imgURL, index);
+        const ext = imgURL.toLowerCase().endsWith('.mp4') ? 'mp4' : 'jpg';
 
         return new Promise(async (resolve) => {
           const timeout = new Promise((res) => setTimeout(res, 5000)); // 5 sec timeout
@@ -340,7 +533,7 @@ fetch(`../products.json?t=${Date.now()}`)
           try {
             await Promise.race([waitForImage, timeout]); // Whichever finishes first
             const blob = await fetchImageAsBlob(imgURL);
-            zip.file(`${filePrefix}.${label}.jpg`, blob);
+            zip.file(`${filePrefix}.${label}.${ext}`, blob);
           } catch (e) {
             console.warn(`❌ Skipped: ${label} (timeout or error)`);
           }
@@ -570,9 +763,10 @@ fetch(`../products.json?t=${Date.now()}`)
           }
 
           product.images.forEach((imgUrl, idx) => {
+            const ext = imgUrl.toLowerCase().endsWith('.mp4') ? 'mp4' : 'jpg';
             allItems.push({
               url: imgUrl,
-              filename: `${prefix}.${getImageLabel(idx)}.jpg`
+              filename: `${prefix}.${getImageLabel(imgUrl, idx)}.${ext}`
             });
           });
         });
@@ -714,7 +908,7 @@ fetch(`../products.json?t=${Date.now()}`)
       typeSelect.innerHTML = '';
 
       for (let i = 0; i < maxImages; i++) {
-        const label = getImageLabel(i);
+        const label = i === 0 ? 'MAIN' : `PT${String(i).padStart(2, '0')}`;
         const opt = document.createElement('option');
         opt.value = label;
         opt.textContent = label;
@@ -766,11 +960,12 @@ fetch(`../products.json?t=${Date.now()}`)
           }
 
           product.images.forEach((imgUrl, idx) => {
-            const label = getImageLabel(idx);
+            const label = getImageLabel(imgUrl, idx);
             if (label === targetLabel) {
+              const ext = imgUrl.toLowerCase().endsWith('.mp4') ? 'mp4' : 'jpg';
               allItems.push({
                 url: imgUrl,
-                filename: `${prefix}.${label}.jpg`
+                filename: `${prefix}.${label}.${ext}`
               });
             }
           });

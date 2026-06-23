@@ -154,7 +154,7 @@ fetch(`products.json?t=${Date.now()}`)
                 if (isVideo) {
                   return `
                     <div class="image-wrapper video-thumb" tabindex="0">
-                      <video src="${url}#t=1.0" preload="metadata" muted playsinline data-full="${url}" onloadedmetadata="this.currentTime=1.0;"></video>
+                      <video src="${url}" poster="${product.images[0]}" preload="none" muted playsinline data-full="${url}" style="width: 100%; height: 110px; object-fit: contain; border-radius: var(--radius-sm); border: 1px solid var(--border);"></video>
                       <span class="image-number">${label}</span>
                       <button class="copy-btn" style="position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.7); padding: 4px; border-radius: 4px; color: white; border: none; cursor: pointer;" title="Download Video" onclick="forceDownload('${url}', event)">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:16px;height:16px;"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
@@ -252,7 +252,7 @@ fetch(`products.json?t=${Date.now()}`)
                 if (isVideo) {
                   return `
                     <div class="image-wrapper video-thumb" tabindex="0">
-                      <video src="${url}#t=1.0" preload="metadata" muted playsinline data-full="${url}" onloadedmetadata="this.currentTime=1.0;"></video>
+                      <video src="${url}" poster="${product.images[0]}" preload="none" muted playsinline data-full="${url}" style="width: 100%; height: 110px; object-fit: contain; border-radius: var(--radius-sm); border: 1px solid var(--border);"></video>
                       <span class="image-number">${label}</span>
                       <button class="copy-btn" style="position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.7); padding: 4px; border-radius: 4px; color: white; border: none; cursor: pointer;" title="Download Video" onclick="forceDownload('${url}', event)">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:16px;height:16px;"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>

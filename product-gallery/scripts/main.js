@@ -395,29 +395,21 @@ fetch(`products.json?t=${Date.now()}`)
     /* ===========================
        Force Download Helper
        =========================== */
-    async function forceDownload(url, e) {
+    function forceDownload(url, e) {
       e.preventDefault();
       e.stopPropagation();
       
-      try {
-        // Attempt to fetch the file directly to force download via blob
-        // This will only work if the server has CORS enabled or it's same-origin
-        const res = await fetch(url);
-        if (!res.ok) throw new Error('Fetch failed');
-        const blob = await res.blob();
-        const blobUrl = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = blobUrl;
-        a.download = url.split('/').pop() || 'video.mp4';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(blobUrl);
-      } catch (err) {
-        // If CORS blocked the fetch, fallback to opening it with clear instructions
-        alert("Server security prevents direct downloads. The video will now open in a new tab.\n\nTo save it: Click the three dots (⋮) in the video player and select 'Download'.");
-        window.open(url, '_blank');
-      }
+      // Since the CDN does not have CORS enabled, fetching as Blob will fail cross-origin.
+      // We must open it in a new tab. We show an alert first so the user understands why.
+      alert("Server security prevents direct downloads. The video will now open in a new tab.\n\nTo save it: Click the three dots (⋮) in the video player and select 'Download'.");
+      
+      const a = document.createElement('a');
+      a.href = url;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     }
 
     /* ===========================

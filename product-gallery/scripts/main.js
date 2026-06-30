@@ -1,15 +1,36 @@
 /* ===========================
    Fetch Product Data
    =========================== */
-fetch(`products.json?t=${Date.now()}`)
-  .then(res => res.json())
-  .then(data => {
+Promise.all([
+  fetch(`products.json?t=${Date.now()}`).then(res => res.json()),
+  fetch(`videos.json?t=${Date.now()}`).then(res => res.json().catch(() => []))
+])
+  .then(([productData, videosData]) => {
+    // Create a mapping of SKU -> video URL
+    const videoMap = {};
+    if (Array.isArray(videosData)) {
+      videosData.forEach(v => {
+        if (v.SKU && v.video) {
+          videoMap[v.SKU] = v.video;
+        }
+      });
+    }
+
     // Normalize product keys (fix PackagingType → packagingType)
-    data = data.map(p => ({
-      ...p,
-      packagingType: p.packagingType || p.PackagingType || "",
-      brand: p.brandName || p.BrandName || p.brand || p.Brand || ""
-    }));
+    let data = productData.map(p => {
+      const normalized = {
+        ...p,
+        packagingType: p.packagingType || p.PackagingType || "",
+        brand: p.brandName || p.BrandName || p.brand || p.Brand || ""
+      };
+      
+      if (videoMap[p.sku]) {
+        if (!normalized.images) normalized.images = [];
+        normalized.images.push(videoMap[p.sku]);
+      }
+      
+      return normalized;
+    });
     window.productData = data;
 
     /* ===========================

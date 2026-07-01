@@ -14,13 +14,31 @@ Promise.all([
         if (v.SKU && v.video) {
           videoMap[v.SKU] = v.video;
         }
-        if (v["Product Name"] && v.video) {
-          if (!videoProductNames.some(item => item.name === v["Product Name"])) {
-            videoProductNames.push({ name: v["Product Name"], video: v.video });
+        
+        const bulkSku = v["Bulk SKU"] || (v.SKU ? v.SKU.split('-')[0] : "");
+        const prodName = v["Product Name"];
+        
+        if (prodName && v.video) {
+          if (!videoProductNames.some(item => item.name === prodName && item.bulkSku === bulkSku)) {
+            videoProductNames.push({ 
+              name: prodName, 
+              bulkSku: bulkSku, 
+              video: v.video,
+              skus: [v.SKU]
+            });
+          } else {
+            const existing = videoProductNames.find(item => item.name === prodName && item.bulkSku === bulkSku);
+            if (existing && v.SKU && !existing.skus.includes(v.SKU)) {
+              existing.skus.push(v.SKU);
+            }
           }
         }
       });
-      videoProductNames.sort((a, b) => a.name.localeCompare(b.name));
+      videoProductNames.sort((a, b) => {
+        const bulkCompare = a.bulkSku.localeCompare(b.bulkSku);
+        if (bulkCompare !== 0) return bulkCompare;
+        return a.name.localeCompare(b.name);
+      });
     }
 
     // Normalize product keys (fix PackagingType → packagingType)
@@ -449,7 +467,13 @@ Promise.all([
         if (!videoListContainer) return;
         videoListContainer.innerHTML = '';
         const lowerQuery = query.toLowerCase();
-        const filtered = videoProductNames.filter(item => item.name.toLowerCase().includes(lowerQuery));
+        
+        const filtered = videoProductNames.filter(item => {
+          const matchName = item.name.toLowerCase().includes(lowerQuery);
+          const matchBulkSku = item.bulkSku.toLowerCase().includes(lowerQuery);
+          const matchSku = item.skus.some(s => s && s.toLowerCase().includes(lowerQuery));
+          return matchName || matchBulkSku || matchSku;
+        });
         
         if (filtered.length === 0) {
           videoListContainer.innerHTML = '<div style="padding: 8px; color: #888; font-size: 0.9em; text-align: center;">No videos found.</div>';
@@ -460,9 +484,11 @@ Promise.all([
           const btn = document.createElement('button');
           btn.style.cssText = 'width: 100%; text-align: left; padding: 8px; border: none; background: transparent; cursor: pointer; border-radius: 4px; display: flex; align-items: center; gap: 8px; color: inherit; font-size: 0.95em; transition: background 0.2s;';
           
+          const displayText = item.bulkSku ? `${item.bulkSku} - ${item.name}` : item.name;
+
           btn.innerHTML = `
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:16px;height:16px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>
-            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${item.name}</span>
+            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${displayText}">${displayText}</span>
           `;
           
           btn.onmouseover = () => btn.style.background = 'rgba(0,0,0,0.05)';

@@ -211,7 +211,7 @@ Promise.all([
                 } else {
                   return `
                     <div class="image-wrapper" tabindex="0">
-                      <img src="${url}" data-full="${url}" loading="lazy" onerror="this.closest('.image-wrapper').style.display='none'" />
+                      <img src="${url}" data-full="${url}" loading="lazy" onerror="this.parentElement.style.display='none'" />
                       <span class="image-number">${label}</span>
                     </div>`;
                 }
@@ -311,7 +311,7 @@ Promise.all([
                 } else {
                   return `
                     <div class="image-wrapper" tabindex="0">
-                      <img src="${url}" data-full="${url}" loading="lazy" onerror="this.closest('.image-wrapper').style.display='none'" />
+                      <img src="${url}" data-full="${url}" loading="lazy" onerror="this.parentElement.style.display='none'" />
                       <span class="image-number">${label}</span>
                     </div>`;
                 }

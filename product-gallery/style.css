@@ -416,7 +416,7 @@ h1 {
   object-fit: contain;
   background: #0f172a;
   border-radius: var(--radius-sm);
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border);
   display: block;
   transition: transform 0.2s ease, box-shadow 0.2s;
 }

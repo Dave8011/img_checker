@@ -8,12 +8,19 @@ Promise.all([
   .then(([productData, videosData]) => {
     // Create a mapping of SKU -> video URL
     const videoMap = {};
+    const videoProductNames = [];
     if (Array.isArray(videosData)) {
       videosData.forEach(v => {
         if (v.SKU && v.video) {
           videoMap[v.SKU] = v.video;
         }
+        if (v["Product Name"] && v.video) {
+          if (!videoProductNames.some(item => item.name === v["Product Name"])) {
+            videoProductNames.push({ name: v["Product Name"], video: v.video });
+          }
+        }
       });
+      videoProductNames.sort((a, b) => a.name.localeCompare(b.name));
     }
 
     // Normalize product keys (fix PackagingType → packagingType)
@@ -398,18 +405,92 @@ Promise.all([
        =========================== */
     const exportDropdown = document.getElementById('exportDropdown');
     const exportToggleBtn = document.getElementById('exportToggleBtn');
+    const videosDropdown = document.getElementById('videosDropdown');
     
     if (exportToggleBtn) {
       exportToggleBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         exportDropdown.classList.toggle('open');
+        if (videosDropdown && videosDropdown.classList.contains('open')) {
+          videosDropdown.classList.remove('open');
+        }
       });
       
       document.addEventListener('click', (e) => {
-        if (!exportDropdown.contains(e.target)) {
+        if (exportDropdown && !exportDropdown.contains(e.target)) {
           exportDropdown.classList.remove('open');
         }
       });
+    }
+
+    /* ===========================
+       Videos Dropdown Logic
+       =========================== */
+    const videosToggleBtn = document.getElementById('videosToggleBtn');
+    const videoSearchInput = document.getElementById('videoSearchInput');
+    const videoListContainer = document.getElementById('videoListContainer');
+
+    if (videosToggleBtn) {
+      videosToggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        videosDropdown.classList.toggle('open');
+        if (exportDropdown && exportDropdown.classList.contains('open')) {
+          exportDropdown.classList.remove('open');
+        }
+      });
+      
+      document.addEventListener('click', (e) => {
+        if (videosDropdown && !videosDropdown.contains(e.target)) {
+          videosDropdown.classList.remove('open');
+        }
+      });
+
+      function renderVideoList(query = '') {
+        if (!videoListContainer) return;
+        videoListContainer.innerHTML = '';
+        const lowerQuery = query.toLowerCase();
+        const filtered = videoProductNames.filter(item => item.name.toLowerCase().includes(lowerQuery));
+        
+        if (filtered.length === 0) {
+          videoListContainer.innerHTML = '<div style="padding: 8px; color: #888; font-size: 0.9em; text-align: center;">No videos found.</div>';
+          return;
+        }
+
+        filtered.forEach(item => {
+          const btn = document.createElement('button');
+          btn.style.cssText = 'width: 100%; text-align: left; padding: 8px; border: none; background: transparent; cursor: pointer; border-radius: 4px; display: flex; align-items: center; gap: 8px; color: inherit; font-size: 0.95em; transition: background 0.2s;';
+          
+          btn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:16px;height:16px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>
+            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${item.name}</span>
+          `;
+          
+          btn.onmouseover = () => btn.style.background = 'rgba(0,0,0,0.05)';
+          btn.onmouseout = () => btn.style.background = 'transparent';
+          
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            currentImages = [item.video];
+            currentIndex = 0;
+            updateLightboxMedia();
+            lightbox.classList.remove('hidden');
+            videosDropdown.classList.remove('open');
+          });
+          
+          videoListContainer.appendChild(btn);
+        });
+      }
+
+      renderVideoList();
+
+      if (videoSearchInput) {
+        videoSearchInput.addEventListener('input', (e) => {
+          renderVideoList(e.target.value);
+        });
+        videoSearchInput.addEventListener('click', (e) => {
+          e.stopPropagation();
+        });
+      }
     }
 
     

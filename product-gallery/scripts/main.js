@@ -1,4 +1,14 @@
 /* ===========================
+   Global Error Handler for Broken Images
+   =========================== */
+window.addEventListener('error', function(e) {
+  const target = e.target;
+  if (target && target.tagName === 'IMG' && target.closest('.image-wrapper')) {
+    target.closest('.image-wrapper').style.display = 'none';
+  }
+}, true); // Use capture phase because error events do not bubble
+
+/* ===========================
    Fetch Product Data
    =========================== */
 Promise.all([
@@ -198,11 +208,9 @@ Promise.all([
                 const isVideo = url.toLowerCase().endsWith('.mp4');
                 const label = getImageLabel(url, i);
                 if (isVideo) {
-                  const posterImg = product.images.find(u => !u.toLowerCase().endsWith('.mp4'));
-                  const posterAttr = posterImg ? `poster="${posterImg}"` : '';
                   return `
                     <div class="image-wrapper video-thumb" tabindex="0">
-                      <video src="${url}" ${posterAttr} preload="none" muted playsinline data-full="${url}" style="width: 100%; height: 110px; object-fit: contain; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg);"></video>
+                      <video src="${url}" preload="metadata" muted playsinline data-full="${url}" style="width: 100%; height: 110px; object-fit: contain; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--card-bg);"></video>
                       <span class="image-number">${label}</span>
                       <button class="copy-btn" style="position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.7); padding: 4px; border-radius: 4px; color: white; border: none; cursor: pointer;" title="Download Video" onclick="forceDownload('${url}', event)">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:16px;height:16px;"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
@@ -211,7 +219,7 @@ Promise.all([
                 } else {
                   return `
                     <div class="image-wrapper" tabindex="0">
-                      <img src="${url}" data-full="${url}" loading="lazy" onerror="this.parentElement.style.display='none'" />
+                      <img src="${url}" data-full="${url}" loading="lazy" />
                       <span class="image-number">${label}</span>
                     </div>`;
                 }
@@ -298,11 +306,9 @@ Promise.all([
                 const isVideo = url.toLowerCase().endsWith('.mp4');
                 const label = getImageLabel(url, i);
                 if (isVideo) {
-                  const posterImg = product.images.find(u => !u.toLowerCase().endsWith('.mp4'));
-                  const posterAttr = posterImg ? `poster="${posterImg}"` : '';
                   return `
                     <div class="image-wrapper video-thumb" tabindex="0">
-                      <video src="${url}" ${posterAttr} preload="none" muted playsinline data-full="${url}" style="width: 100%; height: 110px; object-fit: contain; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg);"></video>
+                      <video src="${url}" preload="metadata" muted playsinline data-full="${url}" style="width: 100%; height: 110px; object-fit: contain; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--card-bg);"></video>
                       <span class="image-number">${label}</span>
                       <button class="copy-btn" style="position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.7); padding: 4px; border-radius: 4px; color: white; border: none; cursor: pointer;" title="Download Video" onclick="forceDownload('${url}', event)">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:16px;height:16px;"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
@@ -311,7 +317,7 @@ Promise.all([
                 } else {
                   return `
                     <div class="image-wrapper" tabindex="0">
-                      <img src="${url}" data-full="${url}" loading="lazy" onerror="this.parentElement.style.display='none'" />
+                      <img src="${url}" data-full="${url}" loading="lazy" />
                       <span class="image-number">${label}</span>
                     </div>`;
                 }

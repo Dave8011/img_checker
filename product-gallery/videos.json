@@ -562,5 +562,23 @@
     "Bulk SKU": "PT0178",
     "video": "https://cdn.iospl.com/saurabh/prod-video/PT0178.mp4",
     "Product Name": "Chilli Flakes Medium Spicy"
+  },
+  {
+    "SKU": "PT0031-000250BP-2",
+    "Bulk SKU": "PT0031",
+    "video": "https://cdn.iospl.com/saurabh/prod-video/PT0031.mp4",
+    "Product Name": "Dhania Powder"
+  },
+  {
+    "SKU": "PT0031-000850BP-1",
+    "Bulk SKU": "PT0031",
+    "video": "https://cdn.iospl.com/saurabh/prod-video/PT0031.mp4",
+    "Product Name": "Dhania Powder"
+  },
+  {
+    "SKU": "PT0031-001800BP-1",
+    "Bulk SKU": "PT0031",
+    "video": "https://cdn.iospl.com/saurabh/prod-video/PT0031.mp4",
+    "Product Name": "Dhania Powder"
   }
 ]

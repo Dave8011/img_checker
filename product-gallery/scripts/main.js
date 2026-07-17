@@ -784,7 +784,7 @@ Promise.all([
       for (const product of products) {
         const { sku, title, category = '', listingType = '', images } = product;
         images.forEach((url, index) => {
-          tasks.push({ sku, title, category, listingType, url, label: getImageLabel(index) });
+          tasks.push({ sku, title, category, listingType, url, label: getImageLabel(url, index) });
         });
       }
 
@@ -1310,10 +1310,11 @@ Promise.all([
           }
 
           product.images.forEach((imgUrl, idx) => {
-            const label = getImageLabel(idx);
+            const label = getImageLabel(imgUrl, idx);
+            const ext = imgUrl.toLowerCase().endsWith('.mp4') ? 'mp4' : 'jpg';
             allItems.push({
               url: imgUrl,
-              filename: `${prefix}.${label}.jpg`
+              filename: `${prefix}.${label}.${ext}`
             });
           });
         });

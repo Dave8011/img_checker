@@ -610,9 +610,35 @@ h1 {
   white-space: nowrap;
 }
 
+#controlGroup .action-link-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  min-height: 40px;
+  border-radius: var(--radius-pill);
+  font-size: 13.5px;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.01em;
+  transition: var(--transition);
+  white-space: nowrap;
+  text-decoration: none;
+  background-color: var(--accent) !important;
+  color: white !important;
+}
+
 #controlGroup button svg {
   width: 18px;
   height: 18px;
+}
+
+#controlGroup .action-link-btn:hover {
+  background-color: var(--accent-hover) !important;
+  transform: translateY(-1.5px);
+  box-shadow: var(--shadow-md);
 }
 
 #clearFiltersBtn {
@@ -992,6 +1018,13 @@ h1 {
 
   /* Action buttons full width, tall */
   #controlGroup button {
+    width: 100%;
+    min-height: 52px;
+    font-size: 15px;
+    border-radius: var(--radius-md);
+  }
+
+  #controlGroup .action-link-btn {
     width: 100%;
     min-height: 52px;
     font-size: 15px;

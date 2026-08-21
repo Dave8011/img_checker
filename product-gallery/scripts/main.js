@@ -936,8 +936,9 @@ Promise.all([
           return;
         }
 
-        const CHUNK_SIZE = 1000;     // max per ZIP
-        const CONCURRENCY = 12;      // multi-thread download
+        const MAX_ZIP_FILES = 1000;
+        const MAX_ZIP_SIZE_BYTES = 950 * 1024 * 1024; // 950 MB
+        const CONCURRENCY = 12;
 
         // Safe fetch with timeout + auto skip
         async function fetchWithTimeout(url, timeout = 15000) {
@@ -962,85 +963,110 @@ Promise.all([
         }
 
         let zipNum = 1;
+        let currentZip = new JSZip();
+        let currentZipCount = 0;
+        let currentZipSize = 0;
 
-        // ============================
-        // ZIP GENERATION in chunks
-        // ============================
-        for (let start = 0; start < allItems.length; start += CHUNK_SIZE) {
-          const chunk = allItems.slice(start, start + CHUNK_SIZE);
-          const total = chunk.length;
-          let processed = 0;
-          let skipped = 0;
-          let pointer = 0;
+        let processed = 0;
+        let skipped = 0;
+        let pointer = 0;
+        const total = allItems.length;
 
-          const zip = new JSZip();
-          const startTime = performance.now();
+        const startTime = performance.now();
+        let lastUpdateCount = 0;
+        let lastUpdateTime = performance.now();
+        let currentSpeed = 0;
 
-          progressText.textContent = `Starting ZIP ${zipNum} (${total} images)...`;
+        let zipChain = Promise.resolve();
+        const zipGenerationPromises = [];
 
-          let lastUpdateCount = 0;
-          let lastUpdateTime = performance.now();
-          let currentSpeed = 0;
+        function queueZipGeneration(zipToGenerate, num) {
+          zipChain = zipChain.then(async () => {
+            progressText.textContent = `Generating ZIP ${num}...`;
+            const zipBlob = await zipToGenerate.generateAsync({ type: "blob" }, meta => {
+              progressText.textContent = `ZIP ${num}: creating file ${Math.round(meta.percent)}%`;
+            });
 
-          // Worker thread
-          async function worker() {
-            while (true) {
-              const idx = pointer++;
-              if (idx >= chunk.length) return;
+            const url = URL.createObjectURL(zipBlob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `ALL_IMAGES_${num}.zip`;
+            a.click();
 
-              const item = chunk[idx];
-              const blob = await fetchWithTimeout(item.url);
+            setTimeout(() => URL.revokeObjectURL(url), 8000);
+            progressText.textContent = `ZIP ${num} ready.`;
+            await new Promise(r => setTimeout(r, 500)); // cool down
+          });
+          zipGenerationPromises.push(zipChain);
+        }
 
-              if (blob) zip.file(item.filename, blob);
-              else skipped++;
+        // Worker thread
+        async function worker() {
+          while (true) {
+            const idx = pointer++;
+            if (idx >= allItems.length) return;
 
-              processed++;
+            const item = allItems[idx];
+            const blob = await fetchWithTimeout(item.url);
 
-              // Rolling ETA
-              const now = performance.now();
-              const elapsedStep = (now - lastUpdateTime) / 1000;
-              if (elapsedStep >= 0.5) {
-                const stepSpeed = (processed - lastUpdateCount) / elapsedStep;
-                currentSpeed = currentSpeed === 0 ? stepSpeed : (currentSpeed * 0.8 + stepSpeed * 0.2);
-                lastUpdateCount = processed;
-                lastUpdateTime = now;
+            if (blob) {
+              const blobSize = blob.size;
+
+              // Check if adding this file exceeds limit (count or size)
+              if (currentZipCount + 1 > MAX_ZIP_FILES || currentZipSize + blobSize > MAX_ZIP_SIZE_BYTES) {
+                if (currentZipCount > 0) {
+                  queueZipGeneration(currentZip, zipNum);
+                  zipNum++;
+                  currentZip = new JSZip();
+                  currentZipCount = 0;
+                  currentZipSize = 0;
+                }
               }
 
-              const overallElapsed = (now - startTime) / 1000;
-              const displaySpeed = currentSpeed > 0 ? currentSpeed : (processed / overallElapsed);
-              const eta = displaySpeed > 0 ? (total - processed) / displaySpeed : 0;
-
-              progressText.textContent =
-                `ZIP ${zipNum}: ${processed}/${total} — Skipped ${skipped} — ETA ${formatSeconds(eta)}`;
+              currentZip.file(item.filename, blob);
+              currentZipCount++;
+              currentZipSize += blobSize;
+            } else {
+              skipped++;
             }
-          }
 
-          // Launch worker pool
-          const workers = [];
-          const count = Math.min(CONCURRENCY, total);
-          for (let i = 0; i < count; i++) workers.push(worker());
-          await Promise.all(workers);
+            processed++;
 
-          progressText.textContent = `Generating ZIP ${zipNum}...`;
+            // Rolling ETA
+            const now = performance.now();
+            const elapsedStep = (now - lastUpdateTime) / 1000;
+            if (elapsedStep >= 0.5) {
+              const stepSpeed = (processed - lastUpdateCount) / elapsedStep;
+              currentSpeed = currentSpeed === 0 ? stepSpeed : (currentSpeed * 0.8 + stepSpeed * 0.2);
+              lastUpdateCount = processed;
+              lastUpdateTime = now;
+            }
 
-          const zipBlob = await zip.generateAsync({ type: "blob" }, meta => {
+            const overallElapsed = (now - startTime) / 1000;
+            const displaySpeed = currentSpeed > 0 ? currentSpeed : (processed / overallElapsed);
+            const eta = displaySpeed > 0 ? (total - processed) / displaySpeed : 0;
+
+            const sizeMB = (currentZipSize / (1024 * 1024)).toFixed(1);
             progressText.textContent =
-              `ZIP ${zipNum}: creating file ${Math.round(meta.percent)}%`;
-          });
+              `Processed ${processed}/${total} (Skipped ${skipped}) — ZIP ${zipNum}: ${currentZipCount} files (${sizeMB} MB) — ETA ${formatSeconds(eta)}`;
+          }
+        }
 
-          // Download
-          const url = URL.createObjectURL(zipBlob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = `ALL_IMAGES_${zipNum}.zip`;
-          a.click();
+        // Launch worker pool
+        const workers = [];
+        const count = Math.min(CONCURRENCY, total);
+        for (let i = 0; i < count; i++) workers.push(worker());
+        await Promise.all(workers);
 
-          setTimeout(() => URL.revokeObjectURL(url), 8000);
+        // Queue remaining zip if there's any
+        if (currentZipCount > 0) {
+          queueZipGeneration(currentZip, zipNum);
+        }
 
-          progressText.textContent = `ZIP ${zipNum} ready.`;
-          zipNum++;
-
-          await new Promise(r => setTimeout(r, 300)); // cool down
+        // Wait for all zip generations to complete
+        if (zipGenerationPromises.length > 0) {
+          progressText.textContent = "Finalizing remaining ZIP generations...";
+          await Promise.all(zipGenerationPromises);
         }
 
         overlay.classList.add("hidden");
@@ -1136,9 +1162,11 @@ Promise.all([
           return;
         }
 
-        const CHUNK_SIZE = 1000;
+        const MAX_ZIP_FILES = 1000;
+        const MAX_ZIP_SIZE_BYTES = 950 * 1024 * 1024; // 950 MB
         const CONCURRENCY = 12;
 
+        // Safe fetch with timeout + auto skip
         async function fetchWithTimeout(url, timeout = 15000) {
           try {
             const controller = new AbortController();
@@ -1161,76 +1189,110 @@ Promise.all([
         }
 
         let zipNum = 1;
+        let currentZip = new JSZip();
+        let currentZipCount = 0;
+        let currentZipSize = 0;
 
-        for (let start = 0; start < allItems.length; start += CHUNK_SIZE) {
-          const chunk = allItems.slice(start, start + CHUNK_SIZE);
-          const total = chunk.length;
-          let processed = 0;
-          let skipped = 0;
-          let pointer = 0;
+        let processed = 0;
+        let skipped = 0;
+        let pointer = 0;
+        const total = allItems.length;
 
-          const zip = new JSZip();
-          const startTime = performance.now();
+        const startTime = performance.now();
+        let lastUpdateCount = 0;
+        let lastUpdateTime = performance.now();
+        let currentSpeed = 0;
 
-          progressText.textContent = `Starting ZIP ${zipNum} (${total} images)...`;
+        let zipChain = Promise.resolve();
+        const zipGenerationPromises = [];
 
-          let lastUpdateCount = 0;
-          let lastUpdateTime = performance.now();
-          let currentSpeed = 0;
+        function queueZipGeneration(zipToGenerate, num, label) {
+          zipChain = zipChain.then(async () => {
+            progressText.textContent = `Generating ZIP ${num} (${targetLabel})...`;
+            const zipBlob = await zipToGenerate.generateAsync({ type: "blob" }, meta => {
+              progressText.textContent = `ZIP ${num} (${targetLabel}): creating file ${Math.round(meta.percent)}%`;
+            });
 
-          async function worker() {
-            while (true) {
-              const idx = pointer++;
-              if (idx >= chunk.length) return;
+            const url = URL.createObjectURL(zipBlob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `ALL_${targetLabel}_IMAGES_${num}.zip`;
+            a.click();
 
-              const item = chunk[idx];
-              const blob = await fetchWithTimeout(item.url);
+            setTimeout(() => URL.revokeObjectURL(url), 8000);
+            progressText.textContent = `ZIP ${num} (${targetLabel}) ready.`;
+            await new Promise(r => setTimeout(r, 500)); // cool down
+          });
+          zipGenerationPromises.push(zipChain);
+        }
 
-              if (blob) zip.file(item.filename, blob);
-              else skipped++;
+        // Worker thread
+        async function worker() {
+          while (true) {
+            const idx = pointer++;
+            if (idx >= allItems.length) return;
 
-              processed++;
+            const item = allItems[idx];
+            const blob = await fetchWithTimeout(item.url);
 
-              const now = performance.now();
-              const elapsedStep = (now - lastUpdateTime) / 1000;
-              if (elapsedStep >= 0.5) {
-                const stepSpeed = (processed - lastUpdateCount) / elapsedStep;
-                currentSpeed = currentSpeed === 0 ? stepSpeed : (currentSpeed * 0.8 + stepSpeed * 0.2);
-                lastUpdateCount = processed;
-                lastUpdateTime = now;
+            if (blob) {
+              const blobSize = blob.size;
+
+              // Check if adding this file exceeds limit (count or size)
+              if (currentZipCount + 1 > MAX_ZIP_FILES || currentZipSize + blobSize > MAX_ZIP_SIZE_BYTES) {
+                if (currentZipCount > 0) {
+                  queueZipGeneration(currentZip, zipNum, `type_${targetLabel}`);
+                  zipNum++;
+                  currentZip = new JSZip();
+                  currentZipCount = 0;
+                  currentZipSize = 0;
+                }
               }
 
-              const overallElapsed = (now - startTime) / 1000;
-              const displaySpeed = currentSpeed > 0 ? currentSpeed : (processed / overallElapsed);
-              const eta = displaySpeed > 0 ? (total - processed) / displaySpeed : 0;
-
-              progressText.textContent =
-                `ZIP ${zipNum} (${targetLabel}): ${processed}/${total} — Skipped ${skipped} — ETA ${formatSeconds(eta)}`;
+              currentZip.file(item.filename, blob);
+              currentZipCount++;
+              currentZipSize += blobSize;
+            } else {
+              skipped++;
             }
+
+            processed++;
+
+            // Rolling ETA
+            const now = performance.now();
+            const elapsedStep = (now - lastUpdateTime) / 1000;
+            if (elapsedStep >= 0.5) {
+              const stepSpeed = (processed - lastUpdateCount) / elapsedStep;
+              currentSpeed = currentSpeed === 0 ? stepSpeed : (currentSpeed * 0.8 + stepSpeed * 0.2);
+              lastUpdateCount = processed;
+              lastUpdateTime = now;
+            }
+
+            const overallElapsed = (now - startTime) / 1000;
+            const displaySpeed = currentSpeed > 0 ? currentSpeed : (processed / overallElapsed);
+            const eta = displaySpeed > 0 ? (total - processed) / displaySpeed : 0;
+
+            const sizeMB = (currentZipSize / (1024 * 1024)).toFixed(1);
+            progressText.textContent =
+              `Processed ${processed}/${total} (Skipped ${skipped}) — ZIP ${zipNum} (${targetLabel}): ${currentZipCount} files (${sizeMB} MB) — ETA ${formatSeconds(eta)}`;
           }
+        }
 
-          const workers = [];
-          const count = Math.min(CONCURRENCY, total);
-          for (let i = 0; i < count; i++) workers.push(worker());
-          await Promise.all(workers);
+        // Launch worker pool
+        const workers = [];
+        const count = Math.min(CONCURRENCY, total);
+        for (let i = 0; i < count; i++) workers.push(worker());
+        await Promise.all(workers);
 
-          progressText.textContent = `Generating ZIP ${zipNum}...`;
+        // Queue remaining zip if there's any
+        if (currentZipCount > 0) {
+          queueZipGeneration(currentZip, zipNum, `type_${targetLabel}`);
+        }
 
-          const zipBlob = await zip.generateAsync({ type: "blob" }, meta => {
-            progressText.textContent = `ZIP ${zipNum}: creating file ${Math.round(meta.percent)}%`;
-          });
-
-          const url = URL.createObjectURL(zipBlob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = `ALL_${targetLabel}_IMAGES_${zipNum}.zip`;
-          a.click();
-
-          setTimeout(() => URL.revokeObjectURL(url), 8000);
-
-          progressText.textContent = `ZIP ${zipNum} ready.`;
-          zipNum++;
-          await new Promise(r => setTimeout(r, 300));
+        // Wait for all zip generations to complete
+        if (zipGenerationPromises.length > 0) {
+          progressText.textContent = "Finalizing remaining ZIP generations...";
+          await Promise.all(zipGenerationPromises);
         }
 
         overlay.classList.add("hidden");
@@ -1325,9 +1387,11 @@ Promise.all([
           return;
         }
 
-        const CHUNK_SIZE = 1000;
+        const MAX_ZIP_FILES = 1000;
+        const MAX_ZIP_SIZE_BYTES = 950 * 1024 * 1024; // 950 MB
         const CONCURRENCY = 12;
 
+        // Safe fetch with timeout + auto skip
         async function fetchWithTimeout(url, timeout = 15000) {
           try {
             const controller = new AbortController();
@@ -1350,76 +1414,110 @@ Promise.all([
         }
 
         let zipNum = 1;
+        let currentZip = new JSZip();
+        let currentZipCount = 0;
+        let currentZipSize = 0;
 
-        for (let start = 0; start < allItems.length; start += CHUNK_SIZE) {
-          const chunk = allItems.slice(start, start + CHUNK_SIZE);
-          const total = chunk.length;
-          let processed = 0;
-          let skipped = 0;
-          let pointer = 0;
+        let processed = 0;
+        let skipped = 0;
+        let pointer = 0;
+        const total = allItems.length;
 
-          const zip = new JSZip();
-          const startTime = performance.now();
+        const startTime = performance.now();
+        let lastUpdateCount = 0;
+        let lastUpdateTime = performance.now();
+        let currentSpeed = 0;
 
-          progressText.textContent = `Starting ZIP ${zipNum} (${total} images)...`;
+        let zipChain = Promise.resolve();
+        const zipGenerationPromises = [];
 
-          let lastUpdateCount = 0;
-          let lastUpdateTime = performance.now();
-          let currentSpeed = 0;
+        function queueZipGeneration(zipToGenerate, num, label) {
+          zipChain = zipChain.then(async () => {
+            progressText.textContent = `Generating ZIP ${num} (${targetBrand})...`;
+            const zipBlob = await zipToGenerate.generateAsync({ type: "blob" }, meta => {
+              progressText.textContent = `ZIP ${num} (${targetBrand}): creating file ${Math.round(meta.percent)}%`;
+            });
 
-          async function worker() {
-            while (true) {
-              const idx = pointer++;
-              if (idx >= chunk.length) return;
+            const url = URL.createObjectURL(zipBlob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `${targetBrand.replace(/[^a-z0-9]/gi, '_')}_IMAGES_${num}.zip`;
+            a.click();
 
-              const item = chunk[idx];
-              const blob = await fetchWithTimeout(item.url);
+            setTimeout(() => URL.revokeObjectURL(url), 8000);
+            progressText.textContent = `ZIP ${num} (${targetBrand}) ready.`;
+            await new Promise(r => setTimeout(r, 500)); // cool down
+          });
+          zipGenerationPromises.push(zipChain);
+        }
 
-              if (blob) zip.file(item.filename, blob);
-              else skipped++;
+        // Worker thread
+        async function worker() {
+          while (true) {
+            const idx = pointer++;
+            if (idx >= allItems.length) return;
 
-              processed++;
+            const item = allItems[idx];
+            const blob = await fetchWithTimeout(item.url);
 
-              const now = performance.now();
-              const elapsedStep = (now - lastUpdateTime) / 1000;
-              if (elapsedStep >= 0.5) {
-                const stepSpeed = (processed - lastUpdateCount) / elapsedStep;
-                currentSpeed = currentSpeed === 0 ? stepSpeed : (currentSpeed * 0.8 + stepSpeed * 0.2);
-                lastUpdateCount = processed;
-                lastUpdateTime = now;
+            if (blob) {
+              const blobSize = blob.size;
+
+              // Check if adding this file exceeds limit (count or size)
+              if (currentZipCount + 1 > MAX_ZIP_FILES || currentZipSize + blobSize > MAX_ZIP_SIZE_BYTES) {
+                if (currentZipCount > 0) {
+                  queueZipGeneration(currentZip, zipNum, `brand_${targetBrand}`);
+                  zipNum++;
+                  currentZip = new JSZip();
+                  currentZipCount = 0;
+                  currentZipSize = 0;
+                }
               }
 
-              const overallElapsed = (now - startTime) / 1000;
-              const displaySpeed = currentSpeed > 0 ? currentSpeed : (processed / overallElapsed);
-              const eta = displaySpeed > 0 ? (total - processed) / displaySpeed : 0;
-
-              progressText.textContent =
-                `ZIP ${zipNum} (${targetBrand.substring(0, 15)}...): ${processed}/${total} — Skipped ${skipped} — ETA ${formatSeconds(eta)}`;
+              currentZip.file(item.filename, blob);
+              currentZipCount++;
+              currentZipSize += blobSize;
+            } else {
+              skipped++;
             }
+
+            processed++;
+
+            // Rolling ETA
+            const now = performance.now();
+            const elapsedStep = (now - lastUpdateTime) / 1000;
+            if (elapsedStep >= 0.5) {
+              const stepSpeed = (processed - lastUpdateCount) / elapsedStep;
+              currentSpeed = currentSpeed === 0 ? stepSpeed : (currentSpeed * 0.8 + stepSpeed * 0.2);
+              lastUpdateCount = processed;
+              lastUpdateTime = now;
+            }
+
+            const overallElapsed = (now - startTime) / 1000;
+            const displaySpeed = currentSpeed > 0 ? currentSpeed : (processed / overallElapsed);
+            const eta = displaySpeed > 0 ? (total - processed) / displaySpeed : 0;
+
+            const sizeMB = (currentZipSize / (1024 * 1024)).toFixed(1);
+            progressText.textContent =
+              `Processed ${processed}/${total} (Skipped ${skipped}) — ZIP ${zipNum} (${targetBrand.substring(0, 15)}...): ${currentZipCount} files (${sizeMB} MB) — ETA ${formatSeconds(eta)}`;
           }
+        }
 
-          const workers = [];
-          const count = Math.min(CONCURRENCY, total);
-          for (let i = 0; i < count; i++) workers.push(worker());
-          await Promise.all(workers);
+        // Launch worker pool
+        const workers = [];
+        const count = Math.min(CONCURRENCY, total);
+        for (let i = 0; i < count; i++) workers.push(worker());
+        await Promise.all(workers);
 
-          progressText.textContent = `Generating ZIP ${zipNum}...`;
+        // Queue remaining zip if there's any
+        if (currentZipCount > 0) {
+          queueZipGeneration(currentZip, zipNum, `brand_${targetBrand}`);
+        }
 
-          const zipBlob = await zip.generateAsync({ type: "blob" }, meta => {
-            progressText.textContent = `ZIP ${zipNum}: creating file ${Math.round(meta.percent)}%`;
-          });
-
-          const url = URL.createObjectURL(zipBlob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = `${targetBrand.replace(/[^a-z0-9]/gi, '_')}_IMAGES_${zipNum}.zip`;
-          a.click();
-
-          setTimeout(() => URL.revokeObjectURL(url), 8000);
-
-          progressText.textContent = `ZIP ${zipNum} ready.`;
-          zipNum++;
-          await new Promise(r => setTimeout(r, 300));
+        // Wait for all zip generations to complete
+        if (zipGenerationPromises.length > 0) {
+          progressText.textContent = "Finalizing remaining ZIP generations...";
+          await Promise.all(zipGenerationPromises);
         }
 
         overlay.classList.add("hidden");

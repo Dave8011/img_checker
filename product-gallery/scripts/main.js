@@ -436,8 +436,7 @@ Promise.all([
     const videosDropdown = document.getElementById('videosDropdown');
     
     if (exportToggleBtn) {
-      exportToggleBtn.addEventListener('mousedown', (e) => {
-        e.preventDefault(); // prevents focus-blur side effects
+      exportToggleBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         const willOpen = !exportDropdown.classList.contains('open');
         exportDropdown.classList.toggle('open', willOpen);
@@ -457,8 +456,7 @@ Promise.all([
     const videoListContainer = document.getElementById('videoListContainer');
 
     if (videosToggleBtn) {
-      videosToggleBtn.addEventListener('mousedown', (e) => {
-        e.preventDefault();
+      videosToggleBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         const willOpen = !videosDropdown.classList.contains('open');
         videosDropdown.classList.toggle('open', willOpen);
@@ -469,8 +467,8 @@ Promise.all([
         }
       });
 
-      // Single shared listener — closes whichever dropdown is open when clicking outside
-      document.addEventListener('mousedown', (e) => {
+      // ONE shared document listener — closes whichever dropdown is open when clicking outside
+      document.addEventListener('click', (e) => {
         if (exportDropdown && !exportDropdown.contains(e.target)) {
           exportDropdown.classList.remove('open');
           exportToggleBtn?.setAttribute('aria-expanded', 'false');

@@ -538,22 +538,22 @@ h1 {
 
 .product h2 {
   font-size: 13.5px;
-  font-weight: 600;
+  font-weight: 500;
   margin: 0 0 14px;
   border-bottom: 1px solid var(--border);
   padding-bottom: 12px;
-  color: var(--text-dim);
+  color: var(--text);
   letter-spacing: -0.01em;
-  line-height: 1.6;
+  line-height: 1.65;
 }
 
 .product h2 code {
-  font-size: 1.05em;
+  font-size: 0.95em;
   background: rgba(99,102,241,0.12);
   padding: 1px 7px;
   border-radius: 5px;
   font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
-  color: var(--accent-hover);
+  color: #c7d2fe;
   border: 1px solid rgba(99,102,241,0.2);
 }
 

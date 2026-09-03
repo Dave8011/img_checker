@@ -112,6 +112,8 @@ h1 {
    Filter / Controls Bar
    =========================== */
 #controls {
+  position: relative;
+  z-index: 50;
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
@@ -923,7 +925,8 @@ h1 {
    Animations
    =========================== */
 @keyframes cardIn {
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
 }
 
 @keyframes shimmer {

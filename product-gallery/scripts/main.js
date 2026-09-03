@@ -436,17 +436,15 @@ Promise.all([
     const videosDropdown = document.getElementById('videosDropdown');
     
     if (exportToggleBtn) {
-      exportToggleBtn.addEventListener('click', (e) => {
+      exportToggleBtn.addEventListener('mousedown', (e) => {
+        e.preventDefault(); // prevents focus-blur side effects
         e.stopPropagation();
-        exportDropdown.classList.toggle('open');
-        if (videosDropdown && videosDropdown.classList.contains('open')) {
+        const willOpen = !exportDropdown.classList.contains('open');
+        exportDropdown.classList.toggle('open', willOpen);
+        exportToggleBtn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+        if (willOpen && videosDropdown?.classList.contains('open')) {
           videosDropdown.classList.remove('open');
-        }
-      });
-      
-      document.addEventListener('click', (e) => {
-        if (exportDropdown && !exportDropdown.contains(e.target)) {
-          exportDropdown.classList.remove('open');
+          document.getElementById('videosToggleBtn')?.setAttribute('aria-expanded', 'false');
         }
       });
     }
@@ -459,17 +457,27 @@ Promise.all([
     const videoListContainer = document.getElementById('videoListContainer');
 
     if (videosToggleBtn) {
-      videosToggleBtn.addEventListener('click', (e) => {
+      videosToggleBtn.addEventListener('mousedown', (e) => {
+        e.preventDefault();
         e.stopPropagation();
-        videosDropdown.classList.toggle('open');
-        if (exportDropdown && exportDropdown.classList.contains('open')) {
+        const willOpen = !videosDropdown.classList.contains('open');
+        videosDropdown.classList.toggle('open', willOpen);
+        videosToggleBtn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+        if (willOpen && exportDropdown?.classList.contains('open')) {
           exportDropdown.classList.remove('open');
+          exportToggleBtn?.setAttribute('aria-expanded', 'false');
         }
       });
-      
-      document.addEventListener('click', (e) => {
+
+      // Single shared listener — closes whichever dropdown is open when clicking outside
+      document.addEventListener('mousedown', (e) => {
+        if (exportDropdown && !exportDropdown.contains(e.target)) {
+          exportDropdown.classList.remove('open');
+          exportToggleBtn?.setAttribute('aria-expanded', 'false');
+        }
         if (videosDropdown && !videosDropdown.contains(e.target)) {
           videosDropdown.classList.remove('open');
+          videosToggleBtn?.setAttribute('aria-expanded', 'false');
         }
       });
 

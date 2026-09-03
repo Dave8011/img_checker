@@ -93,11 +93,6 @@ h1 {
    🧭 Sticky + Floating Filter Bar
    =========================== */
 #controls {
-  position: relative;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
@@ -107,8 +102,6 @@ h1 {
   padding: 12px 16px;
   border-radius: var(--radius-md);
   background: rgba(15, 23, 42, 0.98);
-
-  transition: opacity 0.4s ease, box-shadow 0.3s;
   opacity: 1;
 }
 

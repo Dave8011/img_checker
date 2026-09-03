@@ -128,6 +128,109 @@ Promise.all([
     });
 
     /* ===========================
+       Custom Filter Dropdowns
+       (replaces native <select> with dark-styled dropdowns)
+       =========================== */
+    const _cChevron = `<svg class="csel-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>`;
+
+    function buildCustomSelect(nativeEl, placeholder) {
+      const wrapper = nativeEl.closest('.select-wrapper');
+      if (!wrapper) return;
+
+      const cWrap = document.createElement('div');
+      cWrap.className = 'csel';
+
+      const cBtn = document.createElement('button');
+      cBtn.type = 'button';
+      cBtn.className = 'csel-btn';
+      cBtn.setAttribute('aria-haspopup', 'listbox');
+      cBtn.setAttribute('aria-expanded', 'false');
+      cBtn.innerHTML = `<span class="csel-label">${placeholder}</span>${_cChevron}`;
+
+      const cList = document.createElement('div');
+      cList.className = 'csel-list';
+      cList.setAttribute('role', 'listbox');
+
+      function buildItems() {
+        cList.innerHTML = '';
+        Array.from(nativeEl.options).forEach(opt => {
+          const item = document.createElement('button');
+          item.type = 'button';
+          item.className = 'csel-opt';
+          item.dataset.val = opt.value;
+          item.textContent = opt.text;
+          if (opt.value === nativeEl.value) item.classList.add('active');
+          cList.appendChild(item);
+        });
+      }
+
+      function syncLabel() {
+        const labelEl = cBtn.querySelector('.csel-label');
+        const cur = nativeEl.value;
+        labelEl.textContent = cur
+          ? (Array.from(nativeEl.options).find(o => o.value === cur)?.text || placeholder)
+          : placeholder;
+        cList.querySelectorAll('.csel-opt').forEach(o =>
+          o.classList.toggle('active', o.dataset.val === cur)
+        );
+      }
+
+      buildItems();
+
+      // Single click to open/close
+      cBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        const opening = !cWrap.classList.contains('open');
+        document.querySelectorAll('.csel.open').forEach(w => {
+          if (w !== cWrap) {
+            w.classList.remove('open');
+            w.querySelector('.csel-btn')?.setAttribute('aria-expanded', 'false');
+          }
+        });
+        cWrap.classList.toggle('open', opening);
+        cBtn.setAttribute('aria-expanded', String(opening));
+      });
+
+      // Single click to select option
+      cList.addEventListener('click', e => {
+        const opt = e.target.closest('.csel-opt');
+        if (!opt) return;
+        e.stopPropagation();
+        nativeEl.value = opt.dataset.val;
+        nativeEl.dispatchEvent(new Event('change'));
+        syncLabel();
+        cWrap.classList.remove('open');
+        cBtn.setAttribute('aria-expanded', 'false');
+      });
+
+      cWrap.appendChild(cBtn);
+      cWrap.appendChild(cList);
+      nativeEl.style.display = 'none';
+      cWrap.appendChild(nativeEl); // keep hidden for value tracking
+      wrapper.replaceWith(cWrap);
+
+      nativeEl._cselSync = syncLabel; // expose for programmatic sync
+    }
+
+    buildCustomSelect(brandFilter,        'All Brands');
+    buildCustomSelect(categoryFilter,     'All Categories');
+    buildCustomSelect(listingTypeFilter,  'All Listing Types');
+    buildCustomSelect(packagingTypeFilter,'Packaging Type');
+
+    function syncAllCselLabels() {
+      [brandFilter, categoryFilter, listingTypeFilter, packagingTypeFilter]
+        .forEach(el => el?._cselSync?.());
+    }
+
+    // Close all custom selects when clicking anywhere outside
+    document.addEventListener('click', () => {
+      document.querySelectorAll('.csel.open').forEach(w => {
+        w.classList.remove('open');
+        w.querySelector('.csel-btn')?.setAttribute('aria-expanded', 'false');
+      });
+    });
+
+    /* ===========================
        Render Product Gallery
        =========================== */
     function renderProducts(filter = '', category = '', listingType = '', packagingType = '', brand = '') {
@@ -1567,6 +1670,7 @@ Promise.all([
       updateURLParams(filter, category, listingType, packagingType, brand);
       renderProducts(filter, category, listingType, packagingType, brand);
       updateClearFiltersVisibility(filter, category, listingType, packagingType, brand);
+      syncAllCselLabels();
     }
 
     function updateClearFiltersVisibility(search = '', category = '', listingType = '', packagingType = '', brand = '') {
@@ -1627,6 +1731,7 @@ Promise.all([
       // Render with these initial values
       renderProducts(search, category, listingType, packagingType, brand);
       updateClearFiltersVisibility(search, category, listingType, packagingType, brand);
+      syncAllCselLabels();
     }
 
     /* ===========================
